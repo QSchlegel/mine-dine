@@ -1,0 +1,442 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================================
+   CSS Custom Properties (Design Tokens)
+   ======================================== */
+
+:root {
+  /* Font variables */
+  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-jetbrains: 'JetBrains Mono', monospace;
+
+  /* Light mode colors */
+  --background: #FFFFFF;
+  --background-secondary: #F5F5F5;
+  --background-elevated: #FAFAFA;
+  --foreground: #171717;
+  --foreground-secondary: #6B7280;
+  --foreground-muted: #9CA3AF;
+
+  /* Border colors */
+  --border: rgba(0, 0, 0, 0.1);
+  --border-strong: rgba(0, 0, 0, 0.15);
+
+  /* Primary vibrant purple/pink */
+  --primary: #EC4899;
+  --primary-hover: #DB2777;
+  --primary-light: rgba(236, 72, 153, 0.1);
+
+  /* Accent electric cyan */
+  --accent: #06B6D4;
+  --accent-hover: #0891B2;
+  --accent-light: rgba(6, 182, 212, 0.1);
+
+  /* Glass effect */
+  --glass-background: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(0, 0, 0, 0.05);
+
+  /* Refined shadows with better depth */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.1);
+
+  /* Refined glow effects */
+  --glow-primary: 0 0 24px rgba(236, 72, 153, 0.25), 0 0 8px rgba(236, 72, 153, 0.15);
+  --glow-accent: 0 0 24px rgba(6, 182, 212, 0.25), 0 0 8px rgba(6, 182, 212, 0.15);
+  --glow-primary-strong: 0 0 32px rgba(236, 72, 153, 0.35), 0 0 12px rgba(236, 72, 153, 0.2);
+  --glow-accent-strong: 0 0 32px rgba(6, 182, 212, 0.35), 0 0 12px rgba(6, 182, 212, 0.2);
+
+  color-scheme: light;
+}
+
+/* Dark mode - OS preference */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: #0D0D12;
+    --background-secondary: #151520;
+    --background-elevated: #1C1C28;
+    --foreground: #F0F0FF;
+    --foreground-secondary: #9CA3AF;
+    --foreground-muted: #6B7280;
+
+    --border: rgba(255, 255, 255, 0.1);
+    --border-strong: rgba(255, 255, 255, 0.15);
+
+    --primary-light: rgba(236, 72, 153, 0.2);
+    --accent-light: rgba(6, 182, 212, 0.2);
+
+    --glass-background: rgba(28, 28, 40, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.1);
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.7), 0 4px 8px rgba(0, 0, 0, 0.6);
+    --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.8), 0 8px 16px rgba(0, 0, 0, 0.7);
+
+    --glow-primary: 0 0 24px rgba(236, 72, 153, 0.3), 0 0 8px rgba(236, 72, 153, 0.2);
+    --glow-accent: 0 0 24px rgba(6, 182, 212, 0.3), 0 0 8px rgba(6, 182, 212, 0.2);
+    --glow-primary-strong: 0 0 32px rgba(236, 72, 153, 0.45), 0 0 12px rgba(236, 72, 153, 0.3);
+    --glow-accent-strong: 0 0 32px rgba(6, 182, 212, 0.45), 0 0 12px rgba(6, 182, 212, 0.3);
+
+    color-scheme: dark;
+  }
+}
+
+/* Dark mode - Manual toggle */
+.dark {
+  --background: #0D0D12;
+  --background-secondary: #151520;
+  --background-elevated: #1C1C28;
+  --foreground: #F0F0FF;
+  --foreground-secondary: #9CA3AF;
+  --foreground-muted: #6B7280;
+
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.15);
+
+  --primary-light: rgba(236, 72, 153, 0.2);
+  --accent-light: rgba(6, 182, 212, 0.2);
+
+  --glass-background: rgba(28, 28, 40, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  --glow-primary: 0 0 20px rgba(236, 72, 153, 0.4);
+  --glow-accent: 0 0 20px rgba(6, 182, 212, 0.4);
+
+  color-scheme: dark;
+}
+
+/* Light mode - Manual toggle (overrides OS dark preference) */
+.light {
+  --background: #FFFFFF;
+  --background-secondary: #F5F5F5;
+  --background-elevated: #FAFAFA;
+  --foreground: #171717;
+  --foreground-secondary: #6B7280;
+  --foreground-muted: #9CA3AF;
+
+  --border: rgba(0, 0, 0, 0.1);
+  --border-strong: rgba(0, 0, 0, 0.15);
+
+  --primary-light: rgba(236, 72, 153, 0.1);
+  --accent-light: rgba(6, 182, 212, 0.1);
+
+  --glass-background: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(0, 0, 0, 0.05);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.1);
+
+  --glow-primary: 0 0 24px rgba(236, 72, 153, 0.25), 0 0 8px rgba(236, 72, 153, 0.15);
+  --glow-accent: 0 0 24px rgba(6, 182, 212, 0.25), 0 0 8px rgba(6, 182, 212, 0.15);
+  --glow-primary-strong: 0 0 32px rgba(236, 72, 153, 0.35), 0 0 12px rgba(236, 72, 153, 0.2);
+  --glow-accent-strong: 0 0 32px rgba(6, 182, 212, 0.35), 0 0 12px rgba(6, 182, 212, 0.2);
+
+  color-scheme: light;
+}
+
+/* ========================================
+   Base Styles
+   ======================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-inter);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.01em;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Refined typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+h1 {
+  letter-spacing: -0.03em;
+}
+
+p {
+  line-height: 1.6;
+  letter-spacing: -0.005em;
+}
+
+/* ========================================
+   Custom Scrollbar
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--foreground-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground-secondary);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--foreground-muted) var(--background-secondary);
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    background: var(--glass-background);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+  }
+
+  .glass-strong {
+    background: var(--glass-background);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+  }
+
+  /* Grid pattern backgrounds */
+  .grid-pattern {
+    background-image:
+      linear-gradient(to right, var(--border) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .grid-pattern-sm {
+    background-image:
+      linear-gradient(to right, var(--border) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* Glow text effect */
+  .glow-text {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  }
+
+  .glow-text-subtle {
+    text-shadow: 0 0 8px rgba(236, 72, 153, 0.6);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Focus ring with glow */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2;
+  }
+
+  .focus-ring-accent {
+    @apply focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2;
+  }
+
+  /* Shimmer loading effect */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--background-secondary) 0%,
+      var(--background-elevated) 50%,
+      var(--background-secondary) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Transition utilities */
+  .transition-theme {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+
+  /* Refined spacing utilities */
+  .space-refined > * + * {
+    margin-top: 1.5rem;
+  }
+
+  .space-refined-sm > * + * {
+    margin-top: 0.75rem;
+  }
+
+  .space-refined-lg > * + * {
+    margin-top: 2rem;
+  }
+
+  /* Refined border radius */
+  .rounded-refined {
+    border-radius: 0.875rem;
+  }
+
+  .rounded-refined-lg {
+    border-radius: 1.25rem;
+  }
+
+  /* Subtle gradient overlays */
+  .gradient-overlay {
+    position: relative;
+  }
+
+  .gradient-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(6, 182, 212, 0.2));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .gradient-overlay:hover::before {
+    opacity: 1;
+  }
+}
+
+/* ========================================
+   Component Base Styles
+   ======================================== */
+
+@layer components {
+  /* Refined card base */
+  .card-base {
+    @apply rounded-xl border transition-all duration-300 ease-out;
+    background: var(--background-elevated);
+    border-color: var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card-base:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+
+  /* Refined input base */
+  .input-base {
+    @apply w-full rounded-xl px-4 py-3 text-sm transition-all duration-300 ease-out;
+    background: var(--background);
+    border: 1.5px solid var(--border);
+    color: var(--foreground);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .input-base::placeholder {
+    color: var(--foreground-muted);
+    transition: color 0.2s ease;
+  }
+
+  .input-base:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .input-base:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: var(--glow-primary);
+    transform: translateY(-1px);
+  }
+
+  /* Refined button base */
+  .btn-base {
+    @apply inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-300 ease-out;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* ========================================
+   Reduced Motion
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ========================================
+   Selection Styling
+   ======================================== */
+
+::selection {
+  background: rgba(236, 72, 153, 0.25);
+  color: var(--foreground);
+}
+
+::-moz-selection {
+  background: rgba(236, 72, 153, 0.25);
+  color: var(--foreground);
+}
