@@ -65,15 +65,6 @@ Note: Umami is privacy-focused and open-source. You can self-host it or use a ho
 
 ### File Upload (Optional)
 
-Choose either Cloudinary or AWS S3:
-
-**Cloudinary:**
-```env
-CLOUDINARY_CLOUD_NAME="your_cloud_name"
-CLOUDINARY_API_KEY="your_api_key"
-CLOUDINARY_API_SECRET="your_api_secret"
-```
-
 **AWS S3:**
 ```env
 AWS_S3_BUCKET_NAME="your_bucket_name"

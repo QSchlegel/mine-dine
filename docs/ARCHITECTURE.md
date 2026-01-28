@@ -22,7 +22,7 @@ Mine Dine is built as a Next.js 14+ application using the App Router pattern. Th
 - **Better Auth**: Authentication and session management
 - **Stripe**: Payment processing
 - **Umami**: Privacy-focused analytics and user tracking
-- **Cloudinary/AWS S3**: File storage (optional)
+- **AWS S3**: File storage (optional)
 
 ## Database Schema
 
@@ -71,7 +71,7 @@ Users with higher match scores are recommended to each other.
 ## File Upload Flow
 
 1. Client uploads file to `/api/uploads`
-2. Server processes file (Cloudinary/S3)
+2. Server processes file (AWS S3)
 3. Server returns public URL
 4. URL is stored in database
 

@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { Shield, Users, Calendar, DollarSign, CheckCircle, XCircle, Clock } from 'lucide-react'
 
+// Mark this page as dynamic since it uses getCurrentUser() which calls headers()
+export const dynamic = 'force-dynamic'
+
 export default async function ModeratorDashboardPage() {
   const user = await getCurrentUser()
 

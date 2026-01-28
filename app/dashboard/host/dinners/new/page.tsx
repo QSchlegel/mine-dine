@@ -516,7 +516,7 @@ export default function CreateDinnerPage() {
                   error={errors.imageUrl}
                 />
                 <p className="text-xs text-foreground-muted mt-1">
-                  Upload your image to a service like Cloudinary and paste the URL here
+                  Upload your image to a service like AWS S3 and paste the URL here
                 </p>
               </div>
 

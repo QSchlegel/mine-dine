@@ -8,7 +8,7 @@ This guide will walk you through deploying Mine Dine to Railway, a modern platfo
 - GitHub account (for connecting your repository)
 - Stripe account (for payments)
 - Umami instance (self-hosted or hosted) for analytics
-- AWS S3 or Cloudinary account (for file storage)
+- AWS S3 account (for file storage)
 
 ## Step 1: Create a Railway Project
 
@@ -57,21 +57,31 @@ NEXT_PUBLIC_UMAMI_URL=https://umami.example.com
 OPENAI_API_KEY=sk-...
 ```
 
-### Storage Configuration (Choose One)
+### Storage Configuration
 
-**Option A: Cloudinary**
-```env
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-```
+**Railway Native Bucket (Recommended)**
 
-**Option B: AWS S3**
+Railway provides native S3-compatible storage. To use it:
+
+1. In your Railway project, click "+ New" → "Storage" → "Add Bucket"
+2. Create a bucket (e.g., `versatile-toolchest-ukdghz`)
+3. In your service, click "Variables" → "Add Variable Reference"
+4. Connect your service to the bucket - Railway will automatically add:
+   - `AWS_ENDPOINT_URL` - Automatically set by Railway
+   - `AWS_S3_BUCKET_NAME` - Automatically set by Railway
+   - `AWS_DEFAULT_REGION` - Automatically set by Railway (usually "auto")
+   - `AWS_ACCESS_KEY_ID` - Automatically set by Railway
+   - `AWS_SECRET_ACCESS_KEY` - Automatically set by Railway
+
+**External AWS S3 (Alternative)**
+
+If using external AWS S3 instead of Railway's native bucket:
 ```env
 AWS_S3_BUCKET_NAME=your_bucket_name
 AWS_S3_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your_access_key
 AWS_SECRET_ACCESS_KEY=your_secret_key
+AWS_S3_ENDPOINT=https://s3.us-east-1.amazonaws.com  # Optional, for custom endpoints
 ```
 
 ### Optional: OAuth Providers
