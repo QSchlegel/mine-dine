@@ -15,7 +15,10 @@ const nextConfig = {
     ],
   },
   // Turbopack configuration
-  turbopack: {},
+  turbopack: {
+    // Set root directory to prevent Next.js from detecting parent lockfiles
+    root: path.resolve(__dirname),
+  },
   // Webpack config for production builds and when --webpack flag is used
   // Following the multisig project approach with WebAssembly support
   webpack: (config, { isServer }) => {
