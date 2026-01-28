@@ -24,7 +24,7 @@ This script will:
 - Generate Prisma Client
 - Run database migrations
 
-2. Edit `.env.local` with your API keys (UTXOS, Stripe, PostHog)
+2. Edit `.env.local` with your API keys (Stripe, Umami, etc.)
 
 3. Start the development server:
 ```bash
@@ -55,9 +55,8 @@ cp .env.local.example .env.local
 
 4. **Edit `.env.local`** with your configuration:
    - Set `DATABASE_URL="postgresql://minedine:minedine@localhost:5432/minedine?schema=public"`
-   - Add your UTXOS Project ID
    - Add your Stripe keys (test keys are fine)
-   - Add your PostHog key (optional)
+   - Add your Umami credentials (optional)
 
 5. **Install dependencies:**
 ```bash

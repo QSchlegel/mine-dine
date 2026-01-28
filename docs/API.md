@@ -2,7 +2,7 @@
 
 ## Authentication
 
-All API routes (except public endpoints) require authentication via UTXOS. The user ID is stored in a session cookie after authentication.
+All API routes (except public endpoints) require authentication via Better Auth. The user session is stored in a cookie after authentication.
 
 ## Base URL
 
@@ -14,15 +14,17 @@ http://localhost:3000/api
 
 ### Authentication
 
-#### `GET /api/auth/callback`
-UTXOS authentication callback. Creates or updates user in database.
+#### Authentication Routes
 
-**Query Parameters:**
-- `address` (string): Wallet address
-- `utxosUserId` (string, optional): UTXOS user ID
+Authentication is handled by Better Auth. See Better Auth documentation for available endpoints.
 
-**Response:**
-- Redirects to `/dashboard` on success
+**Base Path:** `/api/auth`
+
+Common endpoints:
+- `POST /api/auth/sign-up` - User registration
+- `POST /api/auth/sign-in` - User login
+- `POST /api/auth/sign-out` - User logout
+- `GET /api/auth/session` - Get current session
 
 ### Profiles
 

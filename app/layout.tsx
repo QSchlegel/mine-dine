@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { PostHogProviderWrapper } from "@/lib/posthog";
+import { UmamiScript } from "@/components/UmamiScript";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navigation } from "@/components/ui/Navigation";
 import { Footer } from "@/components/ui/Footer";
@@ -77,12 +77,11 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen flex flex-col antialiased">
+        <UmamiScript />
         <ThemeProvider>
-          <PostHogProviderWrapper>
-            <Navigation />
-            <main className="flex-1 pt-16">{children}</main>
-            <Footer />
-          </PostHogProviderWrapper>
+          <Navigation />
+          <main className="flex-1 pt-16">{children}</main>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>

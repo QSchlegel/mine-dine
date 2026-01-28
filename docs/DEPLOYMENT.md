@@ -44,15 +44,26 @@ Vercel will automatically:
 3. Select events: `payment_intent.succeeded`, `payment_intent.payment_failed`
 4. Copy webhook secret to environment variables
 
-### 6. Configure UTXOS
+### 6. Configure Umami Analytics
 
-1. Add your production domain to UTXOS whitelist
-2. Update `NEXT_PUBLIC_APP_URL` in environment variables
+1. Set up your Umami instance (self-hosted or hosted)
+2. Create a website in Umami dashboard
+3. Add `NEXT_PUBLIC_UMAMI_WEBSITE_ID` and `NEXT_PUBLIC_UMAMI_URL` to environment variables
+
+## Deployment Options
+
+### Railway (Recommended)
+
+Railway provides a seamless deployment experience with automatic PostgreSQL provisioning. See [Railway Deployment Guide](RAILWAY_DEPLOYMENT.md) for detailed instructions.
+
+### Vercel
+
+Vercel is optimized for Next.js applications and provides excellent developer experience.
 
 ## Monitoring
 
 - Set up error tracking (Sentry, etc.)
-- Monitor PostHog analytics
+- Monitor Umami analytics
 - Set up database backups
 - Monitor Stripe webhook deliveries
 

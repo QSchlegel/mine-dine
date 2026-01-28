@@ -19,9 +19,9 @@ Mine Dine is built as a Next.js 14+ application using the App Router pattern. Th
 - **PostgreSQL**: Relational database
 
 ### Services
-- **UTXOS**: Wallet-as-a-Service for authentication
+- **Better Auth**: Authentication and session management
 - **Stripe**: Payment processing
-- **PostHog**: Analytics and user tracking
+- **Umami**: Privacy-focused analytics and user tracking
 - **Cloudinary/AWS S3**: File storage (optional)
 
 ## Database Schema
@@ -45,11 +45,10 @@ See [Database Documentation](DATABASE.md) for detailed schema.
 
 ## Authentication Flow
 
-1. User connects wallet via UTXOS SDK
-2. UTXOS returns user identifier
-3. App creates/updates user in database
-4. Session cookie is set
-5. Subsequent requests use session for authentication
+1. User signs up/logs in via Better Auth (email/password or OAuth)
+2. Better Auth creates/updates user in database
+3. Session cookie is set
+4. Subsequent requests use session for authentication
 
 ## Payment Flow
 
@@ -88,6 +87,7 @@ Users with higher match scores are recommended to each other.
 ## Deployment
 
 The application is designed to be deployed on:
+- **Railway** (recommended - see [Railway Deployment Guide](RAILWAY_DEPLOYMENT.md))
 - **Vercel** (recommended for Next.js)
 - **AWS** (with appropriate configuration)
 - **Any Node.js hosting** (with environment setup)

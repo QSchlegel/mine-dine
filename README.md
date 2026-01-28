@@ -4,7 +4,7 @@ A Next.js supper club facilitator platform that connects guests with hosts for u
 
 ## Features
 
-- 🔐 **UTXOS Authentication** - Secure wallet-based authentication
+- 🔐 **Better Auth** - Secure authentication with email/password and OAuth
 - 👥 **User Profiles** - Create profiles with photos, bios, and tags
 - 🎯 **Tag-Based Matching** - Comprehensive tag system for matching guests and hosts
 - 👆 **Swipe Interface** - Tinder-like interface for discovering hosts
@@ -14,7 +14,7 @@ A Next.js supper club facilitator platform that connects guests with hosts for u
 - 💳 **Stripe Payments** - Secure payment processing with Apple Pay/Google Pay
 - ⭐ **Reviews & Ratings** - Guests can review their dining experiences
 - 💬 **Messaging** - Direct messaging between guests and hosts
-- 📊 **PostHog Analytics** - User behavior tracking and insights
+- 📊 **Umami Analytics** - Privacy-focused user behavior tracking
 
 ## Quick Start
 
@@ -22,9 +22,8 @@ A Next.js supper club facilitator platform that connects guests with hosts for u
 
 - Node.js 18+ and npm
 - PostgreSQL database
-- UTXOS project ID (get from [utxos.dev](https://utxos.dev))
 - Stripe account (for payments)
-- PostHog account (for analytics)
+- Umami instance (self-hosted or hosted) for analytics
 
 ### Installation
 
@@ -41,7 +40,7 @@ cd mine-dine
 ./scripts/setup-local.sh
 ```
 
-3. Edit `.env.local` with your API keys (UTXOS, Stripe, PostHog)
+3. Edit `.env.local` with your API keys (Stripe, Umami, etc.)
 
 4. Start the development server:
 ```bash
@@ -102,9 +101,9 @@ For detailed local setup instructions, see [Local Setup Guide](docs/LOCAL_SETUP.
 - **Framework**: Next.js 14+ (App Router)
 - **Language**: TypeScript
 - **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: UTXOS Wallet-as-a-Service
+- **Authentication**: Better Auth (email/password + OAuth)
 - **Payments**: Stripe
-- **Analytics**: PostHog
+- **Analytics**: Umami
 - **Styling**: Tailwind CSS
 - **Validation**: Zod
 

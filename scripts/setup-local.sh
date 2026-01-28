@@ -31,8 +31,8 @@ if [ ! -f .env.local ]; then
     cp .env.local.example .env.local
     echo "⚠️  Please edit .env.local with your API keys before continuing!"
     echo "   At minimum, you need to set:"
-    echo "   - NEXT_PUBLIC_UTXOS_PROJECT_ID"
     echo "   - STRIPE_SECRET_KEY and NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"
+    echo "   - Umami credentials (optional): NEXT_PUBLIC_UMAMI_WEBSITE_ID and NEXT_PUBLIC_UMAMI_URL"
     echo ""
     read -p "Press enter after you've updated .env.local..."
 fi

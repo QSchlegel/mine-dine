@@ -38,17 +38,6 @@ Edit `.env` and fill in the following:
 DATABASE_URL="postgresql://user:password@localhost:5432/minedine?schema=public"
 ```
 
-### UTXOS Authentication
-
-1. Create an account at [utxos.dev](https://utxos.dev)
-2. Create a new project
-3. Copy your Project ID
-
-```env
-NEXT_PUBLIC_UTXOS_PROJECT_ID="your_project_id"
-NEXT_PUBLIC_NETWORK_ID="0"  # 0 for preprod, 1 for mainnet
-```
-
 ### Stripe Payments
 
 1. Create an account at [stripe.com](https://stripe.com)
@@ -61,15 +50,18 @@ STRIPE_SECRET_KEY="sk_test_..."
 STRIPE_WEBHOOK_SECRET="whsec_..."
 ```
 
-### PostHog Analytics
+### Umami Analytics
 
-1. Create an account at [posthog.com](https://posthog.com)
-2. Get your project API key
+1. Set up Umami (self-hosted or use a hosted instance)
+2. Create a website in your Umami dashboard
+3. Copy your website ID and Umami instance URL
 
 ```env
-NEXT_PUBLIC_POSTHOG_KEY="phc_..."
-NEXT_PUBLIC_POSTHOG_HOST="https://app.posthog.com"
+NEXT_PUBLIC_UMAMI_WEBSITE_ID="your_website_id"
+NEXT_PUBLIC_UMAMI_URL="https://umami.example.com"
 ```
+
+Note: Umami is privacy-focused and open-source. You can self-host it or use a hosted instance.
 
 ### File Upload (Optional)
 
@@ -125,12 +117,6 @@ The application will be available at [http://localhost:3000](http://localhost:30
 - Verify PostgreSQL is running: `pg_isready`
 - Check your DATABASE_URL format
 - Ensure the database exists
-
-### UTXOS Authentication Issues
-
-- Verify your Project ID is correct
-- Check that your domain is whitelisted in UTXOS dashboard
-- Ensure NEXT_PUBLIC_NETWORK_ID matches your environment
 
 ### Stripe Issues
 

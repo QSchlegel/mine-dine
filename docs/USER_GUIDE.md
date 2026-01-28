@@ -4,7 +4,7 @@
 
 ### As a Guest
 
-1. **Sign In**: Connect your wallet using UTXOS
+1. **Sign Up/Sign In**: Create an account or sign in with email/password or OAuth (Google/GitHub)
 2. **Create Profile**: Add your name, bio, and photos
 3. **Select Tags**: Choose tags that describe your interests
 4. **Discover Hosts**: Use the swipe interface to find hosts
