@@ -1,5 +1,7 @@
 // Guide configuration and state management
 
+import React from 'react'
+
 export type TourType = 'guest' | 'host'
 
 export interface TourStep {

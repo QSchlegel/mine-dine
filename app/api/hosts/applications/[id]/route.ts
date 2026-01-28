@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic'
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireAuth()
@@ -29,7 +29,7 @@ export async function PATCH(
       )
     }
 
-    const applicationId = params.id
+    const { id: applicationId } = await params
     const body = await req.json()
     const validatedData = reviewApplicationSchema.parse(body)
 

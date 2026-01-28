@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireAuth()
@@ -27,7 +27,7 @@ export async function POST(
       )
     }
 
-    const dinnerId = params.id
+    const { id: dinnerId } = await params
     const body = await req.json()
     const validatedData = moderateDinnerSchema.parse(body)
 

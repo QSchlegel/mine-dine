@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { ChefHat, Calendar, Utensils, Users, CheckCircle, Clock, XCircle } from 'lucide-react'
+import HelpButton from '@/components/guides/HelpButton'
+import OnboardingTour from '@/components/guides/OnboardingTour'
 
 interface HostApplication {
   id: string

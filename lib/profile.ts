@@ -28,9 +28,9 @@ export interface UserProfile {
 export function isProfileComplete(user: UserProfile | null): boolean {
   if (!user) return false
 
-  const hasName = user.name && user.name.trim().length >= 2
-  const hasBio = user.bio && user.bio.trim().length >= 20
-  const hasTags = user.userTags && user.userTags.length >= 3
+  const hasName = Boolean(user.name && user.name.trim().length >= 2)
+  const hasBio = Boolean(user.bio && user.bio.trim().length >= 20)
+  const hasTags = Boolean(user.userTags && user.userTags.length >= 3)
 
   return hasName && hasBio && hasTags
 }

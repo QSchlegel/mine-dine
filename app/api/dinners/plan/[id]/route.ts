@@ -5,9 +5,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const headersList = await headers()
     const session = await auth.api.getSession({
       headers: headersList,
@@ -18,7 +19,7 @@ export async function GET(
     }
 
     const dinnerPlan = await prisma.dinnerPlan.findUnique({
-      where: { dinnerId: params.id },
+      where: { dinnerId: id },
       include: {
         dinner: {
           include: {
@@ -49,9 +50,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const headersList = await headers()
     const session = await auth.api.getSession({
       headers: headersList,
@@ -65,7 +67,7 @@ export async function PUT(
 
     // Verify dinner exists and user owns it
     const dinner = await prisma.dinner.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!dinner) {
@@ -78,7 +80,7 @@ export async function PUT(
 
     // Update or create plan
     const dinnerPlan = await prisma.dinnerPlan.upsert({
-      where: { dinnerId: params.id },
+      where: { dinnerId: id },
       update: {
         menuItems: body.menuItems,
         ingredientList: body.ingredientList,
@@ -87,7 +89,7 @@ export async function PUT(
         aiResponse: body.aiResponse || undefined,
       },
       create: {
-        dinnerId: params.id,
+        dinnerId: id,
         menuItems: body.menuItems,
         ingredientList: body.ingredientList,
         prepTimeline: body.prepTimeline,

@@ -114,7 +114,26 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     // Otherwise render as motion button
     // Extract only the props we need to avoid type conflicts with framer-motion
-    const { onClick, type, form, name, value, 'aria-label': ariaLabel, ...restProps } = props
+    const { 
+      onClick, 
+      type, 
+      form, 
+      name, 
+      value, 
+      'aria-label': ariaLabel,
+      // Exclude all HTML event handlers that conflict with framer-motion
+      onDrag, 
+      onDragEnd, 
+      onDragEnter, 
+      onDragExit, 
+      onDragLeave, 
+      onDragOver, 
+      onDragStart,
+      onAnimationStart,
+      onAnimationEnd,
+      onAnimationIteration,
+      ...restProps 
+    } = props
 
     return (
       <motion.button
@@ -131,7 +150,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         initial="rest"
         whileHover={!disabled && !isLoading ? 'hover' : undefined}
         whileTap={!disabled && !isLoading ? 'tap' : undefined}
-        {...restProps}
+        {...(restProps as any)}
       >
         {content}
       </motion.button>

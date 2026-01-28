@@ -602,6 +602,7 @@ export default function CreateDinnerPage() {
             </Button>
           </div>
         </motion.div>
+          </>
         )}
       </div>
     </div>

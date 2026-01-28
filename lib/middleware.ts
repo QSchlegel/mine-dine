@@ -5,9 +5,9 @@ import { getCurrentUser } from './auth'
  * API route wrapper that requires authentication
  */
 export function withAuth(
-  handler: (req: NextRequest, user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>, context?: { params?: { [key: string]: string } }) => Promise<NextResponse>
+  handler: (req: NextRequest, user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>, context?: { params?: Promise<{ [key: string]: string }> }) => Promise<NextResponse>
 ) {
-  return async (req: NextRequest, context?: { params?: { [key: string]: string } }) => {
+  return async (req: NextRequest, context?: { params?: Promise<{ [key: string]: string }> }) => {
     const user = await getCurrentUser()
 
     if (!user) {

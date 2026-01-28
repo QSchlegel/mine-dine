@@ -12,11 +12,12 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const dinner = await prisma.dinner.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         host: {
           select: {
@@ -82,10 +83,11 @@ export async function GET(
 export const PATCH = withAuth(async (
   req: NextRequest,
   user,
-  context?: { params?: { id?: string } }
+  context?: { params?: Promise<{ [key: string]: string }> }
 ) => {
   try {
-    const id = context?.params?.id
+    const params = await context?.params
+    const id = params?.id
     if (!id) {
       return NextResponse.json(
         { error: 'Dinner ID is required' },
@@ -180,10 +182,11 @@ export const PATCH = withAuth(async (
 export const DELETE = withAuth(async (
   req: NextRequest,
   user,
-  context?: { params?: { id?: string } }
+  context?: { params?: Promise<{ [key: string]: string }> }
 ) => {
   try {
-    const id = context?.params?.id
+    const params = await context?.params
+    const id = params?.id
     if (!id) {
       return NextResponse.json(
         { error: 'Dinner ID is required' },

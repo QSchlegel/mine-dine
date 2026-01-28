@@ -17,10 +17,11 @@ export const dynamic = 'force-dynamic'
 export const POST = withAuth(async (
   req: NextRequest,
   user,
-  context?: { params?: { id?: string } }
+  context?: { params?: Promise<{ [key: string]: string }> }
 ) => {
   try {
-    const id = context?.params?.id
+    const params = await context?.params
+    const id = params?.id
     if (!id) {
       return NextResponse.json(
         { error: 'Dinner ID is required' },
