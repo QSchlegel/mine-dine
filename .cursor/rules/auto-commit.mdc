@@ -1,0 +1,34 @@
+---
+description: Automatically commit changes after saving files unless there are other pending tasks
+alwaysApply: true
+---
+
+# Auto-Commit After Save
+
+After saving files or completing edits, automatically commit the changes unless:
+
+1. **There are other pending tasks** - If the user has asked for multiple things or there are incomplete todos, finish those first
+2. **The user explicitly asks not to commit** - Respect explicit instructions to skip committing
+3. **There are no changes to commit** - Only commit when there are actual file changes
+
+## Commit Behavior
+
+- **When to commit**: After successfully saving/editing files and completing the requested task
+- **Commit message**: Use descriptive commit messages based on what was changed (e.g., "Add pre-commit hook", "Update component styling", "Fix bug in authentication")
+- **What to commit**: Only commit files that were actually modified as part of the current task
+- **Pre-commit hook**: The pre-commit hook will automatically run `npm run build` - if it fails, the commit will be blocked
+
+## Examples
+
+✅ **Good - Commit after completing task:**
+- User: "Add a button component"
+- Action: Create button component, then commit with message "Add button component"
+
+✅ **Good - Complete other tasks first:**
+- User: "Fix the bug and also update the docs"
+- Action: Fix bug, update docs, THEN commit both changes together
+
+❌ **Don't commit if:**
+- User explicitly says "don't commit yet"
+- There are incomplete todos or pending tasks
+- No files were actually changed

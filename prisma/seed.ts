@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, TagCategory, DinnerStatus, BookingStatus, SwipeActionType } from '@prisma/client'
+import { PrismaClient, UserRole, TagCategory, DinnerStatus, BookingStatus, SwipeActionType, ProfileVisibility } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -176,7 +176,7 @@ async function main() {
       bio: 'Plant-based chef and wellness advocate. I prove that vegan food can be exciting, delicious, and satisfying. All organic, locally sourced ingredients. 🌱',
       profileImageUrl: profileImages[7],
       coverImageUrl: coverImages[5],
-      profileVisibility: 'ENGAGED_ONLY',
+      profileVisibility: ProfileVisibility.ENGAGED_ONLY,
     },
     {
       email: 'ahmed@example.com',

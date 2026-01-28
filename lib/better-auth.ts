@@ -58,20 +58,6 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: false, // Set to true in production
   },
-  roles: {
-    USER: {
-      permissions: [],
-    },
-    HOST: {
-      permissions: [],
-    },
-    MODERATOR: {
-      permissions: [],
-    },
-    ADMIN: {
-      permissions: [],
-    },
-  },
   plugins, // Plugins validate against roles config
   hooks: {
     // Fix role after user creation - Better Auth may create users with lowercase "user"
