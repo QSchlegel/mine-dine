@@ -59,13 +59,16 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
         {/* Background with vibrant gradient - youthful energy */}
-        <div className="absolute inset-0 bg-gradient-to-br from-pink-50/50 via-purple-50/30 to-cyan-50/50 dark:from-pink-950/20 dark:via-purple-950/10 dark:to-cyan-950/20" style={{ zIndex: 1 }} />
-        <div className="absolute inset-0 grid-pattern opacity-30" style={{ zIndex: 1 }} />
+        <div
+          className="absolute inset-0 bg-gradient-to-br from-pink-50/50 via-purple-50/30 to-cyan-50/50 dark:from-[#050608] dark:via-[#080A0D] dark:to-[#0D0F12]"
+          style={{ zIndex: 1 }}
+        />
+        <div className="absolute inset-0 grid-pattern opacity-30 dark:opacity-10" style={{ zIndex: 1 }} />
 
         {/* Vibrant gradient orbs - energetic colors */}
-        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-pink-400/30 rounded-full blur-[120px] animate-pulse" style={{ zIndex: 1 }} />
-        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-cyan-400/30 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s', zIndex: 1 }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-400/20 rounded-full blur-[150px]" style={{ zIndex: 1 }} />
+        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-pink-400/30 dark:bg-pink-500/10 rounded-full blur-[120px] animate-pulse" style={{ zIndex: 1 }} />
+        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-cyan-400/30 dark:bg-cyan-400/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s', zIndex: 1 }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-400/20 dark:bg-purple-500/8 rounded-full blur-[150px]" style={{ zIndex: 1 }} />
 
         {/* Interactive floating food icons with parallax */}
         <InteractiveFloatingIcons />
@@ -80,8 +83,8 @@ export default function Home() {
           >
             {/* Badge */}
             <motion.div variants={staggerItem}>
-              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-pink-100 to-purple-100 dark:from-pink-900/30 dark:to-purple-900/30 border border-pink-300/50 dark:border-pink-700/50 text-pink-700 dark:text-pink-400 text-sm font-semibold shadow-sm">
-                <span className="h-2 w-2 rounded-full bg-pink-500 animate-pulse" />
+              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-pink-100 to-purple-100 dark:from-pink-500/20 dark:to-purple-500/20 border border-pink-300/50 dark:border-pink-400/40 text-pink-700 dark:text-pink-300 text-sm font-semibold shadow-sm">
+                <span className="h-2 w-2 rounded-full bg-pink-500 dark:bg-pink-400 animate-pulse" />
                 <DynamicSlogan />
               </span>
             </motion.div>
@@ -92,7 +95,7 @@ export default function Home() {
               className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight leading-tight"
             >
               <span className="block text-[var(--foreground)]">Savor Every</span>
-              <span className="block mt-2 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
+              <span className="block mt-2 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 dark:from-pink-400 dark:via-purple-400 dark:to-cyan-400 bg-clip-text text-transparent">
                 Bite, Share Every
               </span>
               <span className="block mt-2 text-[var(--foreground)]">Moment</span>
@@ -279,8 +282,9 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[var(--background-secondary)] relative overflow-hidden">
         {/* Background accents */}
-        <div className="absolute top-0 left-1/4 w-64 h-64 bg-pink-500/10 rounded-full blur-[80px]" />
-        <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-accent-500/10 rounded-full blur-[80px]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-transparent dark:from-[#0B0D10] dark:via-[#12151A] dark:to-[#1A1F26]" />
+        <div className="absolute top-0 left-1/4 w-64 h-64 bg-pink-500/10 dark:bg-pink-500/15 rounded-full blur-[80px]" />
+        <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-accent-500/10 dark:bg-accent-500/15 rounded-full blur-[80px]" />
 
         <motion.div
           variants={fadeInUp}
@@ -339,11 +343,11 @@ function StepCard({
   return (
     <motion.div variants={staggerItem}>
       <Card hover="glow" className="relative p-6 h-full">
-        <div className="absolute top-4 right-4 text-5xl font-bold text-pink-500/10">
+        <div className="absolute top-4 right-4 text-5xl font-bold text-pink-500/10 dark:text-pink-500/30">
           {number}
         </div>
         <CardContent className="p-0 space-y-4">
-          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-pink-500/10 to-purple-500/10 flex items-center justify-center text-pink-600 dark:text-pink-400">
+          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-pink-500/10 to-purple-500/10 dark:from-pink-500/20 dark:to-purple-500/20 flex items-center justify-center text-pink-600 dark:text-pink-300">
             {icon}
           </div>
           <h3 className="text-xl font-semibold text-[var(--foreground)]">{title}</h3>
@@ -368,7 +372,7 @@ function FeatureCard({
     <motion.div variants={staggerItem}>
       <Card hover="subtle" className="p-6 h-full">
         <CardContent className="p-0 space-y-3">
-          <div className="h-10 w-10 rounded-lg bg-accent-500/10 flex items-center justify-center text-accent-500">
+          <div className="h-10 w-10 rounded-lg bg-accent-500/10 dark:bg-accent-500/20 flex items-center justify-center text-accent-500 dark:text-accent-300">
             {icon}
           </div>
           <h3 className="text-lg font-semibold text-[var(--foreground)]">{title}</h3>
@@ -378,4 +382,3 @@ function FeatureCard({
     </motion.div>
   )
 }
-

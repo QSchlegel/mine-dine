@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { format } from 'date-fns'
 
 interface Dinner {
@@ -41,20 +42,16 @@ export default function HostDinnersPage() {
   }, [])
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Loading...</div>
-      </div>
-    )
+    return <LoadingScreen title="Loading your dinners" subtitle="Fetching your listings" />
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Dinners</h1>
-            <p className="mt-2 text-gray-600">Manage your dinner listings</p>
+            <h1 className="text-3xl font-bold text-[var(--foreground)]">My Dinners</h1>
+            <p className="mt-2 text-[var(--foreground-secondary)]">Manage your dinner listings</p>
           </div>
           <Button onClick={() => router.push('/dashboard/host/dinners/new')}>
             Create New Dinner
@@ -64,7 +61,7 @@ export default function HostDinnersPage() {
         {dinners.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-gray-500 mb-4">You haven't created any dinners yet.</p>
+              <p className="text-[var(--foreground-muted)] mb-4">You haven't created any dinners yet.</p>
               <Button onClick={() => router.push('/dashboard/host/dinners/new')}>
                 Create Your First Dinner
               </Button>
@@ -78,9 +75,9 @@ export default function HostDinnersPage() {
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-xl">{dinner.title}</CardTitle>
                     <span className={`px-2 py-1 text-xs rounded-full ${
-                      dinner.status === 'PUBLISHED' ? 'bg-green-100 text-green-800' :
-                      dinner.status === 'DRAFT' ? 'bg-gray-100 text-gray-800' :
-                      'bg-red-100 text-red-800'
+                      dinner.status === 'PUBLISHED' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                      dinner.status === 'DRAFT' ? 'bg-[var(--background-secondary)] text-[var(--foreground-secondary)]' :
+                      'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                     }`}>
                       {dinner.status}
                     </span>
@@ -90,7 +87,7 @@ export default function HostDinnersPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 text-sm text-gray-600">
+                  <div className="space-y-2 text-sm text-[var(--foreground-muted)]">
                     <p>📍 {dinner.location}</p>
                     <p>👥 {dinner._count.bookings} / {dinner.maxGuests} guests</p>
                     <p>💰 €{dinner.basePricePerPerson} per person</p>

@@ -38,13 +38,9 @@ const authNavLinks: NavLink[] = [
   { href: '/dashboard/swipe', label: 'Discover', icon: <Heart className="h-4 w-4" /> },
 ]
 
-// Mobile menu links for authenticated users
+// Mobile menu links for authenticated users (secondary actions not in bottom nav)
 const mobileAuthLinks: NavLink[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: <Home className="h-4 w-4" /> },
-  { href: '/dashboard/bookings', label: 'My Bookings', icon: <Calendar className="h-4 w-4" /> },
   { href: '/dashboard/messages', label: 'Messages', icon: <MessageSquare className="h-4 w-4" /> },
-  { href: '/dashboard/swipe', label: 'Discover Hosts', icon: <Heart className="h-4 w-4" /> },
-  { href: '/dashboard/profile', label: 'Profile', icon: <User className="h-4 w-4" /> },
   { href: '/dashboard/host/apply', label: 'Become a Host', icon: <ChefHat className="h-4 w-4" /> },
 ]
 

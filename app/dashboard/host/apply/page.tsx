@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Textarea } from '@/components/ui/Textarea'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
 
 interface HostApplication {
   id: string
@@ -100,16 +101,12 @@ export default function HostApplyPage() {
   }
 
   if (loadingApplication) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Loading...</div>
-      </div>
-    )
+    return <LoadingScreen title="Loading application" subtitle="Checking your host status" />
   }
 
   if (existingApplication) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
@@ -120,7 +117,7 @@ export default function HostApplyPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-sm font-medium text-gray-700">Status</p>
+                <p className="text-sm font-medium text-[var(--foreground-secondary)]">Status</p>
                 <p className={`mt-1 text-sm ${
                   existingApplication.status === 'APPROVED' ? 'text-green-600' :
                   existingApplication.status === 'REJECTED' ? 'text-red-600' :
@@ -131,15 +128,15 @@ export default function HostApplyPage() {
               </div>
 
               <div>
-                <p className="text-sm font-medium text-gray-700">Application Text</p>
-                <p className="mt-1 text-sm text-gray-600 whitespace-pre-wrap">
+                <p className="text-sm font-medium text-[var(--foreground-secondary)]">Application Text</p>
+                <p className="mt-1 text-sm text-[var(--foreground-muted)] whitespace-pre-wrap">
                   {existingApplication.applicationText}
                 </p>
               </div>
 
               {existingApplication.rejectionReason && (
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Rejection Reason</p>
+                  <p className="text-sm font-medium text-[var(--foreground-secondary)]">Rejection Reason</p>
                   <p className="mt-1 text-sm text-red-600">
                     {existingApplication.rejectionReason}
                   </p>
@@ -162,7 +159,7 @@ export default function HostApplyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>

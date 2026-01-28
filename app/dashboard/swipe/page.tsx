@@ -1,13 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import Image from 'next/image'
-import { useSwipeable } from 'react-swipeable'
 import { Heart, X, Star, ChefHat, Utensils } from 'lucide-react'
-import { swipeCard } from '@/lib/animations'
 import DiscoveryVisualization from '@/components/visualizations/presets/DiscoveryVisualization'
 import MatchVisualization from '@/components/visualizations/presets/MatchVisualization'
 import HelpButton from '@/components/guides/HelpButton'
@@ -164,22 +163,63 @@ export default function SwipePage() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleKeyDown])
 
-  const handlers = useSwipeable({
-    onSwipedLeft: () => handleSwipe('PASS'),
-    onSwipedRight: () => handleSwipe('LIKE'),
-    trackMouse: true,
-    preventScrollOnSwipe: true,
-  })
+  // Motion values for drag-based animations
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+
+  // Tilt effect based on drag position
+  const rotateZ = useTransform(x, [-200, 0, 200], [-15, 0, 15])
+  const rotateY = useTransform(x, [-200, 0, 200], [10, 0, -10])
+  const rotateX = useTransform(y, [-100, 0, 100], [-5, 0, 5])
+
+  // Dynamic glow based on drag direction
+  const glowOpacity = useTransform(x, [-200, -50, 0, 50, 200], [1, 0.5, 0, 0.5, 1])
+  const glowColor = useTransform(
+    x,
+    [-200, 0, 200],
+    [
+      '0 0 60px rgba(239, 68, 68, 0.6)', // Red glow left
+      '0 0 0px rgba(0, 0, 0, 0)',          // No glow center
+      '0 0 60px rgba(34, 197, 94, 0.6)',  // Green glow right
+    ]
+  )
+
+  // Stamp opacity based on drag distance
+  const likeOpacity = useTransform(x, [0, 100], [0, 1])
+  const nopeOpacity = useTransform(x, [-100, 0], [1, 0])
+
+  // Border color based on drag direction
+  const borderColor = useTransform(
+    x,
+    [-200, -50, 0, 50, 200],
+    [
+      'rgba(239, 68, 68, 0.8)',
+      'rgba(239, 68, 68, 0.3)',
+      'rgba(0, 0, 0, 0)',
+      'rgba(34, 197, 94, 0.3)',
+      'rgba(34, 197, 94, 0.8)',
+    ]
+  )
+
+  // Handle drag end with velocity consideration
+  const handleDragEnd = useCallback((_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const offset = info.offset.x
+    const velocity = info.velocity.x
+
+    // Consider both offset AND velocity for more responsive feel
+    if (offset > 100 || velocity > 500) {
+      handleSwipe('LIKE')
+    } else if (offset < -100 || velocity < -500) {
+      handleSwipe('PASS')
+    } else {
+      // Reset position if not swiped far enough
+      x.set(0)
+      y.set(0)
+    }
+  }, [handleSwipe, x, y])
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-foreground-secondary">Discovering hosts...</p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen title="Discovering hosts" subtitle="Finding great matches for you" />
   }
 
   if (error) {
@@ -281,21 +321,87 @@ export default function SwipePage() {
           </div>
 
           {/* Card Stack */}
-          <div {...handlers} className="relative h-[550px]">
+          <div className="relative h-[550px]" style={{ perspective: '1000px' }}>
+            {/* Background cards (stack effect) */}
+            {hosts.slice(currentIndex + 1, currentIndex + 3).map((host, i) => (
+              <motion.div
+                key={host.id}
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  scale: 1 - (i + 1) * 0.05,
+                  y: (i + 1) * 8,
+                  zIndex: 8 - i,
+                }}
+              >
+                <Card className="h-full overflow-hidden shadow-lg border-0 opacity-60">
+                  <div className="relative h-56 w-full bg-gradient-to-br from-primary-400 to-primary-600">
+                    {host.coverImageUrl && (
+                      <Image
+                        src={host.coverImageUrl}
+                        alt=""
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 520px"
+                        className="object-cover"
+                      />
+                    )}
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+
+            {/* Main swipeable card */}
             <AnimatePresence mode="popLayout">
               <motion.div
                 key={currentHost.id}
+                className="absolute inset-0 cursor-grab active:cursor-grabbing"
+                style={{
+                  x,
+                  y,
+                  rotateX,
+                  rotateY,
+                  rotateZ,
+                  boxShadow: glowColor,
+                  zIndex: 10,
+                }}
+                drag={!swiping}
+                dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+                dragElastic={0.9}
+                onDragEnd={handleDragEnd}
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{
-                  x: swipeDirection === 'right' ? 300 : swipeDirection === 'left' ? -300 : 0,
+                  x: swipeDirection === 'right' ? 400 : swipeDirection === 'left' ? -400 : 0,
                   opacity: 0,
-                  rotate: swipeDirection === 'right' ? 15 : swipeDirection === 'left' ? -15 : 0,
+                  rotate: swipeDirection === 'right' ? 20 : swipeDirection === 'left' ? -20 : 0,
+                  transition: { type: 'spring', stiffness: 200, damping: 25 },
                 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                className="absolute inset-0"
               >
-                <Card className="h-full cursor-grab active:cursor-grabbing overflow-hidden shadow-xl border-0">
+                {/* LIKE stamp */}
+                <motion.div
+                  className="absolute top-8 left-8 z-20 rotate-[-20deg] border-4 border-green-500 text-green-500 font-black text-3xl px-4 py-2 rounded-lg pointer-events-none"
+                  style={{ opacity: likeOpacity }}
+                >
+                  LIKE
+                </motion.div>
+
+                {/* NOPE stamp */}
+                <motion.div
+                  className="absolute top-8 right-8 z-20 rotate-[20deg] border-4 border-red-500 text-red-500 font-black text-3xl px-4 py-2 rounded-lg pointer-events-none"
+                  style={{ opacity: nopeOpacity }}
+                >
+                  NOPE
+                </motion.div>
+
+                <motion.div
+                  className="h-full rounded-2xl overflow-hidden"
+                  style={{
+                    borderWidth: 3,
+                    borderStyle: 'solid',
+                    borderColor,
+                  }}
+                >
+                  <Card className="h-full overflow-hidden shadow-xl border-0">
                   {/* Cover Image */}
                   <div className="relative h-56 w-full bg-gradient-to-br from-primary-400 to-primary-600">
                     {currentHost.coverImageUrl ? (
@@ -303,6 +409,7 @@ export default function SwipePage() {
                         src={currentHost.coverImageUrl}
                         alt={currentHost.name || 'Host'}
                         fill
+                        sizes="(max-width: 1024px) 100vw, 520px"
                         className="object-cover"
                       />
                     ) : (
@@ -347,6 +454,7 @@ export default function SwipePage() {
                             src={currentHost.profileImageUrl}
                             alt={currentHost.name || 'Host'}
                             fill
+                            sizes="64px"
                             className="object-cover"
                           />
                         ) : (
@@ -424,33 +532,36 @@ export default function SwipePage() {
                       </div>
                     )}
                   </CardContent>
-                </Card>
+                  </Card>
+                </motion.div>
               </motion.div>
             </AnimatePresence>
 
-            {/* Swipe indicators */}
+            {/* Swipe indicators (shown after swipe is initiated) */}
             <AnimatePresence>
               {swipeDirection === 'right' && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  animate={{ opacity: 1, scale: 1.1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30"
                 >
-                  <div className="w-24 h-24 rounded-full bg-green-500/90 flex items-center justify-center">
-                    <Heart className="w-12 h-12 text-white fill-white" />
+                  <div className="w-28 h-28 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/50">
+                    <Heart className="w-14 h-14 text-white fill-white" />
                   </div>
                 </motion.div>
               )}
               {swipeDirection === 'left' && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  animate={{ opacity: 1, scale: 1.1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30"
                 >
-                  <div className="w-24 h-24 rounded-full bg-red-500/90 flex items-center justify-center">
-                    <X className="w-12 h-12 text-white" />
+                  <div className="w-28 h-28 rounded-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center shadow-lg shadow-red-500/50">
+                    <X className="w-14 h-14 text-white" />
                   </div>
                 </motion.div>
               )}
@@ -458,24 +569,24 @@ export default function SwipePage() {
           </div>
 
           {/* Action buttons */}
-          <div className="flex justify-center gap-6 mt-6" data-tour="swipe">
+          <div className="flex justify-center gap-8 mt-6" data-tour="swipe">
             <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.15, boxShadow: '0 0 30px rgba(239, 68, 68, 0.4)' }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => handleSwipe('PASS')}
               disabled={swiping}
-              className="w-16 h-16 rounded-full bg-red-500/10 hover:bg-red-500/20 flex items-center justify-center transition-colors disabled:opacity-50"
+              className="w-18 h-18 p-5 rounded-full bg-gradient-to-br from-red-500/20 to-red-600/20 hover:from-red-500/30 hover:to-red-600/30 border-2 border-red-500/30 flex items-center justify-center transition-all disabled:opacity-50 shadow-lg"
             >
-              <X className="w-8 h-8 text-red-500" />
+              <X className="w-9 h-9 text-red-500" />
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.15, boxShadow: '0 0 30px rgba(34, 197, 94, 0.4)' }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => handleSwipe('LIKE')}
               disabled={swiping}
-              className="w-16 h-16 rounded-full bg-green-500/10 hover:bg-green-500/20 flex items-center justify-center transition-colors disabled:opacity-50"
+              className="w-18 h-18 p-5 rounded-full bg-gradient-to-br from-green-500/20 to-green-600/20 hover:from-green-500/30 hover:to-green-600/30 border-2 border-green-500/30 flex items-center justify-center transition-all disabled:opacity-50 shadow-lg"
             >
-              <Heart className="w-8 h-8 text-green-500" />
+              <Heart className="w-9 h-9 text-green-500" />
             </motion.button>
           </div>
 

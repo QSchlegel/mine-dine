@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { format } from 'date-fns'
 
 interface Message {
@@ -91,17 +92,13 @@ export default function MessagesPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Loading...</div>
-      </div>
-    )
+    return <LoadingScreen title="Loading messages" subtitle="Fetching your conversations" />
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Messages</h1>
+        <h1 className="text-3xl font-bold text-[var(--foreground)] mb-8">Messages</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1">
@@ -109,7 +106,7 @@ export default function MessagesPage() {
               <CardContent className="p-0">
                 <div className="divide-y">
                   {conversations.length === 0 ? (
-                    <div className="p-4 text-center text-gray-500">
+                    <div className="p-4 text-center text-[var(--foreground-muted)]">
                       No conversations yet
                     </div>
                   ) : (
@@ -124,12 +121,12 @@ export default function MessagesPage() {
                         <button
                           key={conv.id}
                           onClick={() => setSelectedUserId(otherUser.id)}
-                          className={`w-full p-4 text-left hover:bg-gray-50 ${
-                            selectedUserId === otherUser.id ? 'bg-gray-100' : ''
+                          className={`w-full p-4 text-left hover:bg-[var(--background-secondary)] ${
+                            selectedUserId === otherUser.id ? 'bg-[var(--background-elevated)]' : ''
                           }`}
                         >
                           <p className="font-medium">{otherUser.name || 'Anonymous'}</p>
-                          <p className="text-sm text-gray-600 truncate">{conv.content}</p>
+                          <p className="text-sm text-[var(--foreground-muted)] truncate">{conv.content}</p>
                         </button>
                       )
                     })
@@ -153,16 +150,16 @@ export default function MessagesPage() {
                       <div
                         className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                           message.sender.id === selectedUserId
-                            ? 'bg-gray-200 text-gray-900'
-                            : 'bg-indigo-600 text-white'
+                            ? 'bg-[var(--background-elevated)] text-[var(--foreground)]'
+                            : 'bg-[var(--primary)] text-white'
                         }`}
                       >
                         <p className="text-sm">{message.content}</p>
                         <p
                           className={`text-xs mt-1 ${
                             message.sender.id === selectedUserId
-                              ? 'text-gray-600'
-                              : 'text-indigo-200'
+                              ? 'text-[var(--foreground-muted)]'
+                              : 'text-white/80'
                           }`}
                         >
                           {format(new Date(message.createdAt), 'HH:mm')}

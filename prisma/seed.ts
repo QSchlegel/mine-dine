@@ -24,7 +24,7 @@ const coverImages = [
   'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&h=400&fit=crop',
   'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=1200&h=400&fit=crop',
   'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1200&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1482049016gy-b5a13a28aae7?w=1200&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1482049016-b5a13a28aae7?w=1200&h=400&fit=crop',
   'https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=1200&h=400&fit=crop',
 ]
 
@@ -40,6 +40,10 @@ const dinnerImages = [
   'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=600&fit=crop', // Healthy bowl
   'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=800&h=600&fit=crop', // Pizza
   'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop', // Fine dining
+  'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=600&fit=crop', // Shared table
+  'https://images.unsplash.com/photo-1482049016-b5a13a28aae7?w=800&h=600&fit=crop', // Brunch spread
+  'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=800&h=600&fit=crop', // Food table
+  'https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=800&h=600&fit=crop', // Kitchen table
 ]
 
 async function main() {
@@ -172,6 +176,7 @@ async function main() {
       bio: 'Plant-based chef and wellness advocate. I prove that vegan food can be exciting, delicious, and satisfying. All organic, locally sourced ingredients. 🌱',
       profileImageUrl: profileImages[7],
       coverImageUrl: coverImages[5],
+      profileVisibility: 'ENGAGED_ONLY',
     },
     {
       email: 'ahmed@example.com',
@@ -437,6 +442,70 @@ async function main() {
         { name: 'Egg Tarts', description: 'Hong Kong style custard tarts', price: 8 },
       ],
     },
+    {
+      hostIndex: 6,
+      title: 'Levantine Grill Night',
+      description: 'Smoky grills and bright mezze plates inspired by Lebanon and Turkey. Expect fresh flatbreads, herb salads, and slow-roasted meats with plenty of vegetarian options.',
+      cuisine: 'Mediterranean',
+      maxGuests: 10,
+      basePricePerPerson: 58,
+      location: 'Amsterdam Oost',
+      daysFromNow: 14,
+      imageUrl: dinnerImages[10],
+      tagNames: ['Mediterranean', 'Social', 'Family Friendly'],
+      addOns: [
+        { name: 'Arak Pairing', description: 'Traditional anise spirit', price: 18 },
+        { name: 'Pistachio Baklava', description: 'Housemade and warm', price: 10 },
+      ],
+    },
+    {
+      hostIndex: 1,
+      title: 'Tokyo Ramen Lab',
+      description: 'Build your perfect bowl with handmade noodles, slow-simmered broth, and a toppings bar. Learn why good ramen takes 12 hours and tastes like it.',
+      cuisine: 'Japanese',
+      maxGuests: 8,
+      basePricePerPerson: 52,
+      location: 'Amsterdam Zuid',
+      daysFromNow: 16,
+      imageUrl: dinnerImages[11],
+      tagNames: ['Japanese', 'Street Food', 'Pescatarian'],
+      addOns: [
+        { name: 'Extra Chashu', description: 'Double pork belly', price: 9 },
+        { name: 'Craft Highball', description: 'Japanese whisky and soda', price: 12 },
+      ],
+    },
+    {
+      hostIndex: 5,
+      title: 'Seasonal Vegan Brunch',
+      description: 'A slow Sunday brunch featuring baked oats, herbed tofu scramble, citrus salad, and small-batch pastries. Bright, fresh, and satisfying.',
+      cuisine: 'Vegan',
+      maxGuests: 10,
+      basePricePerPerson: 48,
+      location: 'Amsterdam De Pijp',
+      daysFromNow: 18,
+      imageUrl: dinnerImages[12],
+      tagNames: ['Vegan', 'Organic', 'Farm to Table'],
+      addOns: [
+        { name: 'Cold-Pressed Juice', description: 'Seasonal blend', price: 8 },
+        { name: 'Vegan Pastry Box', description: 'Three mini pastries', price: 14 },
+      ],
+    },
+    {
+      hostIndex: 7,
+      title: 'Cantonese Hot Pot Night',
+      description: 'A cozy hot pot dinner with fresh seafood, thin-sliced meats, and a variety of broths. Perfect for sharing and lingering conversations.',
+      cuisine: 'Chinese',
+      maxGuests: 10,
+      basePricePerPerson: 60,
+      location: 'Amsterdam Chinatown',
+      daysFromNow: 20,
+      imageUrl: dinnerImages[13],
+      tagNames: ['Chinese', 'Social', 'Family Friendly'],
+      addOns: [
+        { name: 'Premium Seafood Set', description: 'Extra prawns and scallops', price: 20 },
+        { name: 'Dessert Soup', description: 'Sweet red bean soup', price: 6 },
+      ],
+    },
     // Past dinners (for reviews)
     {
       hostIndex: 0,
@@ -465,6 +534,34 @@ async function main() {
       tagNames: ['French', 'Wine Lover'],
       addOns: [],
       status: DinnerStatus.COMPLETED,
+    },
+    {
+      hostIndex: 4,
+      title: 'Oaxaca Street Food Pop-Up',
+      description: 'A casual night of street-food favorites: tlayudas, esquites, and handmade tortillas with regional salsas.',
+      cuisine: 'Mexican',
+      maxGuests: 14,
+      basePricePerPerson: 35,
+      location: 'Amsterdam Noord',
+      daysFromNow: -10,
+      imageUrl: dinnerImages[3],
+      tagNames: ['Mexican', 'Street Food', 'Social'],
+      addOns: [],
+      status: DinnerStatus.COMPLETED,
+    },
+    {
+      hostIndex: 2,
+      title: 'Monsoon Comforts',
+      description: 'A cozy winter menu inspired by Mumbai monsoon foods. Think warming soups, spiced snacks, and aromatic curries.',
+      cuisine: 'Indian',
+      maxGuests: 8,
+      basePricePerPerson: 50,
+      location: 'Amsterdam West',
+      daysFromNow: -3,
+      imageUrl: dinnerImages[5],
+      tagNames: ['Indian', 'Family Friendly'],
+      addOns: [],
+      status: DinnerStatus.CANCELLED,
     },
   ]
 
@@ -524,10 +621,15 @@ async function main() {
     { guestIndex: 3, dinnerIndex: 3, numberOfGuests: 2, status: BookingStatus.PENDING },
     { guestIndex: 4, dinnerIndex: 2, numberOfGuests: 3, status: BookingStatus.CONFIRMED },
     { guestIndex: 4, dinnerIndex: 5, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
+    { guestIndex: 1, dinnerIndex: 10, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
+    { guestIndex: 2, dinnerIndex: 11, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
+    { guestIndex: 3, dinnerIndex: 12, numberOfGuests: 3, status: BookingStatus.PENDING },
+    { guestIndex: 0, dinnerIndex: 13, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
     // Past bookings (completed)
     { guestIndex: 0, dinnerIndex: 8, numberOfGuests: 2, status: BookingStatus.COMPLETED },
     { guestIndex: 1, dinnerIndex: 9, numberOfGuests: 2, status: BookingStatus.COMPLETED },
     { guestIndex: 2, dinnerIndex: 8, numberOfGuests: 2, status: BookingStatus.COMPLETED },
+    { guestIndex: 3, dinnerIndex: 14, numberOfGuests: 2, status: BookingStatus.COMPLETED },
   ]
 
   const bookings = []
@@ -570,6 +672,11 @@ async function main() {
       bookingIndex: 8,
       rating: 4,
       comment: 'Great food and lovely host. The sugo was delicious and I\'ve already made it at home twice! Only giving 4 stars because the space was a bit cramped, but the experience was worth it.',
+    },
+    {
+      bookingIndex: 13,
+      rating: 5,
+      comment: 'Carlos created such a vibrant atmosphere. The tlayudas were unreal and the salsas had real depth. Would book again in a heartbeat.',
     },
   ]
 
@@ -653,6 +760,22 @@ async function main() {
       messages: [
         'Hi Marco! I\'m so excited about the pasta night. I have a question - can you accommodate a dairy allergy for one of my guests?',
         'That\'s wonderful, thank you! We can\'t wait.',
+      ],
+    },
+    {
+      senderIndex: 2, // Sofia
+      recipientHostIndex: 4, // Carlos
+      messages: [
+        'Hola Carlos! Are your tacos spicy? I love heat but my partner is sensitive.',
+        'Perfect, thanks for the heads up!',
+      ],
+    },
+    {
+      senderIndex: 1, // James
+      recipientHostIndex: 1, // Yuki
+      messages: [
+        'Hi Yuki, is there a pescatarian option in the ramen lab?',
+        'Great, appreciate it!',
       ],
     },
   ]

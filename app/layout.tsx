@@ -5,6 +5,7 @@ import { UmamiScript } from "@/components/UmamiScript";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navigation } from "@/components/ui/Navigation";
 import { Footer } from "@/components/ui/Footer";
+import { BottomNav } from "@/components/ui/BottomNav";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -60,8 +61,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0D0D12" },
+    { media: "(prefers-color-scheme: light)", color: "#FFFCFA" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B0D10" },
   ],
 };
 
@@ -80,8 +81,9 @@ export default function RootLayout({
         <UmamiScript />
         <ThemeProvider>
           <Navigation />
-          <main className="flex-1 pt-16">{children}</main>
-          <Footer />
+          <main className="flex-1 pt-20 pb-24 md:pb-0">{children}</main>
+          <BottomNav />
+          <Footer className="hidden md:block" />
         </ThemeProvider>
       </body>
     </html>

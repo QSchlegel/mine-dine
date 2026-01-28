@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
 
 interface Booking {
   id: string
@@ -74,11 +75,7 @@ export default function ReviewBookingPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Loading...</div>
-      </div>
-    )
+    return <LoadingScreen title="Loading review" subtitle="Preparing your booking details" />
   }
 
   if (!booking) {
@@ -95,7 +92,7 @@ export default function ReviewBookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
@@ -107,7 +104,7 @@ export default function ReviewBookingPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
                   Rating
                 </label>
                 <div className="flex space-x-2">

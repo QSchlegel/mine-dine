@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { format } from 'date-fns'
 import Image from 'next/image'
 
@@ -60,11 +61,7 @@ export default function DinnerDetailPage() {
   }, [params.id])
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Loading...</div>
-      </div>
-    )
+    return <LoadingScreen title="Loading dinner" subtitle="Gathering menu details" />
   }
 
   if (!dinner) {
@@ -81,7 +78,7 @@ export default function DinnerDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {dinner.imageUrl && (
           <div className="relative h-96 w-full mb-8 rounded-lg overflow-hidden">
@@ -104,7 +101,7 @@ export default function DinnerDetailPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 whitespace-pre-wrap">{dinner.description}</p>
+                <p className="text-[var(--foreground-secondary)] whitespace-pre-wrap">{dinner.description}</p>
               </CardContent>
             </Card>
 
@@ -120,7 +117,7 @@ export default function DinnerDetailPage() {
                         <div>
                           <p className="font-medium">{addOn.name}</p>
                           {addOn.description && (
-                            <p className="text-sm text-gray-600">{addOn.description}</p>
+                            <p className="text-sm text-[var(--foreground-muted)]">{addOn.description}</p>
                           )}
                         </div>
                         <p className="font-semibold">€{addOn.price}</p>
@@ -146,12 +143,12 @@ export default function DinnerDetailPage() {
                               src={bill.imageUrl}
                               alt="Grocery bill"
                               fill
-                              className="object-contain bg-gray-100"
+                              className="object-contain bg-[var(--background-secondary)]"
                             />
                           </div>
                         )}
                         {bill.totalAmount && (
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-[var(--foreground-muted)]">
                             Total: €{bill.totalAmount}
                           </p>
                         )}
@@ -170,17 +167,17 @@ export default function DinnerDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-600">Location</p>
+                  <p className="text-sm text-[var(--foreground-muted)]">Location</p>
                   <p className="font-medium">{dinner.location}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Price</p>
-                  <p className="text-2xl font-bold text-indigo-600">
+                  <p className="text-sm text-[var(--foreground-muted)]">Price</p>
+                  <p className="text-2xl font-bold text-[var(--primary)]">
                     €{dinner.basePricePerPerson} per person
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Availability</p>
+                  <p className="text-sm text-[var(--foreground-muted)]">Availability</p>
                   <p className="font-medium">
                     {dinner._count.bookings} / {dinner.maxGuests} guests
                   </p>
@@ -214,7 +211,7 @@ export default function DinnerDetailPage() {
                   <div>
                     <p className="font-medium">{dinner.host.name || 'Anonymous'}</p>
                     {dinner.host.bio && (
-                      <p className="text-sm text-gray-600 mt-1">{dinner.host.bio}</p>
+                      <p className="text-sm text-[var(--foreground-muted)] mt-1">{dinner.host.bio}</p>
                     )}
                   </div>
                 </div>

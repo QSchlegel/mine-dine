@@ -44,14 +44,14 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       none: {},
       lift: cardHover,
       glow: {
-        rest: { 
-          boxShadow: '0 0 0 rgba(236, 72, 153, 0)',
+        rest: {
+          boxShadow: '0 0 0 rgba(232, 93, 117, 0)',
           transform: 'translateY(0)',
         },
         hover: {
-          boxShadow: '0 0 32px rgba(236, 72, 153, 0.25), 0 0 12px rgba(236, 72, 153, 0.15)',
-          borderColor: 'rgba(236, 72, 153, 0.5)',
-          transform: 'translateY(-2px)',
+          boxShadow: '0 0 32px rgba(232, 93, 117, 0.22), 0 0 12px rgba(232, 93, 117, 0.14)',
+          borderColor: 'rgba(232, 93, 117, 0.45)',
+          transform: 'translateY(-3px)',
         },
       },
       subtle: cardHoverSubtle,
@@ -81,7 +81,7 @@ export const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('flex flex-col space-y-1.5 p-6', className)}
+      className={cn('flex flex-col space-y-2 p-7', className)}
       {...props}
     />
   )
@@ -130,7 +130,7 @@ export interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const CardContent = React.forwardRef<HTMLDivElement, CardContentProps>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
+    <div ref={ref} className={cn('p-7 pt-0', className)} {...props} />
   )
 )
 
@@ -144,7 +144,7 @@ export const CardFooter = React.forwardRef<HTMLDivElement, CardFooterProps>(
     <div
       ref={ref}
       className={cn(
-        'flex items-center p-6 pt-0',
+        'flex items-center p-7 pt-0',
         'border-t border-[var(--border)] mt-auto',
         className
       )}

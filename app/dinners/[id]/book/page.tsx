@@ -3,10 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import HelpButton from '@/components/guides/HelpButton'
+import { useTheme } from '@/components/ThemeProvider'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -26,6 +29,90 @@ interface Dinner {
   }
 }
 
+// Payment form component that uses Stripe Elements
+function PaymentForm({ 
+  clientSecret, 
+  bookingId, 
+  onBack 
+}: { 
+  clientSecret: string
+  bookingId: string
+  onBack: () => void 
+}) {
+  const stripe = useStripe()
+  const elements = useElements()
+  const router = useRouter()
+  const [processing, setProcessing] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  const handlePaymentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!stripe || !elements) {
+      return
+    }
+
+    setProcessing(true)
+    setErrorMessage(null)
+
+    try {
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/dashboard/bookings/${bookingId}/confirmation`,
+        },
+        redirect: 'if_required',
+      })
+
+      if (error) {
+        setErrorMessage(error.message || 'Payment failed')
+        setProcessing(false)
+      } else {
+        // Payment succeeded, redirect to confirmation
+        router.push(`/dashboard/bookings/${bookingId}/confirmation`)
+      }
+    } catch (err) {
+      console.error('Payment error:', err)
+      setErrorMessage(err instanceof Error ? err.message : 'Payment failed')
+      setProcessing(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handlePaymentSubmit} className="space-y-6">
+      <div className="space-y-4">
+        <PaymentElement />
+      </div>
+
+      {errorMessage && (
+        <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+          <p className="text-sm text-red-600 dark:text-red-400">{errorMessage}</p>
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onBack}
+          disabled={processing}
+          className="flex-1"
+        >
+          Back
+        </Button>
+        <Button
+          type="submit"
+          isLoading={processing}
+          disabled={!stripe || !elements || processing}
+          className="flex-1"
+        >
+          Pay Now
+        </Button>
+      </div>
+    </form>
+  )
+}
+
 export default function BookDinnerPage() {
   const params = useParams()
   const router = useRouter()
@@ -34,6 +121,10 @@ export default function BookDinnerPage() {
   const [submitting, setSubmitting] = useState(false)
   const [numberOfGuests, setNumberOfGuests] = useState(1)
   const [selectedAddOns, setSelectedAddOns] = useState<Record<string, number>>({})
+  const [step, setStep] = useState<'booking' | 'payment'>('booking')
+  const [clientSecret, setClientSecret] = useState<string | null>(null)
+  const [bookingId, setBookingId] = useState<string | null>(null)
+  const { resolvedTheme } = useTheme()
 
   useEffect(() => {
     if (params.id) {
@@ -73,7 +164,7 @@ export default function BookDinnerPage() {
     return basePrice + addOnsTotal
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
 
@@ -101,21 +192,10 @@ export default function BookDinnerPage() {
         throw new Error(data.error || 'Failed to create booking')
       }
 
-      // Redirect to Stripe Checkout
-      const stripe = await stripePromise
-      if (!stripe) {
-        throw new Error('Stripe failed to load')
-      }
-
-      const { error } = await stripe.confirmCardPayment(data.clientSecret, {
-        // payment_method will be handled by Stripe Elements in production
-      })
-
-      if (error) {
-        throw new Error(error.message)
-      }
-
-      router.push(`/dashboard/bookings/${data.booking.id}/confirmation`)
+      // Store booking data and move to payment step
+      setClientSecret(data.clientSecret)
+      setBookingId(data.booking.id)
+      setStep('payment')
     } catch (err) {
       console.error('Booking error:', err)
       alert(err instanceof Error ? err.message : 'Failed to create booking')
@@ -125,11 +205,7 @@ export default function BookDinnerPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Loading...</div>
-      </div>
-    )
+    return <LoadingScreen title="Preparing checkout" subtitle="Setting up your reservation" />
   }
 
   if (!dinner) {
@@ -149,18 +225,22 @@ export default function BookDinnerPage() {
   const basePrice = dinner.basePricePerPerson * numberOfGuests
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
       <HelpButton pageId="booking" />
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle>Book: {dinner.title}</CardTitle>
             <CardDescription>
-              Complete your booking below
+              {step === 'booking' 
+                ? 'Complete your booking below'
+                : 'Complete your payment to confirm your booking'
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            {step === 'booking' ? (
+              <form onSubmit={handleBookingSubmit} className="space-y-6">
               <Input
                 type="number"
                 label="Number of Guests"
@@ -173,7 +253,7 @@ export default function BookDinnerPage() {
 
               {dinner.addOns.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
                     Add-ons
                   </label>
                   <div className="space-y-3">
@@ -182,9 +262,9 @@ export default function BookDinnerPage() {
                         <div className="flex-1">
                           <p className="font-medium">{addOn.name}</p>
                           {addOn.description && (
-                            <p className="text-sm text-gray-600">{addOn.description}</p>
+                            <p className="text-sm text-[var(--foreground-muted)]">{addOn.description}</p>
                           )}
-                          <p className="text-sm font-semibold text-indigo-600">€{addOn.price}</p>
+                          <p className="text-sm font-semibold text-[var(--primary)]">€{addOn.price}</p>
                         </div>
                         <div className="flex items-center space-x-2">
                           <button
@@ -227,15 +307,41 @@ export default function BookDinnerPage() {
                 </div>
               </div>
 
-              <Button
-                type="submit"
-                isLoading={submitting}
-                className="w-full"
-                disabled={numberOfGuests < 1 || numberOfGuests > (dinner.maxGuests - dinner._count.bookings)}
+                <Button
+                  type="submit"
+                  isLoading={submitting}
+                  className="w-full"
+                  disabled={numberOfGuests < 1 || numberOfGuests > (dinner.maxGuests - dinner._count.bookings)}
+                >
+                  Proceed to Payment
+                </Button>
+              </form>
+            ) : clientSecret ? (
+              <Elements 
+                stripe={stripePromise} 
+                options={{ 
+                  clientSecret,
+                  appearance: {
+                    theme: resolvedTheme === 'dark' ? 'night' : 'stripe',
+                    variables: {
+                      colorPrimary: 'var(--primary)',
+                      colorBackground: 'var(--background)',
+                      colorText: 'var(--foreground)',
+                      colorDanger: 'var(--danger-500)',
+                      fontFamily: 'system-ui, sans-serif',
+                      spacingUnit: '4px',
+                      borderRadius: '12px',
+                    },
+                  },
+                }}
               >
-                Proceed to Payment
-              </Button>
-            </form>
+                <PaymentForm 
+                  clientSecret={clientSecret}
+                  bookingId={bookingId!}
+                  onBack={() => setStep('booking')}
+                />
+              </Elements>
+            ) : null}
           </CardContent>
         </Card>
       </div>

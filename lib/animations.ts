@@ -465,3 +465,191 @@ export const themeToggle: Variants = {
     scale: 1,
   },
 }
+
+// ========================================
+// Mobile Page Transitions
+// ========================================
+
+export const mobilePageFade: Variants = {
+  initial: {
+    opacity: 0,
+    scale: 0.98,
+  },
+  enter: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.25,
+      ease: [0.25, 0.1, 0.25, 1],
+    },
+  },
+  exit: {
+    opacity: 0,
+    scale: 1.02,
+    transition: {
+      duration: 0.15,
+      ease: [0.25, 0.1, 0.25, 1],
+    },
+  },
+}
+
+export const mobilePageSlideRight: Variants = {
+  initial: {
+    x: '100%',
+    opacity: 0,
+  },
+  enter: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 300,
+      damping: 30,
+      mass: 0.8,
+    },
+  },
+  exit: {
+    x: '-20%',
+    opacity: 0.5,
+    transition: {
+      duration: 0.2,
+      ease: 'easeIn',
+    },
+  },
+}
+
+export const mobilePageSlideLeft: Variants = {
+  initial: {
+    x: '-100%',
+    opacity: 0,
+  },
+  enter: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 300,
+      damping: 30,
+      mass: 0.8,
+    },
+  },
+  exit: {
+    x: '20%',
+    opacity: 0.5,
+    transition: {
+      duration: 0.2,
+      ease: 'easeIn',
+    },
+  },
+}
+
+// ========================================
+// Swipe Card Enhancements
+// ========================================
+
+export const swipeCardEnhanced: Variants = {
+  initial: {
+    scale: 0.95,
+    opacity: 0,
+  },
+  center: {
+    scale: 1,
+    opacity: 1,
+    x: 0,
+    y: 0,
+    rotateX: 0,
+    rotateY: 0,
+    rotateZ: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 300,
+      damping: 25,
+    },
+  },
+  exit: (direction: number) => ({
+    x: direction * 400,
+    rotateZ: direction * 20,
+    opacity: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 200,
+      damping: 25,
+    },
+  }),
+}
+
+export const swipeStamp: Variants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.5,
+    rotate: 0,
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    rotate: -20,
+    transition: {
+      type: 'spring',
+      stiffness: 400,
+      damping: 15,
+    },
+  },
+}
+
+export const cardStackItem: Variants = {
+  stack: (i: number) => ({
+    scale: 1 - i * 0.05,
+    y: i * 8,
+    zIndex: 10 - i,
+    transition: {
+      type: 'spring',
+      stiffness: 300,
+      damping: 25,
+    },
+  }),
+}
+
+// ========================================
+// Bottom Navigation
+// ========================================
+
+export const bottomNavSlide: Variants = {
+  hidden: {
+    y: '100%',
+  },
+  visible: {
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 300,
+      damping: 30,
+    },
+  },
+  exit: {
+    y: '100%',
+    transition: {
+      duration: 0.2,
+      ease: 'easeIn',
+    },
+  },
+}
+
+export const navItemPop: Variants = {
+  rest: {
+    scale: 1,
+  },
+  active: {
+    scale: 1.1,
+    transition: {
+      type: 'spring',
+      stiffness: 400,
+      damping: 25,
+    },
+  },
+  tap: {
+    scale: 0.9,
+    transition: {
+      duration: 0.1,
+    },
+  },
+}

@@ -9,6 +9,7 @@ export const userUpdateSchema = z.object({
   bio: z.string().max(500).optional(),
   profileImageUrl: z.string().url().optional(),
   coverImageUrl: z.string().url().optional(),
+  profileVisibility: z.enum(['EVERYONE', 'ENGAGED_ONLY']).optional(),
 })
 
 /**

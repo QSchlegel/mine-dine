@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
@@ -138,11 +139,7 @@ END:VCALENDAR`
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
-      </div>
-    )
+    return <LoadingScreen title="Loading confirmation" subtitle="Finalizing your booking" />
   }
 
   if (error || !booking) {

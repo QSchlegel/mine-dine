@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { ChefHat, Calendar, Utensils, Users, CheckCircle, Clock, XCircle } from 'lucide-react'
 import HelpButton from '@/components/guides/HelpButton'
 import OnboardingTour from '@/components/guides/OnboardingTour'
@@ -50,11 +51,7 @@ export default function HostDashboardPage() {
   }, [])
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Loading...</div>
-      </div>
-    )
+    return <LoadingScreen title="Loading host dashboard" subtitle="Checking your host status" />
   }
 
   const getStatusIcon = () => {
@@ -99,7 +96,7 @@ export default function HostDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
       <HelpButton pageId="host-dashboard" />
       <OnboardingTour
         tourType="host"
@@ -109,11 +106,11 @@ export default function HostDashboardPage() {
       />
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <ChefHat className="w-8 h-8 text-indigo-600" />
+          <h1 className="text-3xl font-bold text-[var(--foreground)] flex items-center gap-3">
+            <ChefHat className="w-8 h-8 text-[var(--primary)]" />
             Host Dashboard
           </h1>
-          <p className="mt-2 text-gray-600">Manage your hosting activities</p>
+          <p className="mt-2 text-[var(--foreground-secondary)]">Manage your hosting activities</p>
         </div>
 
         {/* Application Status */}
@@ -146,7 +143,7 @@ export default function HostDashboardPage() {
                   <p className="text-yellow-700">
                     Your application is currently under review. We'll notify you once a decision has been made.
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-[var(--foreground-muted)]">
                     Application submitted: {application.reviewedAt 
                       ? new Date(application.reviewedAt).toLocaleDateString()
                       : 'Recently'}

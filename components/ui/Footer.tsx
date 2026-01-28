@@ -22,9 +22,13 @@ const footerLinks = {
   ],
 }
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  className?: string
+}
+
+export const Footer: React.FC<FooterProps> = ({ className }) => {
   return (
-    <footer className="relative mt-auto border-t border-[var(--border)]">
+    <footer className={cn("relative mt-auto border-t border-[var(--border)]", className)}>
       {/* Grid pattern background */}
       <div className="absolute inset-0 grid-pattern opacity-50" />
 

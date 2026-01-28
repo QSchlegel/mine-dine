@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { format } from 'date-fns'
 
 interface Booking {
@@ -45,25 +46,21 @@ export default function BookingsPage() {
   }, [])
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Loading...</div>
-      </div>
-    )
+    return <LoadingScreen title="Loading bookings" subtitle="Fetching your reservations" />
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Bookings</h1>
-          <p className="mt-2 text-gray-600">View and manage your dinner reservations</p>
+          <h1 className="text-3xl font-bold text-[var(--foreground)]">My Bookings</h1>
+          <p className="mt-2 text-[var(--foreground-secondary)]">View and manage your dinner reservations</p>
         </div>
 
         {bookings.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-gray-500 mb-4">You haven't made any bookings yet.</p>
+              <p className="text-[var(--foreground-muted)] mb-4">You haven't made any bookings yet.</p>
               <Button onClick={() => router.push('/dinners')}>
                 Browse Dinners
               </Button>
@@ -82,17 +79,17 @@ export default function BookingsPage() {
                       </CardDescription>
                     </div>
                     <span className={`px-2 py-1 text-xs rounded-full ${
-                      booking.status === 'CONFIRMED' ? 'bg-green-100 text-green-800' :
-                      booking.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                      booking.status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
-                      'bg-gray-100 text-gray-800'
+                      booking.status === 'CONFIRMED' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                      booking.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                      booking.status === 'CANCELLED' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+                      'bg-[var(--background-secondary)] text-[var(--foreground-secondary)]'
                     }`}>
                       {booking.status}
                     </span>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 text-sm text-gray-600 mb-4">
+                  <div className="space-y-2 text-sm text-[var(--foreground-muted)] mb-4">
                     <p>📍 {booking.dinner.location}</p>
                     <p>👤 Host: {booking.dinner.host.name || 'Anonymous'}</p>
                     <p>👥 {booking.numberOfGuests} guests</p>

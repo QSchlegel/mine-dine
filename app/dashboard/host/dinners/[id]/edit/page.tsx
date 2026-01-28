@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import {
   ChefHat,
   Calendar,
@@ -260,11 +261,7 @@ export default function EditDinnerPage({ params }: { params: Promise<{ id: strin
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
-      </div>
-    )
+    return <LoadingScreen title="Loading dinner" subtitle="Getting your dinner details" />
   }
 
   if (errors.fetch || !dinner) {

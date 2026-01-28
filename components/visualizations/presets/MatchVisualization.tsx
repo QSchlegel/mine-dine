@@ -3,6 +3,7 @@
 import { useCallback, useRef, useEffect, useState } from 'react'
 import P5WebGLWrapper from '../P5WebGLWrapper'
 import { ThemeColors } from '../core/types'
+import { useConfetti } from '@/hooks/useConfetti'
 
 interface Particle3D {
   x: number
@@ -59,6 +60,9 @@ export default function MatchVisualization({
   const hasExplodedRef = useRef(false)
   const [showText, setShowText] = useState(false)
 
+  // Confetti hook for additional celebration effects
+  const { fireMatchCelebration, fireHearts, prefersReducedMotion } = useConfetti()
+
   // Reset when becoming active
   useEffect(() => {
     if (isActive) {
@@ -66,6 +70,18 @@ export default function MatchVisualization({
       hasExplodedRef.current = false
       startTimeRef.current = performance.now()
       setShowText(false)
+
+      // Fire confetti celebration alongside p5.js fireworks
+      if (!prefersReducedMotion) {
+        // Initial confetti burst
+        fireMatchCelebration()
+
+        // Fire hearts after 500ms
+        setTimeout(() => fireHearts(), 500)
+
+        // Another burst at 1.5s
+        setTimeout(() => fireMatchCelebration(), 1500)
+      }
 
       // Show text after initial burst settles
       setTimeout(() => setShowText(true), 500)
@@ -77,7 +93,7 @@ export default function MatchVisualization({
 
       return () => clearTimeout(timer)
     }
-  }, [isActive, onComplete])
+  }, [isActive, onComplete, fireMatchCelebration, fireHearts, prefersReducedMotion])
 
   const createBurst = useCallback((
     originX: number,
@@ -276,10 +292,10 @@ export default function MatchVisualization({
       {showText && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           {/* Profile images */}
-          <div className="flex items-center gap-8 mb-8">
+          <div className="flex items-center gap-6 sm:gap-8 mb-8">
             {/* User image */}
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg animate-pulse">
+            <div className="relative animate-fade-in">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-white shadow-2xl shadow-coral-500/30 ring-4 ring-coral-500/50 animate-pulse">
                 {userImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -296,11 +312,11 @@ export default function MatchVisualization({
             </div>
 
             {/* Heart icon */}
-            <div className="text-5xl animate-bounce">💖</div>
+            <div className="text-5xl sm:text-6xl animate-bounce drop-shadow-2xl">💖</div>
 
             {/* Host image */}
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg animate-pulse">
+            <div className="relative animate-fade-in">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-white shadow-2xl shadow-cyan-500/30 ring-4 ring-cyan-500/50 animate-pulse">
                 {hostImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -318,10 +334,10 @@ export default function MatchVisualization({
           </div>
 
           {/* Match text */}
-          <h2 className="text-4xl font-bold text-white mb-2 drop-shadow-lg animate-pulse">
+          <h2 className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-coral-400 via-pink-500 to-cyan-400 mb-2 drop-shadow-lg animate-pulse">
             It&apos;s a Match!
           </h2>
-          <p className="text-lg text-white/80">
+          <p className="text-lg text-white/90 font-medium">
             You and {hostName || 'this host'} liked each other
           </p>
 
@@ -329,13 +345,13 @@ export default function MatchVisualization({
           <div className="flex gap-4 mt-8 pointer-events-auto">
             <button
               onClick={onComplete}
-              className="px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-full backdrop-blur-sm transition-colors"
+              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md border border-white/20 transition-all hover:scale-105 active:scale-95"
             >
               Keep Swiping
             </button>
             <button
               onClick={onComplete}
-              className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-full transition-colors"
+              className="px-6 py-3 bg-gradient-to-r from-coral-500 to-pink-500 hover:from-coral-600 hover:to-pink-600 text-white rounded-full transition-all hover:scale-105 active:scale-95 shadow-lg shadow-coral-500/30"
             >
               Send Message
             </button>

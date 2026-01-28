@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import Image from 'next/image'
 import { getProfileCompletionProgress, type ProfileCompletionResult } from '@/lib/profile'
 
@@ -16,6 +17,7 @@ interface UserProfile {
   bio: string | null
   profileImageUrl: string | null
   coverImageUrl: string | null
+  profileVisibility: 'EVERYONE' | 'ENGAGED_ONLY'
   userTags: Array<{
     tag: {
       id: string
@@ -43,6 +45,7 @@ function ProfilePageContent() {
   const [name, setName] = useState('')
   const [bio, setBio] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [profileVisibility, setProfileVisibility] = useState<'EVERYONE' | 'ENGAGED_ONLY'>('EVERYONE')
   const [completion, setCompletion] = useState<ProfileCompletionResult | null>(null)
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const [validationErrors, setValidationErrors] = useState<{ name?: string; bio?: string; tags?: string }>({})
@@ -59,6 +62,7 @@ function ProfilePageContent() {
           setName(profileData.profile.name || '')
           setBio(profileData.profile.bio || '')
           setSelectedTags(profileData.profile.userTags.map((ut: any) => ut.tag.id))
+          setProfileVisibility(profileData.profile.profileVisibility || 'EVERYONE')
         }
         setLoading(false)
       })
@@ -115,7 +119,7 @@ function ProfilePageContent() {
         fetch('/api/profiles', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, bio }),
+          body: JSON.stringify({ name, bio, profileVisibility }),
         }),
         fetch('/api/profiles/tags', {
           method: 'PATCH',
@@ -151,11 +155,7 @@ function ProfilePageContent() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Loading...</div>
-      </div>
-    )
+    return <LoadingScreen title="Loading profile" subtitle="Getting your details ready" />
   }
 
   const tagsByCategory = allTags.reduce((acc, tag) => {
@@ -164,22 +164,40 @@ function ProfilePageContent() {
     return acc
   }, {} as Record<string, Tag[]>)
 
+  const privacyOptions = [
+    {
+      value: 'EVERYONE' as const,
+      title: 'Everyone',
+      description: 'Visible to all Mine Dine members browsing hosts and guests.',
+    },
+    {
+      value: 'ENGAGED_ONLY' as const,
+      title: 'Engaged only',
+      description: 'Visible after you engage (booking, match, or message).',
+    },
+  ]
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto space-y-6">
         {isSetupMode && (
-          <div className="mb-6 bg-indigo-50 border border-indigo-200 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-indigo-900 mb-2">Welcome to Mine Dine!</h2>
-            <p className="text-indigo-700 text-sm">
+          <div className="rounded-2xl border border-[var(--border-strong)] bg-[var(--primary-light)] p-6">
+            <h2 className="text-xl font-semibold text-[var(--foreground)] mb-2">Welcome to Mine Dine!</h2>
+            <p className="text-[var(--foreground-secondary)] text-sm">
               Complete your profile to start discovering amazing dining experiences. Fill in your name, bio, and select some tags to help us match you with the perfect hosts.
             </p>
           </div>
         )}
 
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            {isSetupMode ? 'Complete Your Profile' : 'Edit Profile'}
-          </h1>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-[var(--foreground)]">
+              {isSetupMode ? 'Complete Your Profile' : 'Edit Profile'}
+            </h1>
+            <p className="text-sm text-[var(--foreground-secondary)] mt-1">
+              Keep your profile current to get better matches and quicker bookings.
+            </p>
+          </div>
           {!isSetupMode && (
             <Button
               variant="outline"
@@ -190,195 +208,293 @@ function ProfilePageContent() {
           )}
         </div>
 
-        {/* Notification Banner */}
         {notification && (
           <div
-            className={`mb-6 p-4 rounded-lg ${
+            className={`rounded-xl border p-4 ${
               notification.type === 'success'
-                ? 'bg-green-50 border border-green-200 text-green-800'
-                : 'bg-red-50 border border-red-200 text-red-800'
+                ? 'border-success-100 bg-success-50 text-success-600 dark:border-success-600/40 dark:bg-success-600/20 dark:text-success-500'
+                : 'border-danger-100 bg-danger-50 text-danger-600 dark:border-danger-600/40 dark:bg-danger-600/20 dark:text-danger-500'
             }`}
           >
             <p className="font-medium">{notification.message}</p>
           </div>
         )}
 
-        {/* Profile Completion Progress */}
-        {completion && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-lg">Profile Completion</CardTitle>
-              <CardDescription>
-                {completion.isComplete
-                  ? 'Your profile is complete!'
-                  : `Complete your profile to improve your matching experience`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className={`h-3 rounded-full transition-all duration-300 ${
-                      completion.isComplete ? 'bg-green-600' : 'bg-indigo-600'
-                    }`}
-                    style={{ width: `${completion.progress}%` }}
-                  ></div>
-                </div>
-                <p className="text-sm text-gray-600">
-                  {completion.progress}% complete
-                </p>
-                {!completion.isComplete && completion.recommendations.length > 0 && (
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    {completion.recommendations.map((rec, idx) => (
-                      <li key={idx} className="flex items-start">
-                        <span className="mr-2">•</span>
-                        <span>{rec}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {profile?.profileImageUrl && (
-                <div className="relative h-32 w-32 rounded-full overflow-hidden">
-                  <Image
-                    src={profile.profileImageUrl}
-                    alt="Profile"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              <div>
-                <Input
-                  label="Name"
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value)
-                    if (validationErrors.name) {
-                      setValidationErrors({ ...validationErrors, name: undefined })
-                    }
-                  }}
-                  error={validationErrors.name}
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  {name.length >= 2 ? (
-                    <span className="text-green-600">✓ Name looks good</span>
-                  ) : (
-                    <span>Minimum 2 characters required</span>
-                  )}
-                </p>
-              </div>
-              <div>
-                <Textarea
-                  label="Bio"
-                  value={bio}
-                  onChange={(e) => {
-                    setBio(e.target.value)
-                    if (validationErrors.bio) {
-                      setValidationErrors({ ...validationErrors, bio: undefined })
-                    }
-                  }}
-                  rows={4}
-                  maxLength={500}
-                  error={validationErrors.bio}
-                  required
-                />
-                <div className="flex justify-between items-center mt-1">
-                  <p className="text-xs text-gray-500">
-                    {bio.length >= 20 ? (
-                      <span className="text-green-600">✓ Bio looks good</span>
-                    ) : (
-                      <span>{20 - bio.length} more characters needed (minimum 20)</span>
-                    )}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {bio.length} / 500 characters
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Tags & Interests</CardTitle>
-              <CardDescription>
-                Select at least 3 tags that describe you to help with matching
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {validationErrors.tags && (
-                <p className="text-sm text-red-600 mb-4">{validationErrors.tags}</p>
-              )}
-              <div className="space-y-6">
-                {Object.entries(tagsByCategory).map(([category, tags]) => (
-                  <div key={category}>
-                    <h3 className="font-medium text-gray-900 mb-2 capitalize">
-                      {category.toLowerCase()}
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {tags.map((tag) => (
-                        <button
-                          key={tag.id}
-                          type="button"
-                          onClick={() => {
-                            toggleTag(tag.id)
-                            if (validationErrors.tags) {
-                              setValidationErrors({ ...validationErrors, tags: undefined })
-                            }
-                          }}
-                          className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                            selectedTags.includes(tag.id)
-                              ? 'bg-indigo-600 text-white'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          }`}
-                        >
-                          {tag.name}
-                        </button>
-                      ))}
+        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Basic Information</CardTitle>
+                <CardDescription>Help people know who they are dining with.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {profile?.profileImageUrl && (
+                  <div className="flex items-center gap-4">
+                    <div className="relative h-24 w-24 rounded-full overflow-hidden ring-2 ring-[var(--background)]">
+                      <Image
+                        src={profile.profileImageUrl}
+                        alt="Profile"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-[var(--foreground)]">Profile photo</p>
+                      <p className="text-xs text-[var(--foreground-muted)]">
+                        A friendly photo builds trust and increases match rate.
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
-              <p className="text-xs text-gray-500 mt-4">
-                {selectedTags.length >= 3 ? (
-                  <span className="text-green-600">✓ {selectedTags.length} tags selected (recommended: 3+)</span>
-                ) : (
-                  <span>Selected: {selectedTags.length} / 3 (recommended minimum)</span>
                 )}
-              </p>
-            </CardContent>
-          </Card>
+                <div>
+                  <Input
+                    label="Name"
+                    value={name}
+                    onChange={(e) => {
+                      setName(e.target.value)
+                      if (validationErrors.name) {
+                        setValidationErrors({ ...validationErrors, name: undefined })
+                      }
+                    }}
+                    error={validationErrors.name}
+                    required
+                  />
+                  <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                    {name.length >= 2 ? (
+                      <span className="text-success-600">✓ Name looks good</span>
+                    ) : (
+                      <span>Minimum 2 characters required</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <Textarea
+                    label="Bio"
+                    value={bio}
+                    onChange={(e) => {
+                      setBio(e.target.value)
+                      if (validationErrors.bio) {
+                        setValidationErrors({ ...validationErrors, bio: undefined })
+                      }
+                    }}
+                    rows={4}
+                    maxLength={500}
+                    error={validationErrors.bio}
+                    required
+                  />
+                  <div className="flex flex-wrap items-center justify-between gap-2 mt-1">
+                    <p className="text-xs text-[var(--foreground-muted)]">
+                      {bio.length >= 20 ? (
+                        <span className="text-success-600">✓ Bio looks good</span>
+                      ) : (
+                        <span>{20 - bio.length} more characters needed (minimum 20)</span>
+                      )}
+                    </p>
+                    <p className="text-xs text-[var(--foreground-muted)]">
+                      {bio.length} / 500 characters
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-          <div className="flex gap-4">
-            <Button 
-              onClick={handleSave} 
-              isLoading={saving} 
-              className="flex-1"
-              disabled={saving}
-            >
-              {isSetupMode ? 'Complete Profile' : 'Save Profile'}
-            </Button>
-            {isSetupMode && (
-              <Button
-                variant="outline"
-                onClick={() => router.push('/dashboard')}
+            <Card>
+              <CardHeader>
+                <CardTitle>Tags & Interests</CardTitle>
+                <CardDescription>
+                  Select at least 3 tags that describe you to help with matching.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {validationErrors.tags && (
+                  <p className="text-sm text-danger-600 mb-4">{validationErrors.tags}</p>
+                )}
+                <div className="space-y-6">
+                  {Object.entries(tagsByCategory).map(([category, tags]) => (
+                    <div key={category}>
+                      <h3 className="font-medium text-[var(--foreground)] mb-2 capitalize">
+                        {category.toLowerCase()}
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {tags.map((tag) => (
+                          <button
+                            key={tag.id}
+                            type="button"
+                            onClick={() => {
+                              toggleTag(tag.id)
+                              if (validationErrors.tags) {
+                                setValidationErrors({ ...validationErrors, tags: undefined })
+                              }
+                            }}
+                            className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                              selectedTags.includes(tag.id)
+                                ? 'bg-[var(--primary)] text-white border-[var(--primary)] shadow-[var(--glow-primary)]'
+                                : 'bg-[var(--background-tertiary)] text-[var(--foreground-secondary)] border-[var(--border)] hover:bg-[var(--background-secondary)]'
+                            }`}
+                          >
+                            {tag.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-[var(--foreground-muted)] mt-4">
+                  {selectedTags.length >= 3 ? (
+                    <span className="text-success-600">✓ {selectedTags.length} tags selected (recommended: 3+)</span>
+                  ) : (
+                    <span>Selected: {selectedTags.length} / 3 (recommended minimum)</span>
+                  )}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Privacy Settings</CardTitle>
+                <CardDescription>
+                  Control who can see your full profile details.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {privacyOptions.map((option) => {
+                  const isSelected = profileVisibility === option.value
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setProfileVisibility(option.value)}
+                      className={`w-full text-left rounded-xl border p-4 transition-all ${
+                        isSelected
+                          ? 'border-[var(--primary)] bg-[var(--primary-light)] shadow-[var(--glow-primary)]'
+                          : 'border-[var(--border)] bg-[var(--background-secondary)] hover:border-[var(--border-strong)]'
+                      }`}
+                      aria-pressed={isSelected}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-semibold text-[var(--foreground)]">{option.title}</p>
+                          <p className="text-xs text-[var(--foreground-secondary)] mt-1">
+                            {option.description}
+                          </p>
+                        </div>
+                        <span
+                          className={`h-4 w-4 rounded-full border-2 ${
+                            isSelected ? 'border-[var(--primary)] bg-[var(--primary)]' : 'border-[var(--border-strong)]'
+                          }`}
+                        />
+                      </div>
+                    </button>
+                  )
+                })}
+              </CardContent>
+            </Card>
+
+            <div className="flex flex-wrap gap-4">
+              <Button 
+                onClick={handleSave} 
+                isLoading={saving} 
+                className="flex-1 min-w-[200px]"
                 disabled={saving}
               >
-                Skip for Now
+                {isSetupMode ? 'Complete Profile' : 'Save Profile'}
               </Button>
+              {isSetupMode && (
+                <Button
+                  variant="outline"
+                  onClick={() => router.push('/dashboard')}
+                  disabled={saving}
+                >
+                  Skip for Now
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {completion && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Profile Completion</CardTitle>
+                  <CardDescription>
+                    {completion.isComplete
+                      ? 'Your profile is complete!'
+                      : `Complete your profile to improve your matching experience`}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="w-full bg-[var(--background-tertiary)] rounded-full h-3">
+                      <div
+                        className={`h-3 rounded-full transition-all duration-300 ${
+                          completion.isComplete ? 'bg-success-600' : 'bg-[var(--primary)]'
+                        }`}
+                        style={{ width: `${completion.progress}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-sm text-[var(--foreground-secondary)]">
+                      {completion.progress}% complete
+                    </p>
+                    {!completion.isComplete && completion.recommendations.length > 0 && (
+                      <ul className="text-sm text-[var(--foreground-secondary)] space-y-1">
+                        {completion.recommendations.map((rec, idx) => (
+                          <li key={idx} className="flex items-start">
+                            <span className="mr-2">•</span>
+                            <span>{rec}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Profile Preview</CardTitle>
+                <CardDescription>How you’ll appear to others.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4">
+                  <div className="relative h-14 w-14 rounded-full overflow-hidden bg-[var(--background-tertiary)]">
+                    {profile?.profileImageUrl ? (
+                      <Image
+                        src={profile.profileImageUrl}
+                        alt="Profile preview"
+                        fill
+                        className="object-cover"
+                      />
+                    ) : null}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[var(--foreground)]">{name || 'Your name'}</p>
+                    <p className="text-xs text-[var(--foreground-muted)]">
+                      {profileVisibility === 'EVERYONE' ? 'Visible to everyone' : 'Visible after engagement'}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm text-[var(--foreground-secondary)] mt-4">
+                  {bio || 'Add a friendly bio to help others feel comfortable dining with you.'}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {selectedTags.slice(0, 3).map((tagId) => {
+                    const tag = allTags.find((t) => t.id === tagId)
+                    return (
+                      <span
+                        key={tagId}
+                        className="px-2 py-0.5 rounded-full text-xs bg-[var(--background-tertiary)] text-[var(--foreground-secondary)] border border-[var(--border)]"
+                      >
+                        {tag?.name || 'Tag'}
+                      </span>
+                    )
+                  })}
+                  {selectedTags.length > 3 && (
+                    <span className="text-xs text-[var(--foreground-muted)]">+{selectedTags.length - 3} more</span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
@@ -389,9 +505,7 @@ function ProfilePageContent() {
 export default function ProfilePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Loading...</div>
-      </div>
+      <LoadingScreen title="Loading profile" subtitle="Getting your details ready" />
     }>
       <ProfilePageContent />
     </Suspense>

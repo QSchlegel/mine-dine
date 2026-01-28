@@ -120,20 +120,20 @@ export default function BrowseDinnersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[var(--background)] py-16 px-6 sm:px-8 lg:px-12">
       {/* Decorative background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-1/2 -right-1/4 w-[800px] h-[800px] rounded-full bg-gradient-to-br from-pink-500/5 to-transparent blur-3xl" />
         <div className="absolute -bottom-1/4 -left-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-cyan-500/5 to-transparent blur-3xl" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto">
+      <div className="relative max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-10"
+          className="mb-12"
         >
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-xl bg-gradient-to-br from-pink-500/10 to-cyan-500/10">
@@ -153,7 +153,7 @@ export default function BrowseDinnersPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-8 space-y-4"
+          className="mb-12 space-y-6"
         >
           {/* Search Bar */}
           <div className="relative max-w-md">
@@ -186,8 +186,8 @@ export default function BrowseDinnersPage() {
         </motion.div>
 
         {/* Dinner Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <AnimatePresence mode="wait">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <AnimatePresence mode="sync">
             {loading ? (
               <>
                 {[...Array(6)].map((_, i) => (
@@ -240,25 +240,25 @@ export default function BrowseDinnersPage() {
                         </div>
                       </CardImage>
 
-                      <CardContent className="p-5">
+                      <CardContent className="p-6">
                         {/* Title */}
-                        <h3 className="text-lg font-semibold text-[var(--foreground)] mb-1 line-clamp-1 group-hover:text-[var(--primary)] transition-colors">
+                        <h3 className="text-lg font-semibold text-[var(--foreground)] mb-2 line-clamp-1 group-hover:text-[var(--primary)] transition-colors">
                           {dinner.title}
                         </h3>
 
                         {/* Date & Time */}
-                        <div className="flex items-center gap-2 text-sm text-[var(--foreground-secondary)] mb-3">
+                        <div className="flex items-center gap-2 text-sm text-[var(--foreground-secondary)] mb-4">
                           <Calendar className="w-4 h-4" />
                           <span>{format(new Date(dinner.dateTime), 'EEE, MMM d · h:mm a')}</span>
                         </div>
 
                         {/* Description */}
-                        <p className="text-sm text-[var(--foreground-muted)] mb-4 line-clamp-2">
+                        <p className="text-sm text-[var(--foreground-muted)] mb-5 line-clamp-2">
                           {dinner.description}
                         </p>
 
                         {/* Location & Guests */}
-                        <div className="flex items-center justify-between text-sm text-[var(--foreground-secondary)] mb-4">
+                        <div className="flex items-center justify-between text-sm text-[var(--foreground-secondary)] mb-5">
                           <div className="flex items-center gap-1.5">
                             <MapPin className="w-4 h-4" />
                             <span className="line-clamp-1">{dinner.location}</span>
@@ -270,7 +270,7 @@ export default function BrowseDinnersPage() {
                         </div>
 
                         {/* Host */}
-                        <div className="flex items-center gap-3 pt-3 border-t border-[var(--border)]">
+                        <div className="flex items-center gap-3 pt-4 border-t border-[var(--border)]">
                           <Avatar
                             src={dinner.host.profileImageUrl}
                             name={dinner.host.name || 'Host'}

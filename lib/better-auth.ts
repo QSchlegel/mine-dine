@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { admin } from "better-auth/plugins"
 import { passkey } from "@better-auth/passkey"
+import { createAuthMiddleware } from "better-auth/api"
 import { prisma } from "./prisma"
 
 // Configure passkey plugin
@@ -72,6 +73,63 @@ export const auth = betterAuth({
     },
   },
   plugins, // Plugins validate against roles config
+  hooks: {
+    // Fix role after user creation - Better Auth may create users with lowercase "user"
+    // but our Prisma schema expects uppercase enum values (USER, HOST, ADMIN, MODERATOR)
+    // Note: This hook runs after user creation, but if Better Auth fails during creation
+    // due to role validation, we use the alternative approach in user-creation.ts
+    after: createAuthMiddleware(async (ctx) => {
+      // Fix role after user creation from any sign-up endpoint
+      if (ctx.path.startsWith('/sign-up') && ctx.context.newSession?.user) {
+        const userId = ctx.context.newSession.user.id
+        
+        // Check current role and fix if needed
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { role: true },
+        })
+
+        // If role is lowercase or invalid, update to uppercase USER
+        if (user && user.role !== 'USER' && user.role !== 'HOST' && user.role !== 'ADMIN' && user.role !== 'MODERATOR') {
+          await prisma.user.update({
+            where: { id: userId },
+            data: { role: 'USER' },
+          })
+        }
+      }
+    }),
+    // Hash password before sign-in if account has plain text password
+    // This handles cases where we create accounts manually with plain passwords
+    // Better Auth expects passwords to be hashed, so we hash the input password
+    // and update the stored password before Better Auth processes the sign-in
+    before: createAuthMiddleware(async (ctx) => {
+      // Intercept sign-in attempts to hash password if account has plain text password
+      if (ctx.path === '/sign-in/email' && ctx.body?.password && ctx.body?.email) {
+        const email = ctx.body.email.toLowerCase().trim()
+        const user = await prisma.user.findUnique({
+          where: { email },
+          include: { accounts: { where: { providerId: 'credential' } } },
+        })
+        
+        if (user?.accounts[0]?.password) {
+          const storedPassword = user.accounts[0].password
+          // Check if password is hashed (Better Auth uses scrypt, hashed passwords are longer)
+          // Plain text passwords from our UUID generation are ~64 characters
+          // Hashed passwords are typically 100+ characters
+          if (storedPassword.length < 100) {
+            // Password appears to be plain text, hash it using Better Auth's password hasher
+            // We hash the input password and store it, then Better Auth will hash the input
+            // again and compare - they should match
+            const hashedPassword = await ctx.context.password.hash(ctx.body.password)
+            await prisma.account.update({
+              where: { id: user.accounts[0].id },
+              data: { password: hashedPassword },
+            })
+          }
+        }
+      }
+    }),
+  },
   socialProviders: {
     ...(process.env.BETTER_AUTH_GOOGLE_CLIENT_ID && process.env.BETTER_AUTH_GOOGLE_CLIENT_SECRET ? {
       google: {

@@ -109,16 +109,16 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-[var(--background)] py-16 px-6 sm:px-8 lg:px-12">
+        <div className="max-w-6xl mx-auto">
           {/* Header skeleton */}
-          <div className="mb-8">
+          <div className="mb-12">
             <Skeleton className="h-9 w-48 mb-2" />
             <Skeleton className="h-5 w-64" />
           </div>
 
           {/* Stats skeleton */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
             {[1, 2].map((i) => (
               <Card key={i}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -134,7 +134,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Quick actions skeleton */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <Card key={i}>
                 <CardHeader>
@@ -153,36 +153,36 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
+    <div className="min-h-screen bg-[var(--background)] py-16 px-6 sm:px-8 lg:px-12">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-12">
           <h1 className="text-3xl font-bold text-[var(--foreground)]">
             {getGreeting()}{userName ? `, ${userName.split(' ')[0]}` : ''}
           </h1>
-          <p className="mt-2 text-[var(--foreground-secondary)]">Here&apos;s what&apos;s happening with your dining experiences.</p>
+          <p className="mt-3 text-lg text-[var(--foreground-secondary)]">Here&apos;s what&apos;s happening with your dining experiences.</p>
         </div>
 
         {/* Profile Completion Banner */}
         {profileCompletion && !profileCompletion.isComplete && showCompletionBanner && (
-          <div className="mb-6 bg-amber-50 border border-amber-200 rounded-lg p-4 relative">
+          <div className="mb-10 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-xl p-6 relative">
             <button
               onClick={() => setShowCompletionBanner(false)}
-              className="absolute top-2 right-2 text-amber-600 hover:text-amber-800"
+              className="absolute top-2 right-2 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300"
               aria-label="Dismiss"
             >
               <X className="h-4 w-4" />
             </button>
             <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <h3 className="font-semibold text-amber-900 mb-1">
+                <h3 className="font-semibold text-amber-900 dark:text-amber-200 mb-1">
                   Complete Your Profile
                 </h3>
-                <p className="text-sm text-amber-800 mb-3">
+                <p className="text-sm text-amber-800 dark:text-amber-300 mb-3">
                   Your profile is {profileCompletion.progress}% complete. Complete your profile to improve your matching experience and discover better dining opportunities.
                 </p>
                 {profileCompletion.recommendations.length > 0 && (
-                  <ul className="text-sm text-amber-700 space-y-1 mb-3">
+                  <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1 mb-3">
                     {profileCompletion.recommendations.slice(0, 3).map((rec, idx) => (
                       <li key={idx} className="flex items-start">
                         <span className="mr-2">•</span>
@@ -193,7 +193,7 @@ export default function DashboardPage() {
                 )}
                 <Button
                   onClick={handleOpenWizard}
-                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                  className="bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400 text-white"
                 >
                   Complete Profile
                 </Button>
@@ -203,7 +203,7 @@ export default function DashboardPage() {
         )}
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
@@ -232,9 +232,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Featured Actions - More prominent */}
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4">Get Started</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="mb-12">
+          <h2 className="text-xl font-semibold text-[var(--foreground)] mb-6">Get Started</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card
               className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] bg-gradient-to-br from-orange-500 to-pink-500 text-white border-0"
               onClick={() => router.push('/dashboard/swipe')}
@@ -279,13 +279,13 @@ export default function DashboardPage() {
 
         {/* Quick Actions - Secondary prominence */}
         <div>
-          <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <h2 className="text-xl font-semibold text-[var(--foreground)] mb-6">Quick Actions</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <Card
               className="cursor-pointer hover:shadow-md transition-shadow group"
               onClick={() => router.push('/dashboard/bookings')}
             >
-              <CardContent className="p-4 text-center">
+              <CardContent className="p-6 text-center">
                 <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
                   <Calendar className="h-5 w-5 text-blue-600" />
                 </div>
@@ -300,7 +300,7 @@ export default function DashboardPage() {
               className="cursor-pointer hover:shadow-md transition-shadow group"
               onClick={() => router.push('/dashboard/messages')}
             >
-              <CardContent className="p-4 text-center">
+              <CardContent className="p-6 text-center">
                 <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition-colors">
                   <MessageSquare className="h-5 w-5 text-purple-600" />
                 </div>
@@ -312,9 +312,9 @@ export default function DashboardPage() {
               className="cursor-pointer hover:shadow-md transition-shadow group"
               onClick={() => router.push('/dashboard/profile')}
             >
-              <CardContent className="p-4 text-center">
-                <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-gray-200 transition-colors">
-                  <User className="h-5 w-5 text-gray-600" />
+              <CardContent className="p-6 text-center">
+                <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-[var(--background-secondary)] flex items-center justify-center group-hover:bg-[var(--background-elevated)] transition-colors">
+                  <User className="h-5 w-5 text-[var(--foreground-secondary)]" />
                 </div>
                 <p className="font-medium text-sm text-[var(--foreground)]">Profile</p>
               </CardContent>
@@ -324,7 +324,7 @@ export default function DashboardPage() {
               className="cursor-pointer hover:shadow-md transition-shadow group"
               onClick={() => router.push('/dashboard/host/apply')}
             >
-              <CardContent className="p-4 text-center">
+              <CardContent className="p-6 text-center">
                 <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-amber-100 flex items-center justify-center group-hover:bg-amber-200 transition-colors">
                   <ChefHat className="h-5 w-5 text-amber-600" />
                 </div>
