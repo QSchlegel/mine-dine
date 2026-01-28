@@ -2,11 +2,28 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { format } from 'date-fns'
 import Image from 'next/image'
+import { MapPin, Users, Calendar, Clock, ChefHat } from 'lucide-react'
+
+import {
+  Container,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
+  PriceDisplay,
+  Countdown,
+  CountdownBadge,
+  ProgressBar,
+  AvatarWithStatus,
+  Divider,
+  Section,
+  Badge,
+  EmptyState,
+  DinnerCardSkeleton,
+} from '@/components/ui'
 
 interface Dinner {
   id: string
@@ -61,66 +78,152 @@ export default function DinnerDetailPage() {
   }, [params.id])
 
   if (loading) {
-    return <LoadingScreen title="Loading dinner" subtitle="Gathering menu details" />
-  }
-
-  if (!dinner) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Dinner not found</h1>
-          <Button onClick={() => router.push('/dinners')}>
-            Browse Dinners
-          </Button>
-        </div>
+      <div className="min-h-screen bg-[var(--background)] py-12">
+        <Container>
+          <div className="animate-pulse">
+            <div className="h-96 bg-[var(--background-secondary)] rounded-xl mb-8" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-6">
+                <DinnerCardSkeleton />
+              </div>
+              <div className="space-y-6">
+                <DinnerCardSkeleton />
+              </div>
+            </div>
+          </div>
+        </Container>
       </div>
     )
   }
 
+  if (!dinner) {
+    return (
+      <div className="min-h-screen bg-[var(--background)] py-12">
+        <Container>
+          <EmptyState
+            title="Dinner not found"
+            description="This dinner may have been removed or doesn't exist."
+            icon={<ChefHat />}
+            size="lg"
+            action={{
+              label: 'Browse Dinners',
+              onClick: () => router.push('/dinners'),
+            }}
+          />
+        </Container>
+      </div>
+    )
+  }
+
+  const dinnerDate = new Date(dinner.dateTime)
+  const isPast = dinnerDate < new Date()
+  const isFull = dinner._count.bookings >= dinner.maxGuests
+  const spotsLeft = dinner.maxGuests - dinner._count.bookings
+  const fillPercentage = (dinner._count.bookings / dinner.maxGuests) * 100
+
   return (
-    <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-[var(--background)] py-12">
+      <Container>
+        {/* Hero Image */}
         {dinner.imageUrl && (
-          <div className="relative h-96 w-full mb-8 rounded-lg overflow-hidden">
+          <div className="relative h-[400px] w-full mb-8 rounded-2xl overflow-hidden">
             <Image
               src={dinner.imageUrl}
               alt={dinner.title}
               fill
               className="object-cover"
+              priority
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+            {/* Countdown Badge */}
+            {!isPast && (
+              <div className="absolute top-4 right-4">
+                <CountdownBadge targetDate={dinnerDate} />
+              </div>
+            )}
+
+            {/* Title Overlay */}
+            <div className="absolute bottom-0 left-0 right-0 p-6">
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                {dinner.title}
+              </h1>
+              <div className="flex flex-wrap items-center gap-4 text-white/90">
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="h-4 w-4" />
+                  {format(dinnerDate, 'EEEE, MMM d')}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4" />
+                  {format(dinnerDate, 'h:mm a')}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4" />
+                  {dinner.location}
+                </span>
+              </div>
+            </div>
           </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Description */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-3xl">{dinner.title}</CardTitle>
-                <CardDescription>
-                  {format(new Date(dinner.dateTime), 'PPP p')}
-                </CardDescription>
+                <CardTitle>About this Dinner</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-[var(--foreground-secondary)] whitespace-pre-wrap">{dinner.description}</p>
+                <p className="text-[var(--foreground-secondary)] whitespace-pre-wrap leading-relaxed">
+                  {dinner.description}
+                </p>
               </CardContent>
             </Card>
 
+            {/* Countdown Section (if upcoming) */}
+            {!isPast && (
+              <Card className="overflow-hidden">
+                <div className="bg-gradient-to-r from-coral-500/10 to-accent-500/10 dark:from-coral-500/20 dark:to-accent-500/20 p-6">
+                  <h3 className="text-center text-sm font-medium text-[var(--foreground-secondary)] mb-4">
+                    Dinner starts in
+                  </h3>
+                  <Countdown
+                    targetDate={dinnerDate}
+                    size="lg"
+                    completedLabel="Dinner is happening now!"
+                  />
+                </div>
+              </Card>
+            )}
+
+            {/* Add-ons */}
             {dinner.addOns.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Add-ons</CardTitle>
+                  <CardTitle>Available Add-ons</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {dinner.addOns.map((addOn) => (
-                      <div key={addOn.id} className="flex justify-between items-start">
-                        <div>
-                          <p className="font-medium">{addOn.name}</p>
-                          {addOn.description && (
-                            <p className="text-sm text-[var(--foreground-muted)]">{addOn.description}</p>
-                          )}
+                    {dinner.addOns.map((addOn, index) => (
+                      <div key={addOn.id}>
+                        {index > 0 && <Divider spacing="sm" />}
+                        <div className="flex justify-between items-start py-2">
+                          <div className="flex-1">
+                            <p className="font-medium text-[var(--foreground)]">{addOn.name}</p>
+                            {addOn.description && (
+                              <p className="text-sm text-[var(--foreground-muted)] mt-0.5">
+                                {addOn.description}
+                              </p>
+                            )}
+                          </div>
+                          <PriceDisplay
+                            amount={addOn.price}
+                            size="sm"
+                            className="ml-4"
+                          />
                         </div>
-                        <p className="font-semibold">€{addOn.price}</p>
                       </div>
                     ))}
                   </div>
@@ -128,29 +231,39 @@ export default function DinnerDetailPage() {
               </Card>
             )}
 
+            {/* Grocery Bills (Transparency) */}
             {dinner.groceryBills.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Grocery Bills (Transparency)</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Cost Transparency</CardTitle>
+                    <Badge variant="success" size="sm">Verified</Badge>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <p className="text-sm text-[var(--foreground-secondary)] mb-4">
+                    See exactly what goes into preparing this meal
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {dinner.groceryBills.map((bill) => (
-                      <div key={bill.id}>
+                      <div
+                        key={bill.id}
+                        className="rounded-lg border border-[var(--border)] overflow-hidden"
+                      >
                         {bill.imageUrl && (
-                          <div className="relative h-48 w-full mb-2 rounded overflow-hidden">
+                          <div className="relative h-40 w-full bg-[var(--background-secondary)]">
                             <Image
                               src={bill.imageUrl}
                               alt="Grocery bill"
                               fill
-                              className="object-contain bg-[var(--background-secondary)]"
+                              className="object-contain"
                             />
                           </div>
                         )}
                         {bill.totalAmount && (
-                          <p className="text-sm text-[var(--foreground-muted)]">
-                            Total: €{bill.totalAmount}
-                          </p>
+                          <div className="p-3 bg-[var(--background-secondary)]">
+                            <PriceDisplay amount={bill.totalAmount} size="sm" />
+                          </div>
                         )}
                       </div>
                     ))}
@@ -160,58 +273,96 @@ export default function DinnerDetailPage() {
             )}
           </div>
 
+          {/* Sidebar */}
           <div className="space-y-6">
-            <Card>
+            {/* Booking Card */}
+            <Card className="sticky top-24">
               <CardHeader>
-                <CardTitle>Booking Details</CardTitle>
+                <CardTitle>Book Your Spot</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-5">
+                {/* Price */}
                 <div>
-                  <p className="text-sm text-[var(--foreground-muted)]">Location</p>
-                  <p className="font-medium">{dinner.location}</p>
+                  <p className="text-sm text-[var(--foreground-muted)] mb-1">Price</p>
+                  <PriceDisplay
+                    amount={dinner.basePricePerPerson}
+                    size="lg"
+                    perPerson
+                  />
                 </div>
+
+                <Divider spacing="sm" />
+
+                {/* Date & Time */}
                 <div>
-                  <p className="text-sm text-[var(--foreground-muted)]">Price</p>
-                  <p className="text-2xl font-bold text-[var(--primary)]">
-                    €{dinner.basePricePerPerson} per person
+                  <p className="text-sm text-[var(--foreground-muted)] mb-1">When</p>
+                  <p className="font-medium text-[var(--foreground)]">
+                    {format(dinnerDate, 'EEEE, MMMM d, yyyy')}
+                  </p>
+                  <p className="text-sm text-[var(--foreground-secondary)]">
+                    at {format(dinnerDate, 'h:mm a')}
                   </p>
                 </div>
+
+                <Divider spacing="sm" />
+
+                {/* Availability */}
                 <div>
-                  <p className="text-sm text-[var(--foreground-muted)]">Availability</p>
-                  <p className="font-medium">
-                    {dinner._count.bookings} / {dinner.maxGuests} guests
-                  </p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm text-[var(--foreground-muted)]">Availability</p>
+                    <div className="flex items-center gap-1 text-sm">
+                      <Users className="h-4 w-4 text-[var(--foreground-muted)]" />
+                      <span className="font-medium text-[var(--foreground)]">
+                        {dinner._count.bookings}
+                      </span>
+                      <span className="text-[var(--foreground-muted)]">
+                        / {dinner.maxGuests}
+                      </span>
+                    </div>
+                  </div>
+                  <ProgressBar
+                    value={fillPercentage}
+                    variant={isFull ? 'danger' : fillPercentage > 75 ? 'warning' : 'success'}
+                    size="md"
+                  />
+                  {!isFull && (
+                    <p className="text-xs text-[var(--foreground-muted)] mt-1.5">
+                      {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
+                    </p>
+                  )}
                 </div>
+
                 <Button
                   className="w-full"
+                  size="lg"
                   onClick={() => router.push(`/dinners/${dinner.id}/book`)}
-                  disabled={dinner._count.bookings >= dinner.maxGuests}
+                  disabled={isFull || isPast}
                 >
-                  {dinner._count.bookings >= dinner.maxGuests ? 'Fully Booked' : 'Book Now'}
+                  {isPast ? 'Event Ended' : isFull ? 'Fully Booked' : 'Book Now'}
                 </Button>
               </CardContent>
             </Card>
 
+            {/* Host Card */}
             <Card>
               <CardHeader>
-                <CardTitle>Host</CardTitle>
+                <CardTitle>Your Host</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center space-x-4">
-                  {dinner.host.profileImageUrl && (
-                    <div className="relative h-16 w-16 rounded-full overflow-hidden">
-                      <Image
-                        src={dinner.host.profileImageUrl}
-                        alt={dinner.host.name || 'Host'}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <p className="font-medium">{dinner.host.name || 'Anonymous'}</p>
+                <div className="flex items-start gap-4">
+                  <AvatarWithStatus
+                    src={dinner.host.profileImageUrl || undefined}
+                    name={dinner.host.name || 'Host'}
+                    size="lg"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-[var(--foreground)]">
+                      {dinner.host.name || 'Anonymous Host'}
+                    </p>
                     {dinner.host.bio && (
-                      <p className="text-sm text-[var(--foreground-muted)] mt-1">{dinner.host.bio}</p>
+                      <p className="text-sm text-[var(--foreground-secondary)] mt-1 line-clamp-3">
+                        {dinner.host.bio}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -219,7 +370,7 @@ export default function DinnerDetailPage() {
             </Card>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   )
 }

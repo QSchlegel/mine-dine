@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent, CardImage } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Avatar } from '@/components/ui/Avatar'
+import { Button } from '@/components/ui/Button'
 import { format } from 'date-fns'
-import { MapPin, Calendar, Users, Utensils, Search, Sparkles } from 'lucide-react'
+import { MapPin, Calendar, Users, Utensils, Search, Sparkles, ChefHat } from 'lucide-react'
 
 interface Dinner {
   id: string
@@ -70,9 +71,18 @@ function EmptyState() {
           <h3 className="text-xl font-semibold text-[var(--foreground)] mb-2">
             No dinners available yet
           </h3>
-          <p className="text-[var(--foreground-secondary)] max-w-md mx-auto">
+          <p className="text-[var(--foreground-secondary)] max-w-md mx-auto mb-6">
             Check back soon for unique dining experiences hosted by amazing chefs in your area.
           </p>
+          <Button
+            href="/dashboard/host/apply"
+            variant="primary"
+            size="lg"
+            leftIcon={<ChefHat className="w-5 h-5" />}
+            className="mt-4"
+          >
+            Host the first event
+          </Button>
         </div>
       </div>
     </motion.div>

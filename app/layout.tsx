@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navigation } from "@/components/ui/Navigation";
 import { Footer } from "@/components/ui/Footer";
 import { BottomNav } from "@/components/ui/BottomNav";
+import { ToastProvider } from "@/components/ui/Toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -80,10 +81,12 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col antialiased">
         <UmamiScript />
         <ThemeProvider>
-          <Navigation />
-          <main className="flex-1 pt-20 pb-24 md:pb-0">{children}</main>
-          <BottomNav />
-          <Footer className="hidden md:block" />
+          <ToastProvider position="bottom-right">
+            <Navigation />
+            <main className="flex-1 pt-20 pb-24 md:pb-0">{children}</main>
+            <BottomNav />
+            <Footer className="hidden md:block" />
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>
