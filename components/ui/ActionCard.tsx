@@ -5,7 +5,9 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { ArrowRight } from 'lucide-react'
 
-export interface ActionCardProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ActionCardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 
+  'onDrag' | 'onDragEnd' | 'onDragStart' | 'onDragEnter' | 'onDragExit' | 'onDragLeave' | 'onDragOver' | 'onDrop'
+  | 'onAnimationStart' | 'onAnimationEnd' | 'onAnimationIteration'> {
   /** Card title */
   title: string
   /** Card description */

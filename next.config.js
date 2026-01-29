@@ -12,6 +12,14 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
+      {
+        protocol: 'https',
+        hostname: '*.storage.railway.app',
+      },
+      {
+        protocol: 'https',
+        hostname: 'storage.railway.app',
+      },
     ],
   },
   // Turbopack configuration
@@ -66,7 +74,7 @@ const nextConfig = {
   },
   
   // External packages for server components to avoid bundling issues
-  serverExternalPackages: [],
+  serverExternalPackages: ['@prisma/client', 'prisma'],
 }
 
 module.exports = nextConfig

@@ -121,10 +121,11 @@ async function main() {
   // Create Users
   console.log('👤 Creating users...')
 
-  // Create admin user
+  // Create admin user (email can be overridden via FIRST_ADMIN_EMAIL)
+  const adminEmail = (process.env.FIRST_ADMIN_EMAIL || 'admin@minedine.com').toLowerCase()
   const admin = await prisma.user.create({
     data: {
-      email: 'admin@minedine.com',
+      email: adminEmail,
       name: 'Mine Dine Admin',
       bio: 'Platform administrator',
       role: UserRole.ADMIN,
@@ -682,12 +683,22 @@ async function main() {
 
   for (const reviewData of reviewsData) {
     const booking = bookings[reviewData.bookingIndex]
+    // Distribute rating across the three star categories
+    // For seed data, use a simple distribution: hospitality 40%, cleanliness 30%, taste 30%
+    const hospitalityStars = Math.ceil(reviewData.rating * 0.4)
+    const cleanlinessStars = Math.ceil(reviewData.rating * 0.3)
+    const tasteStars = reviewData.rating - hospitalityStars - cleanlinessStars
+    
     await prisma.review.create({
       data: {
         bookingId: booking.id,
         userId: booking.userId,
         dinnerId: booking.dinnerId,
-        rating: reviewData.rating,
+        hospitalityStars,
+        cleanlinessStars,
+        tasteStars,
+        tipStars: 0, // No tips in seed data
+        tipAmount: 0,
         comment: reviewData.comment,
       },
     })
@@ -823,7 +834,7 @@ async function main() {
   console.log('\n📧 Test accounts:')
   console.log('   Guest: emma@example.com (has matches with hosts)')
   console.log('   Host: marco@example.com (Italian chef)')
-  console.log('   Admin: admin@minedine.com')
+  console.log(`   Admin: ${adminEmail}`)
 }
 
 main()

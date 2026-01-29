@@ -125,6 +125,7 @@ export const GET = withAuth(async (req: NextRequest, user) => {
     const hostIds = hosts.map(h => h.id)
 
     // Batch fetch ratings for all hosts in a single query
+    // Calculate average from category stars: (hospitality + cleanliness + taste) / 3
     const hostRatings = await prisma.review.groupBy({
       by: ['dinnerId'],
       where: {
@@ -132,8 +133,8 @@ export const GET = withAuth(async (req: NextRequest, user) => {
           hostId: { in: hostIds },
         },
       },
-      _avg: { rating: true },
-      _count: { rating: true },
+      _avg: { hospitalityStars: true, cleanlinessStars: true, tasteStars: true },
+      _count: { id: true },
     })
 
     // Get dinner to host mapping for rating lookup
@@ -149,8 +150,14 @@ export const GET = withAuth(async (req: NextRequest, user) => {
       const hostId = dinnerToHost.get(rating.dinnerId)
       if (hostId) {
         const current = hostRatingMap.get(hostId) || { totalRating: 0, count: 0 }
-        current.totalRating += (rating._avg.rating || 0) * rating._count.rating
-        current.count += rating._count.rating
+        // Calculate average rating from category stars
+        const avgHospitality = rating._avg.hospitalityStars || 0
+        const avgCleanliness = rating._avg.cleanlinessStars || 0
+        const avgTaste = rating._avg.tasteStars || 0
+        const avgRating = (avgHospitality + avgCleanliness + avgTaste) / 3
+        const reviewCount = rating._count.id || 0
+        current.totalRating += avgRating * reviewCount
+        current.count += reviewCount
         hostRatingMap.set(hostId, current)
       }
     }

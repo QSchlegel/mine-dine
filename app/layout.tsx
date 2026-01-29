@@ -7,6 +7,8 @@ import { Navigation } from "@/components/ui/Navigation";
 import { Footer } from "@/components/ui/Footer";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { ToastProvider } from "@/components/ui/Toast";
+import { ProactiveAssistant } from "@/components/assistant/ProactiveAssistant";
+import GlobalBackground from "@/components/GlobalBackground";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -81,11 +83,13 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col antialiased">
         <UmamiScript />
         <ThemeProvider>
+          <GlobalBackground />
           <ToastProvider position="bottom-right">
             <Navigation />
             <main className="flex-1 pt-20 pb-24 md:pb-0">{children}</main>
             <BottomNav />
             <Footer className="hidden md:block" />
+            <ProactiveAssistant />
           </ToastProvider>
         </ThemeProvider>
       </body>

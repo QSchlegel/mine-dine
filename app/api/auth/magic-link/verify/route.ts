@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma'
 import { createUserWithSession, createSessionForUser } from '@/lib/auth/user-creation'
 import { APIError } from 'better-auth/api'
 
+// Ensure Node.js runtime (not edge) for Prisma binary engine
+export const runtime = 'nodejs'
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -61,12 +64,8 @@ export async function POST(request: NextRequest) {
       user = result.user
       cookies = result.cookies
 
-      // Create a profile for the new user
-      await prisma.profile.create({
-        data: {
-          userId: user.id,
-        },
-      })
+      // Note: Profile information is stored directly on the User model
+      // (name, bio, profileImageUrl, etc.), so no separate profile creation is needed
     } else {
       // For existing users, create a session using the utility
       const result = await createSessionForUser(existingUser.id, normalizedEmail)
@@ -105,9 +104,10 @@ export async function POST(request: NextRequest) {
     
     // Handle API errors
     if (error instanceof APIError) {
+      const statusCode = typeof error.status === 'number' ? error.status : 500
       return NextResponse.json(
         { message: error.message || 'Verification failed' },
-        { status: error.status || 500 }
+        { status: statusCode }
       )
     }
 

@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense, type ChangeEvent } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
+import { Badge } from '@/components/ui/Badge'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import Image from 'next/image'
 import { getProfileCompletionProgress, type ProfileCompletionResult } from '@/lib/profile'
@@ -16,8 +17,10 @@ interface UserProfile {
   email: string | null
   bio: string | null
   profileImageUrl: string | null
+  profileImagePublicUrl?: string | null
   coverImageUrl: string | null
   profileVisibility: 'EVERYONE' | 'ENGAGED_ONLY'
+  role: 'USER' | 'HOST' | 'ADMIN' | 'MODERATOR'
   userTags: Array<{
     tag: {
       id: string
@@ -37,7 +40,7 @@ function ProfilePageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const isSetupMode = searchParams.get('setup') === 'true'
-  
+
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [allTags, setAllTags] = useState<Tag[]>([])
   const [loading, setLoading] = useState(true)
@@ -49,6 +52,12 @@ function ProfilePageContent() {
   const [completion, setCompletion] = useState<ProfileCompletionResult | null>(null)
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const [validationErrors, setValidationErrors] = useState<{ name?: string; bio?: string; tags?: string }>({})
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null) // display (may be signed)
+  const [persistedProfileImageUrl, setPersistedProfileImageUrl] = useState<string | null>(null) // stored in DB
+  const [role, setRole] = useState<UserProfile['role'] | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [imageError, setImageError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -63,6 +72,11 @@ function ProfilePageContent() {
           setBio(profileData.profile.bio || '')
           setSelectedTags(profileData.profile.userTags.map((ut: any) => ut.tag.id))
           setProfileVisibility(profileData.profile.profileVisibility || 'EVERYONE')
+          const displayUrl = profileData.profile.profileImageUrl || null
+          const stableUrl = profileData.profile.profileImagePublicUrl || displayUrl
+          setProfileImageUrl(displayUrl)
+          setPersistedProfileImageUrl(stableUrl)
+          setRole(profileData.profile.role || 'USER')
         }
         setLoading(false)
       })
@@ -119,7 +133,7 @@ function ProfilePageContent() {
         fetch('/api/profiles', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, bio, profileVisibility }),
+          body: JSON.stringify({ name, bio, profileVisibility, profileImageUrl: persistedProfileImageUrl }),
         }),
         fetch('/api/profiles/tags', {
           method: 'PATCH',
@@ -154,6 +168,78 @@ function ProfilePageContent() {
     )
   }
 
+  const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
+    const maxSize = 10 * 1024 * 1024
+
+    if (!allowedMimeTypes.includes(file.type)) {
+      setImageError('Only JPG, PNG, WEBP, or GIF files are allowed.')
+      event.target.value = ''
+      return
+    }
+
+    if (file.size > maxSize) {
+      setImageError('File is too large. Maximum size is 10MB.')
+      event.target.value = ''
+      return
+    }
+
+    setUploadingImage(true)
+    setImageError(null)
+
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('type', 'profile')
+
+    try {
+      const res = await fetch('/api/uploads', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Upload failed')
+      }
+
+      const displayUrl = data.signedUrl || data.url
+      setProfileImageUrl(displayUrl)
+      setPersistedProfileImageUrl(data.url)
+      setProfile((prev) => (prev ? { ...prev, profileImageUrl: displayUrl } : prev))
+
+      // Persist immediately so reloads keep the image even if the user doesn't click Save
+      try {
+        await fetch('/api/profiles', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profileImageUrl: data.url }),
+        })
+      } catch (persistErr) {
+        console.error('Failed to persist profile image:', persistErr)
+      }
+
+      setNotification({ type: 'success', message: 'Photo uploaded successfully!' })
+      setTimeout(() => setNotification(null), 5000)
+    } catch (error: any) {
+      const message = error?.message || 'Failed to upload photo. Please try again.'
+      setImageError(message)
+      setNotification({ type: 'error', message })
+      setTimeout(() => setNotification(null), 5000)
+    } finally {
+      setUploadingImage(false)
+      event.target.value = ''
+    }
+  }
+
+  const handleRemoveImage = () => {
+    setProfileImageUrl(null)
+    setPersistedProfileImageUrl(null)
+    setProfile((prev) => (prev ? { ...prev, profileImageUrl: null } : prev))
+  }
+
   if (loading) {
     return <LoadingScreen title="Loading profile" subtitle="Getting your details ready" />
   }
@@ -177,8 +263,15 @@ function ProfilePageContent() {
     },
   ]
 
+  const roleConfig: Record<UserProfile['role'], { label: string; variant: 'coral' | 'blue' | 'success' | 'warning' | 'default' }> = {
+    USER: { label: 'Guest', variant: 'default' },
+    HOST: { label: 'Host', variant: 'coral' },
+    ADMIN: { label: 'Admin', variant: 'warning' },
+    MODERATOR: { label: 'Moderator', variant: 'blue' },
+  }
+
   return (
-    <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[var(--background)]/80 backdrop-blur-sm py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto space-y-6">
         {isSetupMode && (
           <div className="rounded-2xl border border-[var(--border-strong)] bg-[var(--primary-light)] p-6">
@@ -190,11 +283,18 @@ function ProfilePageContent() {
         )}
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-[var(--foreground)]">
-              {isSetupMode ? 'Complete Your Profile' : 'Edit Profile'}
-            </h1>
-            <p className="text-sm text-[var(--foreground-secondary)] mt-1">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-3xl font-bold text-[var(--foreground)]">
+                {isSetupMode ? 'Complete Your Profile' : 'Edit Profile'}
+              </h1>
+              {role && (
+                <Badge variant={roleConfig[role].variant} size="md" glow>
+                  {roleConfig[role].label}
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm text-[var(--foreground-secondary)]">
               Keep your profile current to get better matches and quicker bookings.
             </p>
           </div>
@@ -228,24 +328,63 @@ function ProfilePageContent() {
                 <CardDescription>Help people know who they are dining with.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {profile?.profileImageUrl && (
-                  <div className="flex items-center gap-4">
-                    <div className="relative h-24 w-24 rounded-full overflow-hidden ring-2 ring-[var(--background)]">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="relative h-24 w-24 rounded-full overflow-hidden ring-2 ring-[var(--background)] bg-[var(--background-tertiary)] flex items-center justify-center text-xs text-[var(--foreground-muted)]">
+                    {profileImageUrl ? (
                       <Image
-                        src={profile.profileImageUrl}
+                        src={profileImageUrl}
                         alt="Profile"
                         fill
                         className="object-cover"
                       />
-                    </div>
+                    ) : (
+                      <span className="px-4 text-center">Add a clear, friendly headshot</span>
+                    )}
+                  </div>
+                  <div className="space-y-2">
                     <div>
                       <p className="text-sm font-medium text-[var(--foreground)]">Profile photo</p>
                       <p className="text-xs text-[var(--foreground-muted)]">
-                        A friendly photo builds trust and increases match rate.
+                        Higher-quality, safe-for-work photos improve trust and matches.
                       </p>
                     </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        isLoading={uploadingImage}
+                      >
+                        {profileImageUrl ? 'Change photo' : 'Upload photo'}
+                      </Button>
+                      {profileImageUrl && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleRemoveImage}
+                          disabled={uploadingImage}
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                    {imageError && (
+                      <p className="text-xs text-danger-600">{imageError}</p>
+                    )}
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--foreground-muted)]">
+                      Max 10MB • jpg, png, webp, gif • Safe-for-work only
+                    </p>
                   </div>
-                )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+                </div>
                 <div>
                   <Input
                     label="Name"
@@ -412,30 +551,26 @@ function ProfilePageContent() {
           </div>
 
           <div className="space-y-6">
-            {completion && (
+            {completion && !completion.isComplete && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Profile Completion</CardTitle>
                   <CardDescription>
-                    {completion.isComplete
-                      ? 'Your profile is complete!'
-                      : `Complete your profile to improve your matching experience`}
+                    Complete your profile to improve your matching experience
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <div className="w-full bg-[var(--background-tertiary)] rounded-full h-3">
                       <div
-                        className={`h-3 rounded-full transition-all duration-300 ${
-                          completion.isComplete ? 'bg-success-600' : 'bg-[var(--primary)]'
-                        }`}
+                        className="h-3 rounded-full transition-all duration-300 bg-[var(--primary)]"
                         style={{ width: `${completion.progress}%` }}
                       ></div>
                     </div>
                     <p className="text-sm text-[var(--foreground-secondary)]">
                       {completion.progress}% complete
                     </p>
-                    {!completion.isComplete && completion.recommendations.length > 0 && (
+                    {completion.recommendations.length > 0 && (
                       <ul className="text-sm text-[var(--foreground-secondary)] space-y-1">
                         {completion.recommendations.map((rec, idx) => (
                           <li key={idx} className="flex items-start">
@@ -458,9 +593,9 @@ function ProfilePageContent() {
               <CardContent>
                 <div className="flex items-center gap-4">
                   <div className="relative h-14 w-14 rounded-full overflow-hidden bg-[var(--background-tertiary)]">
-                    {profile?.profileImageUrl ? (
+                    {profileImageUrl ? (
                       <Image
-                        src={profile.profileImageUrl}
+                        src={profileImageUrl}
                         alt="Profile preview"
                         fill
                         className="object-cover"
@@ -468,7 +603,14 @@ function ProfilePageContent() {
                     ) : null}
                   </div>
                   <div>
-                    <p className="font-semibold text-[var(--foreground)]">{name || 'Your name'}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-[var(--foreground)]">{name || 'Your name'}</p>
+                      {role && (
+                        <Badge variant={roleConfig[role].variant} size="sm">
+                          {roleConfig[role].label}
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-xs text-[var(--foreground-muted)]">
                       {profileVisibility === 'EVERYONE' ? 'Visible to everyone' : 'Visible after engagement'}
                     </p>

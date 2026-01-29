@@ -4,6 +4,70 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes minebot-wiggle {
+  0%, 84% {
+    transform: translateY(0) rotate(0deg);
+  }
+  86% {
+    transform: translateY(-1px) rotate(-6deg);
+  }
+  90% {
+    transform: translateY(0) rotate(6deg);
+  }
+  94% {
+    transform: translateY(-1px) rotate(-4deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+.minebot-wiggle {
+  animation: minebot-wiggle 6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* Matrix/Terminal flicker effect */
+@keyframes terminal-flicker {
+  0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
+    opacity: 1;
+  }
+  20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes matrix-rain {
+  0% {
+    transform: translateY(-100%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 5px currentColor) drop-shadow(0 0 10px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 10px currentColor) drop-shadow(0 0 20px currentColor) drop-shadow(0 0 30px currentColor);
+  }
+}
+
+@keyframes cyber-pulse {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
 /* ========================================
    CSS Custom Properties (Design Tokens)
    ======================================== */
@@ -64,94 +128,116 @@
   color-scheme: light;
 }
 
-/* Dark mode - OS preference */
+/* Dark mode - OS preference - Matrix/Tron Terminal Aesthetic with MineDine brand colors */
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --background: #050608;
-    --background-secondary: #080A0D;
-    --background-tertiary: #0D0F12;
-    --background-elevated: #12151A;
-    --foreground: #F3F1EE;
-    --foreground-secondary: #C9C2BC;
-    --foreground-muted: #8F8781;
+    /* Deep void black - terminal background */
+    --background: #020406;
+    --background-secondary: #040810;
+    --background-tertiary: #081018;
+    --background-elevated: #0C1620;
 
-    --border: rgba(243, 241, 238, 0.12);
-    --border-strong: rgba(243, 241, 238, 0.2);
+    /* Neon teal text hierarchy - based on MineDine accent teal */
+    --foreground: #4DFFE6;
+    --foreground-secondary: #2EC4B6;
+    --foreground-muted: #1A9488;
 
-    --primary: #F08397;
-    --primary-hover: #F39AAC;
-    --primary-light: rgba(240, 131, 151, 0.18);
+    /* Glowing neon borders - teal tinted */
+    --border: rgba(46, 196, 182, 0.18);
+    --border-strong: rgba(46, 196, 182, 0.35);
 
-    --accent: #2EC4B6;
-    --accent-hover: #5AD9CC;
-    --accent-light: rgba(46, 196, 182, 0.18);
+    /* Primary - Neon coral/rose (MineDine primary electrified) */
+    --primary: #FF6B8A;
+    --primary-hover: #FF8FA8;
+    --primary-light: rgba(255, 107, 138, 0.15);
 
-    --secondary: #F6C453;
-    --secondary-hover: #FAD27D;
-    --secondary-light: rgba(246, 196, 83, 0.18);
+    /* Accent - Electric teal (MineDine teal neon) */
+    --accent: #4DFFE6;
+    --accent-hover: #80FFF0;
+    --accent-light: rgba(77, 255, 230, 0.15);
 
-    --glass-background: rgba(8, 10, 13, 0.85);
-    --glass-border: rgba(243, 241, 238, 0.12);
+    /* Secondary - Neon amber (MineDine amber electrified) */
+    --secondary: #FFD666;
+    --secondary-hover: #FFE599;
+    --secondary-light: rgba(255, 214, 102, 0.15);
 
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.35);
-    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.35);
-    --shadow-lg: 0 14px 30px rgba(0, 0, 0, 0.5), 0 6px 14px rgba(0, 0, 0, 0.38);
-    --shadow-xl: 0 28px 54px rgba(0, 0, 0, 0.6), 0 10px 22px rgba(0, 0, 0, 0.45);
+    /* Glassy terminal panels - teal tinted */
+    --glass-background: rgba(4, 16, 24, 0.9);
+    --glass-border: rgba(46, 196, 182, 0.25);
 
-    --glow-primary: 0 0 26px rgba(240, 131, 151, 0.3), 0 0 10px rgba(240, 131, 151, 0.18);
-    --glow-accent: 0 0 26px rgba(46, 196, 182, 0.3), 0 0 10px rgba(46, 196, 182, 0.18);
-    --glow-primary-strong: 0 0 34px rgba(240, 131, 151, 0.4), 0 0 14px rgba(240, 131, 151, 0.25);
-    --glow-accent-strong: 0 0 34px rgba(46, 196, 182, 0.4), 0 0 14px rgba(46, 196, 182, 0.25);
+    /* Deep shadows with brand color bleed */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.6);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.7), 0 0 4px rgba(46, 196, 182, 0.08);
+    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.8), 0 0 8px rgba(46, 196, 182, 0.1);
+    --shadow-lg: 0 14px 30px rgba(0, 0, 0, 0.85), 0 0 16px rgba(46, 196, 182, 0.12);
+    --shadow-xl: 0 28px 54px rgba(0, 0, 0, 0.9), 0 0 24px rgba(46, 196, 182, 0.15);
 
-    --selection-background: rgba(240, 131, 151, 0.3);
-    --selection-foreground: var(--foreground);
+    /* Neon glow effects - brand colors */
+    --glow-primary: 0 0 20px rgba(255, 107, 138, 0.4), 0 0 40px rgba(255, 107, 138, 0.2), 0 0 60px rgba(255, 107, 138, 0.1);
+    --glow-accent: 0 0 20px rgba(77, 255, 230, 0.4), 0 0 40px rgba(77, 255, 230, 0.2), 0 0 60px rgba(77, 255, 230, 0.1);
+    --glow-primary-strong: 0 0 30px rgba(255, 107, 138, 0.6), 0 0 60px rgba(255, 107, 138, 0.3), 0 0 90px rgba(255, 107, 138, 0.15);
+    --glow-accent-strong: 0 0 30px rgba(77, 255, 230, 0.6), 0 0 60px rgba(77, 255, 230, 0.3), 0 0 90px rgba(77, 255, 230, 0.15);
+
+    /* Teal neon selection */
+    --selection-background: rgba(77, 255, 230, 0.3);
+    --selection-foreground: #020406;
 
     color-scheme: dark;
   }
 }
 
-/* Dark mode - Manual toggle */
+/* Dark mode - Manual toggle - Matrix/Tron Terminal Aesthetic with MineDine brand colors */
 .dark {
-  --background: #050608;
-  --background-secondary: #080A0D;
-  --background-tertiary: #0D0F12;
-  --background-elevated: #12151A;
-  --foreground: #F3F1EE;
-  --foreground-secondary: #C9C2BC;
-  --foreground-muted: #8F8781;
+  /* Deep void black - terminal background */
+  --background: #020406;
+  --background-secondary: #040810;
+  --background-tertiary: #081018;
+  --background-elevated: #0C1620;
 
-  --border: rgba(243, 241, 238, 0.12);
-  --border-strong: rgba(243, 241, 238, 0.2);
+  /* Neon teal text hierarchy - based on MineDine accent teal */
+  --foreground: #4DFFE6;
+  --foreground-secondary: #2EC4B6;
+  --foreground-muted: #1A9488;
 
-  --primary: #F08397;
-  --primary-hover: #F39AAC;
-  --primary-light: rgba(240, 131, 151, 0.18);
+  /* Glowing neon borders - teal tinted */
+  --border: rgba(46, 196, 182, 0.18);
+  --border-strong: rgba(46, 196, 182, 0.35);
 
-  --accent: #2EC4B6;
-  --accent-hover: #5AD9CC;
-  --accent-light: rgba(46, 196, 182, 0.18);
+  /* Primary - Neon coral/rose (MineDine primary electrified) */
+  --primary: #FF6B8A;
+  --primary-hover: #FF8FA8;
+  --primary-light: rgba(255, 107, 138, 0.15);
 
-  --secondary: #F6C453;
-  --secondary-hover: #FAD27D;
-  --secondary-light: rgba(246, 196, 83, 0.18);
+  /* Accent - Electric teal (MineDine teal neon) */
+  --accent: #4DFFE6;
+  --accent-hover: #80FFF0;
+  --accent-light: rgba(77, 255, 230, 0.15);
 
-  --glass-background: rgba(8, 10, 13, 0.85);
-  --glass-border: rgba(243, 241, 238, 0.12);
+  /* Secondary - Neon amber (MineDine amber electrified) */
+  --secondary: #FFD666;
+  --secondary-hover: #FFE599;
+  --secondary-light: rgba(255, 214, 102, 0.15);
 
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 14px 30px rgba(0, 0, 0, 0.5), 0 6px 14px rgba(0, 0, 0, 0.38);
-  --shadow-xl: 0 28px 54px rgba(0, 0, 0, 0.6), 0 10px 22px rgba(0, 0, 0, 0.45);
+  /* Glassy terminal panels - teal tinted */
+  --glass-background: rgba(4, 16, 24, 0.9);
+  --glass-border: rgba(46, 196, 182, 0.25);
 
-  --glow-primary: 0 0 26px rgba(240, 131, 151, 0.3), 0 0 10px rgba(240, 131, 151, 0.18);
-  --glow-accent: 0 0 26px rgba(46, 196, 182, 0.3), 0 0 10px rgba(46, 196, 182, 0.18);
-  --glow-primary-strong: 0 0 34px rgba(240, 131, 151, 0.4), 0 0 14px rgba(240, 131, 151, 0.25);
-  --glow-accent-strong: 0 0 34px rgba(46, 196, 182, 0.4), 0 0 14px rgba(46, 196, 182, 0.25);
+  /* Deep shadows with brand color bleed */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.7), 0 0 4px rgba(46, 196, 182, 0.08);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.8), 0 0 8px rgba(46, 196, 182, 0.1);
+  --shadow-lg: 0 14px 30px rgba(0, 0, 0, 0.85), 0 0 16px rgba(46, 196, 182, 0.12);
+  --shadow-xl: 0 28px 54px rgba(0, 0, 0, 0.9), 0 0 24px rgba(46, 196, 182, 0.15);
 
-  --selection-background: rgba(240, 131, 151, 0.3);
-  --selection-foreground: var(--foreground);
+  /* Neon glow effects - brand colors */
+  --glow-primary: 0 0 20px rgba(255, 107, 138, 0.4), 0 0 40px rgba(255, 107, 138, 0.2), 0 0 60px rgba(255, 107, 138, 0.1);
+  --glow-accent: 0 0 20px rgba(77, 255, 230, 0.4), 0 0 40px rgba(77, 255, 230, 0.2), 0 0 60px rgba(77, 255, 230, 0.1);
+  --glow-primary-strong: 0 0 30px rgba(255, 107, 138, 0.6), 0 0 60px rgba(255, 107, 138, 0.3), 0 0 90px rgba(255, 107, 138, 0.15);
+  --glow-accent-strong: 0 0 30px rgba(77, 255, 230, 0.6), 0 0 60px rgba(77, 255, 230, 0.3), 0 0 90px rgba(77, 255, 230, 0.15);
+
+  /* Teal neon selection */
+  --selection-background: rgba(77, 255, 230, 0.3);
+  --selection-foreground: #020406;
 
   color-scheme: dark;
 }
@@ -441,6 +527,69 @@ p {
 
   .gradient-overlay:hover::before {
     opacity: 1;
+  }
+
+  /* Matrix/Tron Terminal Effects - Dark Mode Only (MineDine Brand Colors) */
+  /* Reduced glow intensity for better readability */
+  .dark .terminal-glow {
+    text-shadow:
+      0 0 4px currentColor,
+      0 0 8px rgba(77, 255, 230, 0.3);
+  }
+
+  .dark .terminal-glow-subtle {
+    text-shadow:
+      0 0 2px rgba(77, 255, 230, 0.15);
+  }
+
+  .dark .neon-border {
+    box-shadow:
+      inset 0 0 10px rgba(77, 255, 230, 0.1),
+      0 0 10px rgba(77, 255, 230, 0.2),
+      0 0 20px rgba(77, 255, 230, 0.1);
+  }
+
+  .dark .neon-border-coral {
+    box-shadow:
+      inset 0 0 10px rgba(255, 107, 138, 0.1),
+      0 0 10px rgba(255, 107, 138, 0.2),
+      0 0 20px rgba(255, 107, 138, 0.1);
+  }
+
+  .dark .scanlines::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(77, 255, 230, 0.012) 2px,
+      rgba(77, 255, 230, 0.012) 4px
+    );
+    pointer-events: none;
+  }
+
+  .dark .matrix-grid {
+    background-image:
+      linear-gradient(to right, rgba(46, 196, 182, 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(46, 196, 182, 0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .dark .matrix-grid-dense {
+    background-image:
+      linear-gradient(to right, rgba(46, 196, 182, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(46, 196, 182, 0.04) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .dark .cyber-gradient {
+    background: linear-gradient(135deg, rgba(255, 107, 138, 0.08) 0%, rgba(77, 255, 230, 0.05) 50%, rgba(255, 214, 102, 0.08) 100%);
+  }
+
+  .dark .flicker {
+    animation: terminal-flicker 0.15s infinite;
   }
 }
 

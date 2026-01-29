@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { messageCreateSchema } from '@/lib/validations'
 import { prisma } from '@/lib/prisma'
+import { getDisplayImageUrl, buildPublicUrl, extractKeyFromUrl } from '@/lib/storage'
 
 /**
  * Send a message
@@ -76,7 +77,16 @@ export const POST = withAuth(async (req: NextRequest, user) => {
       },
     })
 
-    return NextResponse.json({ message }, { status: 201 })
+    // Sign profile images if needed
+    const [signedSender, signedRecipient] = await Promise.all([
+      signUserImage(message.sender),
+      signUserImage(message.recipient),
+    ])
+
+    return NextResponse.json(
+      { message: { ...message, sender: signedSender, recipient: signedRecipient } },
+      { status: 201 }
+    )
   } catch (error) {
     if (error instanceof Error && error.name === 'ZodError') {
       return NextResponse.json(
@@ -132,7 +142,15 @@ export const GET = withAuth(async (req: NextRequest, user) => {
         },
       })
 
-      return NextResponse.json({ messages })
+      const signedMessages = await Promise.all(
+        messages.map(async (m) => ({
+          ...m,
+          sender: await signUserImage(m.sender),
+          recipient: await signUserImage(m.recipient),
+        }))
+      )
+
+      return NextResponse.json({ messages: signedMessages })
     } else {
       // Get all conversations
       const conversations = await prisma.message.findMany({
@@ -164,7 +182,15 @@ export const GET = withAuth(async (req: NextRequest, user) => {
         distinct: ['senderId', 'recipientId'],
       })
 
-      return NextResponse.json({ conversations })
+      const signedConversations = await Promise.all(
+        conversations.map(async (c) => ({
+          ...c,
+          sender: await signUserImage(c.sender),
+          recipient: await signUserImage(c.recipient),
+        }))
+      )
+
+      return NextResponse.json({ conversations: signedConversations })
     }
   } catch (error) {
     console.error('Error fetching messages:', error)
@@ -174,3 +200,18 @@ export const GET = withAuth(async (req: NextRequest, user) => {
     )
   }
 })
+
+async function signUserImage(user: { profileImageUrl: string | null } | null) {
+  if (!user) return user
+  const displayUrl = await getDisplayImageUrl(user.profileImageUrl)
+  if (!displayUrl) return { ...user }
+
+  const key = extractKeyFromUrl(user.profileImageUrl || displayUrl)
+  const publicUrl = key ? buildPublicUrl(key) : null
+
+  return {
+    ...user,
+    profileImageUrl: displayUrl,
+    profileImagePublicUrl: publicUrl ?? user.profileImageUrl,
+  }
+}

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { format } from 'date-fns'
+import Image from 'next/image'
+import { useSession } from '@/lib/auth-client'
 
 interface Message {
   id: string
@@ -31,6 +33,8 @@ export default function MessagesPage() {
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const { data: session } = useSession()
+  const currentUserId = (session as any)?.user?.id || null
 
   useEffect(() => {
     fetch('/api/messages')
@@ -96,7 +100,7 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[var(--background)]/80 backdrop-blur-sm py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-[var(--foreground)] mb-8">Messages</h1>
 
@@ -111,11 +115,7 @@ export default function MessagesPage() {
                     </div>
                   ) : (
                     conversations.map((conv) => {
-                      const otherUser = conv.sender.id === conv.recipient.id
-                        ? conv.recipient
-                        : conv.sender.id !== conv.recipient.id
-                        ? (conv.sender.id === conv.recipient.id ? conv.recipient : conv.sender)
-                        : conv.recipient
+                      const otherUser = conv.sender.id === currentUserId ? conv.recipient : conv.sender
 
                       return (
                         <button
@@ -125,8 +125,22 @@ export default function MessagesPage() {
                             selectedUserId === otherUser.id ? 'bg-[var(--background-elevated)]' : ''
                           }`}
                         >
-                          <p className="font-medium">{otherUser.name || 'Anonymous'}</p>
-                          <p className="text-sm text-[var(--foreground-muted)] truncate">{conv.content}</p>
+                          <div className="flex items-center gap-3">
+                            <div className="relative h-10 w-10 rounded-full overflow-hidden bg-[var(--background-tertiary)]">
+                              {otherUser.profileImageUrl ? (
+                                <Image
+                                  src={otherUser.profileImageUrl}
+                                  alt={otherUser.name || 'User'}
+                                  fill
+                                  className="object-cover"
+                                />
+                              ) : null}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{otherUser.name || 'Anonymous'}</p>
+                              <p className="text-sm text-[var(--foreground-muted)] truncate">{conv.content}</p>
+                            </div>
+                          </div>
                         </button>
                       )
                     })
@@ -147,23 +161,35 @@ export default function MessagesPage() {
                         message.sender.id === selectedUserId ? 'justify-start' : 'justify-end'
                       }`}
                     >
-                      <div
-                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                          message.sender.id === selectedUserId
-                            ? 'bg-[var(--background-elevated)] text-[var(--foreground)]'
-                            : 'bg-[var(--primary)] text-white'
-                        }`}
-                      >
-                        <p className="text-sm">{message.content}</p>
-                        <p
-                          className={`text-xs mt-1 ${
+                      <div className={`flex items-end gap-2 ${message.sender.id === selectedUserId ? '' : 'flex-row-reverse'}`}>
+                        <div className="relative h-8 w-8 rounded-full overflow-hidden bg-[var(--background-tertiary)] flex-shrink-0">
+                          {message.sender.profileImageUrl ? (
+                            <Image
+                              src={message.sender.profileImageUrl}
+                              alt={message.sender.name || 'User'}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : null}
+                        </div>
+                        <div
+                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                             message.sender.id === selectedUserId
-                              ? 'text-[var(--foreground-muted)]'
-                              : 'text-white/80'
+                              ? 'bg-[var(--background-elevated)] text-[var(--foreground)]'
+                              : 'bg-[var(--primary)] text-white'
                           }`}
                         >
-                          {format(new Date(message.createdAt), 'HH:mm')}
-                        </p>
+                          <p className="text-sm">{message.content}</p>
+                          <p
+                            className={`text-xs mt-1 ${
+                              message.sender.id === selectedUserId
+                                ? 'text-[var(--foreground-muted)]'
+                                : 'text-white/80'
+                            }`}
+                          >
+                            {format(new Date(message.createdAt), 'HH:mm')}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   ))}

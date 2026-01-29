@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
-import { uploadFile, isStorageConfigured } from '@/lib/storage'
+import { uploadFile } from '@/lib/storage'
+import { ensureImageIsSafe } from '@/lib/moderation'
 
 /**
  * Upload file (images, grocery bills)
@@ -48,9 +49,22 @@ export const POST = withAuth(async (req: NextRequest, user) => {
       )
     }
 
-    const uploadUrl = await uploadFile(file, type)
+    if (['profile', 'cover'].includes(type)) {
+      const moderation = await ensureImageIsSafe(file)
+      if (!moderation.safe) {
+        return NextResponse.json(
+          {
+            error: 'Image failed the safety check. Please choose a different photo.',
+            reasons: moderation.reasons,
+          },
+          { status: 400 }
+        )
+      }
+    }
 
-    return NextResponse.json({ url: uploadUrl })
+    const { publicUrl, signedUrl } = await uploadFile(file, type)
+
+    return NextResponse.json({ url: publicUrl, signedUrl })
   } catch (error) {
     console.error('Error uploading file:', error)
     return NextResponse.json(

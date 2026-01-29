@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { userUpdateSchema } from '@/lib/validations'
 import { prisma } from '@/lib/prisma'
+import { extractKeyFromUrl, getPresignedUrl, buildPublicUrl } from '@/lib/storage'
 
 /**
  * Get current user's profile
@@ -21,6 +22,29 @@ export const GET = withAuth(async (req: NextRequest, user) => {
         },
       },
     })
+
+    // If profile image lives in a private bucket, ensure we return a fresh signed URL
+    // and expose the stable public URL for persistence.
+    if (profile?.profileImageUrl?.includes('storage.railway.app')) {
+      const key = extractKeyFromUrl(profile.profileImageUrl)
+      const publicUrl = key ? buildPublicUrl(key) : null
+
+      if (publicUrl) {
+        ;(profile as any).profileImagePublicUrl = publicUrl
+      }
+
+      if (key && !profile.profileImageUrl.includes('X-Amz-Signature')) {
+        const signed = await getPresignedUrl(key, 60 * 60 * 24 * 6)
+        if (signed) {
+          profile.profileImageUrl = signed
+        }
+      }
+
+      // If URL was previously stored as signed and now expired, fall back to public
+      if (!profile.profileImageUrl && publicUrl) {
+        profile.profileImageUrl = publicUrl
+      }
+    }
 
     return NextResponse.json({ profile })
   } catch (error) {

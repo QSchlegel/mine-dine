@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
 import { reviewCreateSchema } from '@/lib/validations'
 import { prisma } from '@/lib/prisma'
+import { calculateTipAmount, validateStarDistribution } from '@/lib/reviews/tip'
 
 /**
  * Create a review
@@ -50,12 +51,43 @@ export const POST = withAuth(async (req: NextRequest, user) => {
       )
     }
 
+    // Validate star distribution
+    const starValidation = validateStarDistribution(
+      validatedData.hospitalityStars,
+      validatedData.cleanlinessStars,
+      validatedData.tasteStars,
+      validatedData.tipStars
+    )
+
+    if (!starValidation.valid) {
+      return NextResponse.json(
+        { error: starValidation.error },
+        { status: 400 }
+      )
+    }
+
+    // If tip stars > 0, verify payment was made
+    if (validatedData.tipStars > 0 && !validatedData.tipPaymentIntentId) {
+      return NextResponse.json(
+        { error: 'Tip payment is required for additional stars' },
+        { status: 400 }
+      )
+    }
+
+    // Calculate tip amount
+    const tipAmount = calculateTipAmount(booking.totalPrice, validatedData.tipStars)
+
     const review = await prisma.review.create({
       data: {
         bookingId: validatedData.bookingId,
         userId: user.id,
         dinnerId: booking.dinnerId,
-        rating: validatedData.rating,
+        hospitalityStars: validatedData.hospitalityStars,
+        cleanlinessStars: validatedData.cleanlinessStars,
+        tasteStars: validatedData.tasteStars,
+        tipStars: validatedData.tipStars,
+        tipAmount,
+        tipPaymentIntentId: validatedData.tipPaymentIntentId,
         comment: validatedData.comment,
       },
       include: {

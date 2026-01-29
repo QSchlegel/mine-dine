@@ -72,8 +72,10 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
   const [isSigningOut, setIsSigningOut] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(user.image || null)
   
   const isModerator = user.role === 'MODERATOR' || user.role === 'ADMIN'
+  const isAdmin = user.role === 'ADMIN'
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -97,6 +99,22 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
 
     document.addEventListener('keydown', handleEscape)
     return () => document.removeEventListener('keydown', handleEscape)
+  }, [])
+
+  // Fetch signed profile image for display (session image might be unsigned/expired)
+  useEffect(() => {
+    let isMounted = true
+    fetch('/api/profiles')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!isMounted) return
+        const url = data.profile?.profileImageUrl || data.profile?.profileImagePublicUrl
+        if (url) setAvatarUrl(url)
+      })
+      .catch(() => {})
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   const handleSignOut = async () => {
@@ -146,9 +164,9 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
         aria-haspopup="true"
       >
         {/* Avatar */}
-        {user.image ? (
+        {avatarUrl ? (
           <img
-            src={user.image}
+            src={avatarUrl}
             alt={displayName}
             className="h-8 w-8 rounded-full object-cover"
           />
@@ -194,9 +212,9 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
             {/* User Info Header */}
             <div className="p-4 border-b border-[var(--border)] bg-[var(--background-secondary)]">
               <div className="flex items-center gap-3">
-                {user.image ? (
+                {avatarUrl ? (
                   <img
-                    src={user.image}
+                    src={avatarUrl}
                     alt={displayName}
                     className="h-10 w-10 rounded-full object-cover"
                   />
@@ -274,6 +292,32 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
                     </p>
                     <p className="text-xs text-[var(--foreground-secondary)]">
                       Review applications & dinners
+                    </p>
+                  </div>
+                </Link>
+              )}
+
+              {/* Admin Dashboard Link */}
+              {isAdmin && (
+                <Link
+                  href="/dashboard/admin"
+                  className={cn(
+                    'flex items-center gap-3 px-4 py-2.5',
+                    'hover:bg-[var(--background-secondary)]',
+                    'transition-colors duration-150',
+                    'border-t border-[var(--border)] mt-2 pt-2'
+                  )}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <span className="text-[var(--foreground-secondary)]">
+                    <Shield className="h-4 w-4" />
+                  </span>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-[var(--foreground)]">
+                      Admin Dashboard
+                    </p>
+                    <p className="text-xs text-[var(--foreground-secondary)]">
+                      Platform controls & payouts
                     </p>
                   </div>
                 </Link>

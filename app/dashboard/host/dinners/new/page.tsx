@@ -66,6 +66,20 @@ export default function CreateDinnerPage() {
 
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const storedPlan = window.localStorage.getItem('mindine_pending_dinner_plan')
+    if (!storedPlan) return
+    try {
+      const parsedPlan = JSON.parse(storedPlan) as DinnerPlan
+      setAiPlan(parsedPlan)
+      setPlanningMode('manual')
+      window.localStorage.removeItem('mindine_pending_dinner_plan')
+    } catch (error) {
+      console.warn('Failed to load pending dinner plan:', error)
+    }
+  }, [])
+
   // Fetch available tags
   useEffect(() => {
     const fetchTags = async () => {

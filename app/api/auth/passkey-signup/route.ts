@@ -51,9 +51,10 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         )
       }
+      const statusCode = typeof error.status === 'number' ? error.status : 500
       return NextResponse.json(
         { message: error.message || 'Failed to create account' },
-        { status: error.status || 500 }
+        { status: statusCode }
       )
     }
 

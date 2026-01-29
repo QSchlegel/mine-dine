@@ -139,77 +139,84 @@ export default function InteractiveFloatingIcons({
   return (
     <div className={`pointer-events-none ${className}`} aria-hidden="true">
       {/* UtensilsCrossed - top left, medium depth */}
+      {/* Light: pink / Dark: Neon teal with glow */}
       <FloatingIcon
-        icon={<UtensilsCrossed className="w-full h-full" />}
+        icon={<UtensilsCrossed className="w-full h-full drop-shadow-[0_0_8px_currentColor]" />}
         depth={0.6}
         position={{ top: '20%', left: '10%' }}
         size="w-12 h-12"
-        color="text-pink-500/40"
+        color="text-pink-500/40 dark:text-[#4DFFE6]/50"
         delay={0}
         floatAmplitude={12}
       />
 
       {/* ChefHat - bottom right, high depth (more movement) */}
+      {/* Light: pink / Dark: Neon coral */}
       <FloatingIcon
-        icon={<ChefHat className="w-full h-full" />}
+        icon={<ChefHat className="w-full h-full drop-shadow-[0_0_10px_currentColor]" />}
         depth={0.8}
         position={{ bottom: '32%', right: '15%' }}
         size="w-16 h-16"
-        color="text-pink-500/40"
+        color="text-pink-500/40 dark:text-[#FF6B8A]/50"
         delay={1}
         floatAmplitude={15}
       />
 
       {/* Circle - top right, low depth (subtle movement) */}
+      {/* Light: cyan / Dark: Neon teal ring */}
       <FloatingIcon
-        icon={<Circle className="w-full h-full fill-cyan-500/20" />}
+        icon={<Circle className="w-full h-full fill-cyan-500/20 dark:fill-[#4DFFE6]/15 dark:stroke-[#4DFFE6]/30" />}
         depth={0.4}
         position={{ top: '33%', right: '10%' }}
         size="w-10 h-10"
-        color="text-cyan-500/40"
+        color="text-cyan-500/40 dark:text-[#4DFFE6]/40"
         delay={2}
         floatAmplitude={8}
       />
 
       {/* Sparkles - bottom left, medium depth */}
+      {/* Light: purple / Dark: Neon amber */}
       <FloatingIcon
-        icon={<Sparkles className="w-full h-full" />}
+        icon={<Sparkles className="w-full h-full drop-shadow-[0_0_6px_currentColor]" />}
         depth={0.5}
         position={{ bottom: '25%', left: '15%' }}
         size="w-8 h-8"
-        color="text-purple-400/50"
+        color="text-purple-400/50 dark:text-[#FFD666]/50"
         delay={0.5}
         floatAmplitude={10}
       />
 
       {/* Flame - middle right, high depth */}
+      {/* Light: pink / Dark: Neon coral flame */}
       <FloatingIcon
-        icon={<Flame className="w-full h-full" />}
+        icon={<Flame className="w-full h-full drop-shadow-[0_0_10px_currentColor]" />}
         depth={0.7}
         position={{ top: '50%', right: '20%' }}
         size="w-14 h-14"
-        color="text-pink-500/40"
+        color="text-pink-500/40 dark:text-[#FF6B8A]/45"
         delay={1.5}
         floatAmplitude={14}
       />
 
       {/* Additional decorative elements at various depths */}
+      {/* Small circle - top right */}
       <FloatingIcon
-        icon={<Circle className="w-full h-full fill-purple-400/15" />}
+        icon={<Circle className="w-full h-full fill-purple-400/15 dark:fill-[#FFD666]/10 dark:stroke-[#FFD666]/20" />}
         depth={0.3}
         position={{ top: '15%', right: '25%' }}
         size="w-6 h-6"
-        color="text-purple-400/30"
+        color="text-purple-400/30 dark:text-[#FFD666]/30"
         delay={0.8}
         floatAmplitude={6}
       />
 
+      {/* Sparkles - top left area */}
       <FloatingIcon
-        icon={<Sparkles className="w-full h-full" />}
+        icon={<Sparkles className="w-full h-full drop-shadow-[0_0_8px_currentColor]" />}
         depth={0.9}
         position={{ top: '40%', left: '8%' }}
         size="w-10 h-10"
-        color="text-cyan-400/30"
+        color="text-cyan-400/30 dark:text-[#4DFFE6]/40"
         delay={2.2}
         floatAmplitude={16}
       />

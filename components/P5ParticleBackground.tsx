@@ -109,14 +109,16 @@ export default function P5ParticleBackground({
         let touchY = 0
         let isTouching = false
 
-        // Color palette based on theme
+        // Color palette based on theme - Neon MineDine brand for dark mode
         const getColors = () => {
           if (resolvedTheme === 'dark') {
+            // Neon brand colors terminal aesthetic
             return {
-              background: [15, 23, 42],
-              particle: 'rgba(251, 191, 36, 0.4)',
-              connection: 'rgba(251, 146, 60, 0.15)',
-              accent: 'rgba(255, 127, 80, 0.3)',
+              background: [2, 4, 6], // Deep void black
+              particle: 'rgba(77, 255, 230, 0.6)', // Neon teal (brand accent)
+              connection: 'rgba(77, 255, 230, 0.12)', // Subtle teal connections
+              accent: 'rgba(255, 107, 138, 0.4)', // Neon coral (brand primary)
+              secondary: 'rgba(255, 214, 102, 0.3)', // Neon amber (brand secondary)
             }
           } else {
             return {
@@ -124,6 +126,7 @@ export default function P5ParticleBackground({
               particle: 'rgba(245, 158, 11, 0.5)',
               connection: 'rgba(249, 115, 22, 0.2)',
               accent: 'rgba(255, 127, 80, 0.4)',
+              secondary: 'rgba(232, 93, 117, 0.3)',
             }
           }
         }
@@ -301,15 +304,34 @@ export default function P5ParticleBackground({
               if (particle.y < 0) particle.y = p.height
               if (particle.y > p.height) particle.y = 0
 
-              // Draw particle
-              p.fill(colors.particle)
-              p.noStroke()
-              p.circle(particle.x, particle.y, particle.radius * 2)
+              // Draw particle with glow effect in dark mode
+              if (resolvedTheme === 'dark') {
+                // Outer glow - neon teal
+                p.fill('rgba(77, 255, 230, 0.15)')
+                p.noStroke()
+                p.circle(particle.x, particle.y, particle.radius * 6)
+
+                // Middle glow
+                p.fill('rgba(77, 255, 230, 0.3)')
+                p.circle(particle.x, particle.y, particle.radius * 3)
+
+                // Core particle
+                p.fill(colors.particle)
+                p.circle(particle.x, particle.y, particle.radius * 2)
+
+                // Bright center
+                p.fill('rgba(77, 255, 230, 0.9)')
+                p.circle(particle.x, particle.y, particle.radius * 0.8)
+              } else {
+                // Light mode - standard particle
+                p.fill(colors.particle)
+                p.noStroke()
+                p.circle(particle.x, particle.y, particle.radius * 2)
+              }
             }
 
             // Draw connections between nearby particles
-            p.stroke(colors.connection)
-            p.strokeWeight(1)
+            p.strokeWeight(resolvedTheme === 'dark' ? 1.5 : 1)
 
             for (let i = 0; i < particles.length; i++) {
               for (let j = i + 1; j < particles.length; j++) {
@@ -318,12 +340,20 @@ export default function P5ParticleBackground({
                 const distance = p.sqrt(dx * dx + dy * dy)
 
                 if (distance < connectionDistance) {
-                  const opacity = p.map(distance, 0, connectionDistance, 0.3, 0)
-                  const connectionColor = colors.connection.replace(
-                    /0\.\d+/,
-                    opacity.toString()
-                  )
-                  p.stroke(connectionColor)
+                  const opacity = p.map(distance, 0, connectionDistance, resolvedTheme === 'dark' ? 0.4 : 0.3, 0)
+
+                  if (resolvedTheme === 'dark') {
+                    // Neon teal glowing connections
+                    const connectionColor = `rgba(77, 255, 230, ${opacity})`
+                    p.stroke(connectionColor)
+                  } else {
+                    const connectionColor = colors.connection.replace(
+                      /0\.\d+/,
+                      opacity.toString()
+                    )
+                    p.stroke(connectionColor)
+                  }
+
                   p.line(
                     particles[i].x,
                     particles[i].y,

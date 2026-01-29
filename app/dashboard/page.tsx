@@ -121,7 +121,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--background)] py-16">
+      <div className="min-h-screen bg-[var(--background)]/80 backdrop-blur-sm py-16">
         <Container>
           <PageHeaderSkeleton size="lg" />
 
@@ -149,7 +149,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] py-16">
+    <div className="min-h-screen bg-[var(--background)]/80 backdrop-blur-sm py-16">
       <Container>
         <PageHeader
           title={`${getGreeting()}${userName ? `, ${userName.split(' ')[0]}` : ''}`}

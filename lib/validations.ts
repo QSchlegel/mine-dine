@@ -52,12 +52,38 @@ export const bookingCreateSchema = z.object({
 })
 
 /**
- * Review validation schema
+ * Review validation schema (gamified star distribution)
+ *
+ * Guests get 5 base stars to distribute across 3 categories.
+ * Additional stars can be purchased as tips (1% of menu price per star, max 10).
+ * Total stars used must equal: 5 (base) + tipStars
  */
 export const reviewCreateSchema = z.object({
   bookingId: z.string(),
-  rating: z.number().int().min(1).max(5),
+  hospitalityStars: z.number().int().min(0).max(5),
+  cleanlinessStars: z.number().int().min(0).max(5),
+  tasteStars: z.number().int().min(0).max(5),
+  tipStars: z.number().int().min(0).max(10).default(0),
+  tipPaymentIntentId: z.string().optional(),
   comment: z.string().max(1000).optional(),
+}).refine(
+  (data) => {
+    const totalUsed = data.hospitalityStars + data.cleanlinessStars + data.tasteStars
+    const expectedTotal = 5 + data.tipStars
+    return totalUsed === expectedTotal
+  },
+  {
+    message: 'Total stars distributed must equal 5 (base) plus purchased tip stars',
+    path: ['hospitalityStars'],
+  }
+)
+
+/**
+ * Guest review validation schema (host reviewing guest)
+ */
+export const guestReviewCreateSchema = z.object({
+  bookingId: z.string(),
+  sentiment: z.enum(['LIKE', 'DISLIKE']),
 })
 
 /**

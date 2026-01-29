@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Ensure Node.js runtime (not edge) for Prisma binary engine
+export const runtime = 'nodejs'
+
 // Generate a random 6-digit code
 function generateCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString()

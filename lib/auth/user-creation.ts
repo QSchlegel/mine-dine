@@ -22,6 +22,7 @@ export async function createUserWithSession(
   role: UserRole = 'USER'
 ) {
   const normalizedEmail = email.toLowerCase().trim()
+  const firstAdminEmail = process.env.FIRST_ADMIN_EMAIL?.toLowerCase().trim()
 
   // Check if user already exists
   const existingUser = await prisma.user.findUnique({
@@ -34,13 +35,26 @@ export async function createUserWithSession(
     })
   }
 
+  // Auto-elevate the first admin email when no admin exists yet
+  let roleToAssign: UserRole = role
+  if (firstAdminEmail && normalizedEmail === firstAdminEmail) {
+    const existingAdmin = await prisma.user.findFirst({
+      where: { role: 'ADMIN' },
+      select: { id: true },
+    })
+
+    if (!existingAdmin) {
+      roleToAssign = 'ADMIN'
+    }
+  }
+
   // Create user manually with correct role enum
   const user = await prisma.user.create({
     data: {
       email: normalizedEmail,
       name: name || null,
       emailVerified: true,
-      role: role, // Use uppercase enum value
+      role: roleToAssign, // Use uppercase enum value
     },
   })
 

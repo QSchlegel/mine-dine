@@ -10,6 +10,79 @@ const reviewApplicationSchema = z.object({
 })
 
 /**
+ * Get a host application by ID (moderator only)
+ * GET /api/hosts/applications/[id]
+ */
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await requireAuth()
+
+    if (!hasRole(user, 'MODERATOR')) {
+      return NextResponse.json(
+        { error: 'Forbidden' },
+        { status: 403 }
+      )
+    }
+
+    const { id: applicationId } = await params
+
+    const application = await prisma.hostApplication.findUnique({
+      where: { id: applicationId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            bio: true,
+            profileImageUrl: true,
+          },
+        },
+        reviewedBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        onboardedBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    })
+
+    if (!application) {
+      return NextResponse.json(
+        { error: 'Application not found' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json({ application })
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    console.error('Error fetching host application:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch application' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
  * Review a host application (admin or moderator only)
  * PATCH /api/hosts/applications/[id]
  */

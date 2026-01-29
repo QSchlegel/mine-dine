@@ -17,6 +17,8 @@ import {
   LogOut,
   Home,
   Utensils,
+  Sparkles,
+  BookOpen,
 } from 'lucide-react'
 
 interface NavLink {
@@ -29,6 +31,7 @@ interface NavLink {
 const publicNavLinks: NavLink[] = [
   { href: '/dinners', label: 'Browse Dinners', icon: <Utensils className="h-4 w-4" /> },
   { href: '/swipe', label: 'Discover Hosts', icon: <Heart className="h-4 w-4" /> },
+  { href: '/recipes', label: 'Recipes', icon: <BookOpen className="h-4 w-4" /> },
 ]
 
 // Authenticated user navigation links
@@ -36,12 +39,16 @@ const authNavLinks: NavLink[] = [
   { href: '/dashboard', label: 'Dashboard', icon: <Home className="h-4 w-4" /> },
   { href: '/dinners', label: 'Browse Dinners', icon: <Utensils className="h-4 w-4" /> },
   { href: '/dashboard/swipe', label: 'Discover', icon: <Heart className="h-4 w-4" /> },
+  { href: '/recipes', label: 'Recipes', icon: <BookOpen className="h-4 w-4" /> },
+  { href: '/minebot', label: 'MineBot', icon: <Sparkles className="h-4 w-4" /> },
 ]
 
 // Mobile menu links for authenticated users (secondary actions not in bottom nav)
 const mobileAuthLinks: NavLink[] = [
   { href: '/dashboard/messages', label: 'Messages', icon: <MessageSquare className="h-4 w-4" /> },
   { href: '/dashboard/host/apply', label: 'Become a Host', icon: <ChefHat className="h-4 w-4" /> },
+  { href: '/minebot', label: 'MineBot', icon: <Sparkles className="h-4 w-4" /> },
+  { href: '/recipes', label: 'Recipes', icon: <BookOpen className="h-4 w-4" /> },
 ]
 
 export const Navigation: React.FC = () => {
@@ -133,22 +140,8 @@ export const Navigation: React.FC = () => {
                   // Loading skeleton
                   <div className="h-10 w-24 rounded-full bg-[var(--background-secondary)] animate-pulse" />
                 ) : isAuthenticated && user ? (
-                  // Authenticated: Show profile icon and user menu
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="md"
-                      href="/dashboard/profile"
-                      className={cn(
-                        '!px-3',
-                        pathname === '/dashboard/profile' && 'bg-[var(--background-secondary)]'
-                      )}
-                      aria-label="Profile"
-                    >
-                      <User className="h-5 w-5" />
-                    </Button>
-                    <UserMenu user={user} />
-                  </>
+                  // Authenticated: Show user menu only
+                  <UserMenu user={user} />
                 ) : (
                   // Not authenticated: Show login/signup buttons
                   <>

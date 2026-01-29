@@ -40,13 +40,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const resolved = theme === 'system' ? getSystemTheme() : theme
     setResolvedTheme(resolved)
 
-    // Update document class
+    // Update document class - always apply the resolved theme class
+    // This ensures Tailwind's dark: utilities work correctly
     const root = document.documentElement
     root.classList.remove('light', 'dark')
-
-    if (theme !== 'system') {
-      root.classList.add(theme)
-    }
+    root.classList.add(resolved)
   }, [theme, mounted])
 
   // Listen for system theme changes

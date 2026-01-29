@@ -76,11 +76,21 @@ const config: Config = {
           600: "#DC2626",
         },
 
-        // Dark mode backgrounds - warmer tones
-        void: "#0A0908",
-        space: "#0F0D0C",
-        nebula: "#1A1716",
-        cosmic: "#242120",
+        // Dark mode backgrounds - Matrix/Tron terminal void
+        void: "#020406",
+        space: "#040810",
+        nebula: "#081018",
+        cosmic: "#0C1620",
+
+        // Neon versions of MineDine brand colors
+        neon: {
+          coral: "#FF6B8A",
+          "coral-bright": "#FF8FA8",
+          teal: "#4DFFE6",
+          "teal-bright": "#80FFF0",
+          amber: "#FFD666",
+          "amber-bright": "#FFE599",
+        },
 
         // Light mode backgrounds - warm cream
         surface: {
@@ -105,6 +115,11 @@ const config: Config = {
         "slide-down": "slide-down 0.3s ease-out",
         "scale-in": "scale-in 0.2s ease-out",
         "spin-slow": "spin 3s linear infinite",
+        // Matrix/Tron animations
+        "terminal-blink": "terminal-blink 1s step-end infinite",
+        "cyber-pulse": "cyber-pulse 2s ease-in-out infinite",
+        "neon-flicker": "neon-flicker 3s linear infinite",
+        "scan-line": "scan-line 8s linear infinite",
       },
 
       keyframes: {
@@ -136,6 +151,23 @@ const config: Config = {
           "0%": { opacity: "0", transform: "scale(0.95)" },
           "100%": { opacity: "1", transform: "scale(1)" },
         },
+        // Matrix/Tron keyframes
+        "terminal-blink": {
+          "0%, 50%": { opacity: "1" },
+          "51%, 100%": { opacity: "0" },
+        },
+        "cyber-pulse": {
+          "0%, 100%": { opacity: "0.8", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.02)" },
+        },
+        "neon-flicker": {
+          "0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100%": { opacity: "1" },
+          "20%, 21.999%, 63%, 63.999%, 65%, 69.999%": { opacity: "0.8" },
+        },
+        "scan-line": {
+          "0%": { transform: "translateY(-100%)" },
+          "100%": { transform: "translateY(100vh)" },
+        },
       },
 
       boxShadow: {
@@ -151,6 +183,13 @@ const config: Config = {
         "elevated-dark": "0 4px 20px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.4)",
         "refined": "0 2px 10px rgba(26, 22, 20, 0.05), 0 1px 4px rgba(26, 22, 20, 0.04)",
         "refined-lg": "0 12px 36px rgba(26, 22, 20, 0.08), 0 4px 14px rgba(26, 22, 20, 0.06)",
+        // Neon glows - MineDine brand colors
+        "neon-teal": "0 0 10px rgba(77, 255, 230, 0.4), 0 0 20px rgba(77, 255, 230, 0.2), 0 0 40px rgba(77, 255, 230, 0.1)",
+        "neon-teal-lg": "0 0 20px rgba(77, 255, 230, 0.5), 0 0 40px rgba(77, 255, 230, 0.3), 0 0 80px rgba(77, 255, 230, 0.15)",
+        "neon-coral": "0 0 10px rgba(255, 107, 138, 0.4), 0 0 20px rgba(255, 107, 138, 0.2), 0 0 40px rgba(255, 107, 138, 0.1)",
+        "neon-coral-lg": "0 0 20px rgba(255, 107, 138, 0.5), 0 0 40px rgba(255, 107, 138, 0.3), 0 0 80px rgba(255, 107, 138, 0.15)",
+        "neon-amber": "0 0 10px rgba(255, 214, 102, 0.4), 0 0 20px rgba(255, 214, 102, 0.2), 0 0 40px rgba(255, 214, 102, 0.1)",
+        "neon-amber-lg": "0 0 20px rgba(255, 214, 102, 0.5), 0 0 40px rgba(255, 214, 102, 0.3), 0 0 80px rgba(255, 214, 102, 0.15)",
       },
 
       backdropBlur: {

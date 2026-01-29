@@ -9,6 +9,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { format } from 'date-fns'
 import { MapPin, Calendar, Users, Utensils, Search, Sparkles, ChefHat } from 'lucide-react'
+import { useSession } from '@/lib/auth-client'
 
 interface Dinner {
   id: string
@@ -55,6 +56,62 @@ function SkeletonCard() {
 }
 
 function EmptyState() {
+  const { data: session, isPending } = useSession()
+  const [userRole, setUserRole] = useState<string | null>(null)
+  const [loadingRole, setLoadingRole] = useState(true)
+
+  // Fetch user role if authenticated (session might not include role)
+  useEffect(() => {
+    if (isPending) {
+      setLoadingRole(true)
+      return
+    }
+
+    if (!session?.user) {
+      setUserRole(null)
+      setLoadingRole(false)
+      return
+    }
+
+    // Try to get role from session first
+    const roleFromSession = (session.user as any)?.role
+    if (roleFromSession) {
+      setUserRole(roleFromSession)
+      setLoadingRole(false)
+      return
+    }
+
+    // If role not in session, fetch user profile
+    fetch('/api/profiles')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.profile?.role) {
+          setUserRole(data.profile.role)
+        }
+        setLoadingRole(false)
+      })
+      .catch(() => {
+        setLoadingRole(false)
+      })
+  }, [session, isPending])
+
+  const isAuthenticated = !!session?.user
+  const isHost = userRole === 'HOST' || userRole === 'ADMIN'
+
+  // Determine button href and text based on user state
+  let buttonHref = '/signup'
+  let buttonText = 'Sign up to host'
+
+  if (isAuthenticated) {
+    if (isHost) {
+      buttonHref = '/dashboard/host/dinners/new'
+      buttonText = 'Create the first dinner'
+    } else {
+      buttonHref = '/dashboard/host/apply'
+      buttonText = 'Apply to become a host'
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -69,19 +126,20 @@ function EmptyState() {
             <Utensils className="w-10 h-10 text-[var(--primary)]" />
           </div>
           <h3 className="text-xl font-semibold text-[var(--foreground)] mb-2">
-            No dinners available yet
+            Be the first to host a dinner in your area
           </h3>
           <p className="text-[var(--foreground-secondary)] max-w-md mx-auto mb-6">
-            Check back soon for unique dining experiences hosted by amazing chefs in your area.
+            Create a unique dining experience and share your culinary passion with guests. Start hosting today!
           </p>
           <Button
-            href="/dashboard/host/apply"
+            href={buttonHref}
             variant="primary"
             size="lg"
             leftIcon={<ChefHat className="w-5 h-5" />}
             className="mt-4"
+            disabled={loadingRole || isPending}
           >
-            Host the first event
+            {buttonText}
           </Button>
         </div>
       </div>
@@ -130,7 +188,7 @@ export default function BrowseDinnersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] py-16 px-6 sm:px-8 lg:px-12">
+    <div className="min-h-screen bg-[var(--background)]/80 backdrop-blur-sm py-16 px-6 sm:px-8 lg:px-12">
       {/* Decorative background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-1/2 -right-1/4 w-[800px] h-[800px] rounded-full bg-gradient-to-br from-pink-500/5 to-transparent blur-3xl" />
