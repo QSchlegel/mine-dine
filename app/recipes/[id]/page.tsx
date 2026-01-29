@@ -7,13 +7,14 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
 import { Avatar } from '@/components/ui/Avatar'
-import { Heart, MessageCircle } from 'lucide-react'
+import { Heart, MessageCircle, Eye, Flame, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface RecipeDetail {
   id: string
   title: string
   description: string | null
+  imageUrl: string | null
   servings: number | null
   prepTime: string | null
   cookTime: string | null
@@ -26,6 +27,9 @@ interface RecipeDetail {
     name: string | null
     profileImageUrl: string | null
   }
+  viewCount?: number
+  useCount?: number
+  experience?: number
   comments: Array<{
     id: string
     content: string
@@ -51,6 +55,7 @@ export default function RecipeDetailPage() {
   const [loading, setLoading] = useState(true)
   const [comment, setComment] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isRecordingView, setIsRecordingView] = useState(false)
 
   useEffect(() => {
     if (!recipeId) return
@@ -65,6 +70,16 @@ export default function RecipeDetailPage() {
         console.error('Failed to load recipe:', error)
         setLoading(false)
       })
+  }, [recipeId])
+
+  useEffect(() => {
+    if (!recipeId) return
+    setIsRecordingView(true)
+    fetch(`/api/recipes/${recipeId}/stats`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'view' }),
+    }).finally(() => setIsRecordingView(false))
   }, [recipeId])
 
   const toggleLike = async () => {
@@ -127,6 +142,24 @@ export default function RecipeDetailPage() {
     }
   }
 
+  const recordUse = async () => {
+    if (!recipeId || isRecordingView) return
+    await fetch(`/api/recipes/${recipeId}/stats`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'use' }),
+    })
+    setRecipe((prev) =>
+      prev
+        ? {
+            ...prev,
+            useCount: (prev.useCount || 0) + 1,
+            experience: (prev.experience || 0) + 2,
+          }
+        : prev
+    )
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
@@ -168,6 +201,15 @@ export default function RecipeDetailPage() {
               </div>
             </div>
 
+            {recipe.imageUrl && (
+              <div className="rounded-xl overflow-hidden border border-[var(--border)] aspect-video max-w-2xl mb-4">
+                <img
+                  src={recipe.imageUrl}
+                  alt={recipe.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
             <div>
               <h1 className="text-3xl font-bold text-[var(--foreground)]">{recipe.title}</h1>
               {recipe.description && (
@@ -210,6 +252,21 @@ export default function RecipeDetailPage() {
                 <MessageCircle className="w-4 h-4" />
                 {recipe._count.comments} comments
               </div>
+              <div className="flex items-center gap-1">
+                <Eye className="w-4 h-4" />
+                {recipe.viewCount ?? 0}
+              </div>
+              <div className="flex items-center gap-1">
+                <Flame className="w-4 h-4" />
+                {recipe.useCount ?? 0}
+              </div>
+              <div className="flex items-center gap-1">
+                <Sparkles className="w-4 h-4" />
+                {recipe.experience ?? 0} XP
+              </div>
+              <Button size="sm" variant="outline" onClick={recordUse}>
+                Mark used in dinner
+              </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

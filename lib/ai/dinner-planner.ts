@@ -1,6 +1,6 @@
 // Dinner planning agent logic
 
-import { generateJSON } from './openai'
+import { generateJSON } from './llm'
 
 export interface DinnerPlanningParams {
   cuisine?: string

@@ -20,6 +20,23 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'storage.railway.app',
       },
+      // IPFS (Pinata and public gateways)
+      {
+        protocol: 'https',
+        hostname: 'gateway.pinata.cloud',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.pinata.cloud',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ipfs.io',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.ipfs.dweb.link',
+      },
     ],
   },
   // Turbopack configuration

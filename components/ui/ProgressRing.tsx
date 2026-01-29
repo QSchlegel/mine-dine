@@ -125,11 +125,14 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
 
 // Linear progress bar variant
 export interface ProgressBarProps {
-  value: number
+  /** Progress value 0–100. Ignored when indeterminate is true. */
+  value?: number
   variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger'
   size?: 'sm' | 'md' | 'lg'
   showValue?: boolean
   animate?: boolean
+  /** When true, shows an animated indeterminate loading bar (no percentage). */
+  indeterminate?: boolean
   className?: string
 }
 
@@ -140,19 +143,29 @@ const barSizes = {
 }
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
-  value,
+  value = 0,
   variant = 'primary',
   size = 'md',
   showValue = false,
   animate = true,
+  indeterminate = false,
   className,
 }) => {
   const colors = variantColors[variant]
   const clampedValue = Math.min(100, Math.max(0, value))
 
+  const barColorClass = cn(
+    'h-full rounded-full',
+    variant === 'primary' && 'bg-coral-500 dark:bg-coral-400',
+    variant === 'secondary' && 'bg-accent-500 dark:bg-accent-400',
+    variant === 'success' && 'bg-success-500 dark:bg-success-400',
+    variant === 'warning' && 'bg-amber-500 dark:bg-amber-400',
+    variant === 'danger' && 'bg-danger-500 dark:bg-danger-400'
+  )
+
   return (
     <div className={cn('w-full', className)}>
-      {showValue && (
+      {showValue && !indeterminate && (
         <div className="flex justify-between mb-1">
           <span className={cn('text-xs font-medium', colors.text)}>
             Progress
@@ -167,19 +180,28 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         barSizes[size],
         'bg-[var(--background-secondary)]'
       )}>
-        <motion.div
-          className={cn(
-            'h-full rounded-full',
-            variant === 'primary' && 'bg-coral-500 dark:bg-coral-400',
-            variant === 'secondary' && 'bg-accent-500 dark:bg-accent-400',
-            variant === 'success' && 'bg-success-500 dark:bg-success-400',
-            variant === 'warning' && 'bg-amber-500 dark:bg-amber-400',
-            variant === 'danger' && 'bg-danger-500 dark:bg-danger-400'
-          )}
-          initial={animate ? { width: 0 } : { width: `${clampedValue}%` }}
-          animate={{ width: `${clampedValue}%` }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-        />
+        {indeterminate ? (
+          <div className="relative h-full w-full">
+            <motion.div
+              className={cn(barColorClass, 'absolute inset-y-0')}
+              style={{ width: '40%' }}
+              animate={{ left: ['-40%', '100%'] }}
+              transition={{
+                repeat: Infinity,
+                repeatType: 'loop',
+                duration: 1.4,
+                ease: 'easeInOut',
+              }}
+            />
+          </div>
+        ) : (
+          <motion.div
+            className={barColorClass}
+            initial={animate ? { width: 0 } : { width: `${clampedValue}%` }}
+            animate={{ width: `${clampedValue}%` }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+          />
+        )}
       </div>
     </div>
   )

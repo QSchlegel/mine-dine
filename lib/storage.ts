@@ -1,9 +1,15 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import {
+  isIpfsConfigured,
+  isIpfsUrl,
+  uploadBufferToIPFS,
+  uploadFileToIPFS,
+} from '@/lib/ipfs'
 
 /**
  * Storage utility for file uploads
- * Supports both AWS S3 and Railway's native S3-compatible storage
+ * Supports IPFS (Pinata) when PINATA_JWT is set, otherwise AWS S3 / Railway
  */
 
 interface StorageConfig {
@@ -68,39 +74,45 @@ function getS3Client(): S3Client | null {
 }
 
 /**
- * Upload a file to S3 storage
+ * Upload a file to storage (IPFS when configured, otherwise S3/Railway).
  * @param file - File to upload
  * @param type - File type category (profile, cover, dinner, grocery-bill)
  * @returns Object with persistent publicUrl and optional signedUrl for immediate use
  */
 export async function uploadFile(file: File, type: string): Promise<{ publicUrl: string; signedUrl?: string }> {
+  if (isIpfsConfigured()) {
+    try {
+      const { publicUrl } = await uploadFileToIPFS(file, type)
+      return { publicUrl }
+    } catch (error) {
+      console.error('Error uploading file to IPFS:', error)
+      throw new Error('Failed to upload file')
+    }
+  }
+
   const client = getS3Client()
   const config = getStorageConfig()
 
   if (!client || !config) {
-    // Fallback: return placeholder if storage not configured
     console.warn('Storage not configured, returning placeholder URL')
     const url = `https://placeholder.com/${type}/${file.name}`
     return { publicUrl: url, signedUrl: url }
   }
 
-  // Generate unique filename
   const timestamp = Date.now()
   const randomString = Math.random().toString(36).substring(2, 15)
   const extension = file.name.split('.').pop() || 'bin'
   const filename = `${type}/${timestamp}-${randomString}.${extension}`
 
-  // Convert File to Buffer
   const arrayBuffer = await file.arrayBuffer()
   const buffer = Buffer.from(arrayBuffer)
 
-  // Upload to S3
   const commandConfig: any = {
     Bucket: config.bucketName,
     Key: filename,
     Body: buffer,
     ContentType: file.type || 'application/octet-stream',
-    ACL: 'public-read', // prefer public if backend supports it
+    ACL: 'public-read',
   }
 
   const command = new PutObjectCommand(commandConfig)
@@ -115,9 +127,8 @@ export async function uploadFile(file: File, type: string): Promise<{ publicUrl:
 
     let signedUrl: string | undefined
 
-    // If bucket is private (common on Railway), also return a short-ish signed URL for immediate use
     if (config.endpoint && config.endpoint.includes('storage.railway.app')) {
-      const signed = await getPresignedUrl(filename, 60 * 60 * 24 * 6) // 6 days
+      const signed = await getPresignedUrl(filename, 60 * 60 * 24 * 6)
       if (signed) signedUrl = signed
       else console.warn('Presign failed for Railway bucket, falling back to unsigned URL')
     }
@@ -162,35 +173,91 @@ export async function getPresignedUrl(
 }
 
 /**
- * Check if storage is configured
+ * Upload a buffer to storage (IPFS when configured, otherwise S3/Railway).
+ * @param buffer - Raw file buffer
+ * @param type - File type category (e.g. dinner, profile)
+ * @param contentType - MIME type (e.g. image/png)
+ * @param extension - File extension for the key (e.g. png)
+ * @returns Object with persistent publicUrl and optional signedUrl
+ */
+export async function uploadBuffer(
+  buffer: Buffer,
+  type: string,
+  contentType: string,
+  extension: string
+): Promise<{ publicUrl: string; signedUrl?: string }> {
+  if (isIpfsConfigured()) {
+    try {
+      const { publicUrl } = await uploadBufferToIPFS(buffer, type, contentType, extension)
+      return { publicUrl }
+    } catch (error) {
+      console.error('Error uploading buffer to IPFS:', error)
+      throw new Error('Failed to upload file')
+    }
+  }
+
+  const client = getS3Client()
+  const config = getStorageConfig()
+
+  if (!client || !config) {
+    throw new Error('Storage not configured. Set PINATA_JWT for IPFS or AWS_S3_* / Railway bucket env vars.')
+  }
+
+  const timestamp = Date.now()
+  const randomString = Math.random().toString(36).substring(2, 15)
+  const filename = `${type}/${timestamp}-${randomString}.${extension}`
+
+  const command = new PutObjectCommand({
+    Bucket: config.bucketName,
+    Key: filename,
+    Body: buffer,
+    ContentType: contentType,
+    ACL: 'public-read',
+  })
+
+  await client.send(command)
+
+  const publicUrl = buildPublicUrl(filename)
+  if (!publicUrl) throw new Error('Failed to build public URL')
+
+  let signedUrl: string | undefined
+  if (config.endpoint?.includes('storage.railway.app')) {
+    const signed = await getPresignedUrl(filename, 60 * 60 * 24 * 6)
+    if (signed) signedUrl = signed
+  }
+
+  return { publicUrl, signedUrl }
+}
+
+/**
+ * Check if storage is configured (IPFS or S3/Railway).
  */
 export function isStorageConfigured(): boolean {
-  return getStorageConfig() !== null
+  return isIpfsConfigured() || getStorageConfig() !== null
 }
 
 /**
  * Extract object key from a public URL generated by this helper.
  * Used to re-sign objects for read access when buckets are private.
+ * IPFS URLs have no key (they are already public).
  */
 export function extractKeyFromUrl(url: string): string | null {
+  if (isIpfsUrl(url)) return null
+
   try {
     const parsed = new URL(url)
     const config = getStorageConfig()
     const bucket = config?.bucketName
 
-    // Virtual-hosted Railway style: https://bucket.storage.railway.app/key
     if (parsed.hostname.includes('storage.railway.app') && bucket && parsed.hostname.startsWith(bucket + '.')) {
       return parsed.pathname.replace(/^\//, '')
     }
 
-    // Path-style: https://storage.railway.app/bucket/key OR https://endpoint/bucket/key
     const segments = parsed.pathname.split('/').filter(Boolean)
     if (segments.length >= 2) {
-      // If first segment is the bucket name, drop it
       if (bucket && segments[0] === bucket) {
         return segments.slice(1).join('/')
       }
-      // Otherwise assume the first segment is already part of the key
       return segments.join('/')
     }
 
@@ -230,13 +297,15 @@ export function normalizeToPublicUrl(url: string): string | null {
 
 /**
  * Get a signed URL for display if the object lives in a private bucket; otherwise return the original URL.
+ * IPFS URLs are returned as-is (already public).
  */
 export async function getDisplayImageUrl(url: string | null | undefined): Promise<string | null> {
   if (!url) return null
+  if (isIpfsUrl(url)) return url
+
   const key = extractKeyFromUrl(url)
   if (!key) return url
 
-  // Try signed URL first (6 days), fall back to public URL
   const signed = await getPresignedUrl(key, 60 * 60 * 24 * 6)
   if (signed) return signed
 

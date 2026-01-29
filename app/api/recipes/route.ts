@@ -44,6 +44,11 @@ export async function GET() {
       return {
         ...rest,
         likedByCurrentUser: userId ? likes?.length > 0 : false,
+        stats: {
+          views: recipe.viewCount,
+          uses: recipe.useCount,
+          experience: recipe.experience,
+        },
       }
     })
 
@@ -75,11 +80,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const imageUrl =
+      typeof body?.imageUrl === 'string' && body.imageUrl.trim() ? body.imageUrl.trim() : null
+
     const recipe = await prisma.recipe.create({
       data: {
         authorId: session.user.id,
         title,
         description: body?.description?.trim() || null,
+        imageUrl: imageUrl || undefined,
         servings: Number.isFinite(Number(body?.servings)) ? Number(body.servings) : null,
         prepTime: body?.prepTime || null,
         cookTime: body?.cookTime || null,
@@ -87,6 +96,9 @@ export async function POST(request: NextRequest) {
         steps,
         tags: Array.isArray(body?.tags) ? body.tags : [],
         isPublic: body?.isPublic !== false,
+        viewCount: 0,
+        useCount: 0,
+        experience: 0,
       },
     })
 

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Utensils, Calendar, MessageSquare, User, Heart, ChefHat } from 'lucide-react'
 import type { ProfileCompletionResult } from '@/lib/profile'
 import ProfileCompletionWizard from '@/components/profile/ProfileCompletionWizard'
+import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
 
 // Import reusable UI components
 import {
@@ -33,6 +34,7 @@ export default function DashboardPage() {
     bookings: 0,
     upcomingBookings: 0,
   })
+  const [profile, setProfile] = useState<any>(null)
   const [profileCompletion, setProfileCompletion] = useState<ProfileCompletionResult | null>(null)
   const [showCompletionBanner, setShowCompletionBanner] = useState(true)
   const [showWizard, setShowWizard] = useState(false)
@@ -67,8 +69,11 @@ export default function DashboardPage() {
         }
 
         // Set user name for personalization
-        if (profileData.profile?.name) {
-          setUserName(profileData.profile.name)
+        if (profileData.profile) {
+          setProfile(profileData.profile)
+          if (profileData.profile.name) {
+            setUserName(profileData.profile.name)
+          }
         }
 
         setLoading(false)
@@ -109,6 +114,14 @@ export default function DashboardPage() {
     // Refresh dashboard data
     fetchDashboardData()
     setShowWizard(false)
+  }
+
+  const handleStartTour = () => {
+    router.push('/dashboard/swipe?tour=guest')
+  }
+
+  const handleBookDinner = () => {
+    router.push('/dinners')
   }
 
   // Get greeting based on time of day
@@ -154,6 +167,16 @@ export default function DashboardPage() {
         <PageHeader
           title={`${getGreeting()}${userName ? `, ${userName.split(' ')[0]}` : ''}`}
           subtitle="Here's what's happening with your dining experiences."
+        />
+
+        <OnboardingChecklist
+          completion={profileCompletion}
+          bookingsCount={stats.bookings}
+          hasCompletedGuestTour={profile?.hasCompletedGuestTour}
+          onOpenWizard={handleOpenWizard}
+          onStartTour={handleStartTour}
+          onBookDinner={handleBookDinner}
+          className="mb-8"
         />
 
         {/* Profile Completion Banner */}

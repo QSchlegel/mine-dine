@@ -15,6 +15,24 @@ interface PlanningStepsProps {
   isLoading?: boolean
 }
 
+const presets: Array<{ label: string; description: string; params: Partial<DinnerPlanningParams> }> = [
+  {
+    label: 'Italian Date Night',
+    description: '4 guests • pasta-forward • cozy',
+    params: { cuisine: 'Italian', guestCount: 4, theme: 'Cozy date night', skillLevel: 'intermediate', budgetRange: { min: 45, max: 70 } },
+  },
+  {
+    label: 'Vibrant Vegan Brunch',
+    description: '8 guests • plant-based • colorful plates',
+    params: { cuisine: 'Vegan', guestCount: 8, occasion: 'Sunday brunch', budgetRange: { min: 30, max: 55 }, skillLevel: 'beginner' },
+  },
+  {
+    label: 'Tapas & Natural Wine',
+    description: '12 guests • share plates • relaxed',
+    params: { cuisine: 'Spanish Tapas', guestCount: 12, theme: 'Natural wine & small plates', budgetRange: { min: 50, max: 80 } },
+  },
+]
+
 export default function PlanningSteps({
   onComplete,
   onCancel,
@@ -33,6 +51,11 @@ export default function PlanningSteps({
     value: DinnerPlanningParams[K]
   ) => {
     setParams((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const applyPreset = (presetParams: Partial<DinnerPlanningParams>) => {
+    setParams((prev) => ({ ...prev, ...presetParams }))
+    setCurrentStep(5)
   }
 
   const handleNext = () => {
@@ -130,6 +153,26 @@ export default function PlanningSteps({
                       onChange={(e) => updateParam('theme', e.target.value)}
                       placeholder="e.g., Rustic, Modern, Traditional, Fusion"
                     />
+                  </div>
+
+                  {/* Quick presets */}
+                  <div className="pt-2">
+                    <p className="text-xs font-semibold text-foreground mb-2 uppercase tracking-wide">
+                      Quick starts
+                    </p>
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      {presets.map((preset) => (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          onClick={() => applyPreset(preset.params)}
+                          className="text-left rounded-lg border border-border hover:border-primary-300 hover:shadow-sm transition-all p-3 bg-background-secondary"
+                        >
+                          <p className="text-sm font-semibold text-foreground">{preset.label}</p>
+                          <p className="text-xs text-foreground-muted">{preset.description}</p>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </>
               )}

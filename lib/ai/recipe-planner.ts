@@ -1,4 +1,4 @@
-import { generateJSON } from './openai'
+import { generateJSON } from './llm'
 
 export interface RecipePlanningParams {
   prompt: string

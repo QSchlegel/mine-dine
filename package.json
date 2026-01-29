@@ -13,6 +13,7 @@
     "lint": "next lint",
     "postinstall": "prisma generate",
     "db:seed": "npx tsx prisma/seed.ts",
+    "generate:recipes": "tsx scripts/generate-classic-recipes.ts",
     "db:reset": "npx prisma migrate reset --force",
     "db:studio": "npx prisma studio",
     "prepare": "husky"
@@ -28,6 +29,8 @@
     "@aws-sdk/client-s3": "^3.975.0",
     "@aws-sdk/s3-request-presigner": "^3.975.0",
     "@better-auth/passkey": "^1.4.17",
+    "@fal-ai/client": "^1.8.4",
+    "@google/genai": "^1.38.0",
     "@prisma/client": "^6.19.0",
     "@stripe/react-stripe-js": "^5.4.1",
     "@stripe/stripe-js": "^8.6.4",

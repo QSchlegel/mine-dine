@@ -17,7 +17,7 @@ export default function NameStep({ name, onChange, isValid }: NameStepProps) {
       variants={fadeInUp}
       initial="initial"
       animate="animate"
-      className="space-y-4"
+      className="space-y-3 sm:space-y-4"
     >
       <Input
         label="Name"
@@ -34,14 +34,14 @@ export default function NameStep({ name, onChange, isValid }: NameStepProps) {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 text-sm text-green-600"
+          className="flex items-center gap-2 text-sm text-green-500"
         >
           <Check className="h-4 w-4" />
           <span>Name looks good!</span>
         </motion.div>
       )}
 
-      <p className="text-xs text-gray-500 mt-4">
+      <p className="text-xs text-[var(--foreground-muted)] mt-3 sm:mt-4">
         This helps hosts personalize your experience and make you feel welcome.
       </p>
     </motion.div>

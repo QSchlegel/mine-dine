@@ -216,8 +216,51 @@ export default function SignupPage() {
     }
   }
 
+  // Get current step number for progress indicator
+  const getStepNumber = (): number => {
+    if (step === 'email') return 1
+    return 2
+  }
+
+  const isLoadingStep = step === 'creating-account' || step === 'registering-passkey'
+
   return (
     <AuthLayout title="Create your account" subtitle="Join Mine Dine and discover amazing dining experiences">
+      {/* Mobile Progress Indicator */}
+      {!isLoadingStep && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mb-6"
+        >
+          {/* Step dots with connecting line */}
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <motion.div
+              animate={{
+                backgroundColor: getStepNumber() >= 1 ? 'rgb(232, 93, 117)' : 'rgb(229, 231, 235)',
+              }}
+              className="h-2.5 w-2.5 rounded-full"
+            />
+            <div className="h-0.5 w-8 bg-[var(--border)]">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: getStepNumber() >= 2 ? '100%' : '0%' }}
+                className="h-full bg-coral-500"
+              />
+            </div>
+            <motion.div
+              animate={{
+                backgroundColor: getStepNumber() >= 2 ? 'rgb(232, 93, 117)' : 'rgb(229, 231, 235)',
+              }}
+              className="h-2.5 w-2.5 rounded-full"
+            />
+          </div>
+          <p className="text-xs text-center text-[var(--foreground-muted)]">
+            Step {getStepNumber()} of 2
+          </p>
+        </motion.div>
+      )}
+
       <AnimatePresence mode="wait">
         {error && (
           <motion.div
@@ -310,25 +353,24 @@ export default function SignupPage() {
                 type="button"
                 onClick={handlePasskeySignup}
                 disabled={isLoading}
-                className="w-full p-4 rounded-xl border-2 border-coral-500 bg-coral-500/5 hover:bg-coral-500/10 transition-all text-left group relative overflow-hidden"
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
+                className="w-full p-4 sm:p-4 rounded-xl border-2 border-coral-500 bg-coral-500/5 hover:bg-coral-500/10 active:bg-coral-500/15 transition-all text-left group relative overflow-hidden touch-manipulation"
+                whileTap={{ scale: 0.98 }}
               >
                 <div className="absolute top-2 right-2">
                   <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-coral-500 text-white rounded-full">
                     Recommended
                   </span>
                 </div>
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl bg-coral-500/20 text-coral-500">
-                    <Fingerprint className="h-6 w-6" />
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="p-2.5 sm:p-3 rounded-xl bg-coral-500/20 text-coral-500 shrink-0">
+                    <Fingerprint className="h-5 w-5 sm:h-6 sm:w-6" />
                   </div>
-                  <div className="flex-1 pt-1">
-                    <h3 className="font-semibold text-[var(--foreground)] mb-1">
+                  <div className="flex-1 min-w-0 pt-0.5 sm:pt-1">
+                    <h3 className="font-semibold text-[var(--foreground)] mb-0.5 sm:mb-1 text-sm sm:text-base">
                       Set up Passkey
                     </h3>
-                    <p className="text-sm text-[var(--foreground-secondary)]">
-                      Use Face ID, Touch ID, or fingerprint for instant, secure sign-in
+                    <p className="text-xs sm:text-sm text-[var(--foreground-secondary)] leading-relaxed">
+                      Use Face ID, Touch ID, or fingerprint for instant sign-in
                     </p>
                   </div>
                 </div>
@@ -339,20 +381,19 @@ export default function SignupPage() {
                 type="button"
                 onClick={handleMagicLinkRequest}
                 disabled={isLoading}
-                className="w-full p-4 rounded-xl border border-[var(--border)] hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all text-left"
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
+                className="w-full p-4 sm:p-4 rounded-xl border border-[var(--border)] hover:border-cyan-500/50 hover:bg-cyan-500/5 active:bg-cyan-500/10 transition-all text-left touch-manipulation"
+                whileTap={{ scale: 0.98 }}
               >
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl bg-cyan-500/10 text-cyan-500">
-                    <Sparkles className="h-6 w-6" />
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="p-2.5 sm:p-3 rounded-xl bg-cyan-500/10 text-cyan-500 shrink-0">
+                    <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-[var(--foreground)] mb-1">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-[var(--foreground)] mb-0.5 sm:mb-1 text-sm sm:text-base">
                       Email me a sign-in link
                     </h3>
-                    <p className="text-sm text-[var(--foreground-secondary)]">
-                      We&apos;ll send a magic link to your email - no password needed
+                    <p className="text-xs sm:text-sm text-[var(--foreground-secondary)] leading-relaxed">
+                      We&apos;ll send a magic link to your email
                     </p>
                   </div>
                 </div>
@@ -363,19 +404,18 @@ export default function SignupPage() {
                 type="button"
                 onClick={() => setStep('password')}
                 disabled={isLoading}
-                className="w-full p-4 rounded-xl border border-[var(--border)] hover:border-[var(--foreground-secondary)]/30 hover:bg-[var(--background-secondary)] transition-all text-left"
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
+                className="w-full p-4 sm:p-4 rounded-xl border border-[var(--border)] hover:border-[var(--foreground-secondary)]/30 hover:bg-[var(--background-secondary)] active:bg-[var(--background-tertiary)] transition-all text-left touch-manipulation"
+                whileTap={{ scale: 0.98 }}
               >
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl bg-[var(--background-secondary)] text-[var(--foreground-secondary)]">
-                    <Lock className="h-6 w-6" />
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="p-2.5 sm:p-3 rounded-xl bg-[var(--background-secondary)] text-[var(--foreground-secondary)] shrink-0">
+                    <Lock className="h-5 w-5 sm:h-6 sm:w-6" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-[var(--foreground)] mb-1">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-[var(--foreground)] mb-0.5 sm:mb-1 text-sm sm:text-base">
                       Create a password
                     </h3>
-                    <p className="text-sm text-[var(--foreground-secondary)]">
+                    <p className="text-xs sm:text-sm text-[var(--foreground-secondary)] leading-relaxed">
                       Traditional sign-in with email and password
                     </p>
                   </div>

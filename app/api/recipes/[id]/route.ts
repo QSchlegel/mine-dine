@@ -57,6 +57,9 @@ export async function GET(
         recipe: {
           ...rest,
           likedByCurrentUser: userId ? likes?.length > 0 : false,
+          viewCount: (recipe as any).viewCount ?? 0,
+          useCount: (recipe as any).useCount ?? 0,
+          experience: (recipe as any).experience ?? 0,
         },
       },
       { status: 200 }

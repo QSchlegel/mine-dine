@@ -15,6 +15,8 @@ export interface ModalProps {
   showCloseButton?: boolean
   closeOnBackdropClick?: boolean
   closeOnEscape?: boolean
+  /** Makes modal fullscreen on mobile devices */
+  mobileFullscreen?: boolean
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -27,6 +29,7 @@ export const Modal: React.FC<ModalProps> = ({
   showCloseButton = true,
   closeOnBackdropClick = true,
   closeOnEscape = true,
+  mobileFullscreen = false,
 }) => {
   // Handle escape key
   const handleEscape = useCallback(
@@ -62,10 +65,16 @@ export const Modal: React.FC<ModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className={cn(
+          "fixed inset-0 z-50 flex items-center justify-center",
+          mobileFullscreen ? "p-0 sm:p-4" : "p-4"
+        )}>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            className={cn(
+              "fixed inset-0 bg-black/60 backdrop-blur-sm",
+              mobileFullscreen && "sm:bg-black/60 bg-black/0"
+            )}
             variants={modalBackdrop}
             initial="hidden"
             animate="visible"
@@ -76,11 +85,21 @@ export const Modal: React.FC<ModalProps> = ({
           {/* Modal Content */}
           <motion.div
             className={cn(
-              'relative z-50 w-full overflow-hidden rounded-2xl',
+              'relative z-50 w-full overflow-hidden',
               'bg-[var(--background-elevated)]',
               'border border-[var(--border)]',
               'shadow-lg dark:shadow-2xl',
-              sizes[size]
+              // Mobile fullscreen mode
+              mobileFullscreen ? [
+                'h-full sm:h-auto',
+                'rounded-none sm:rounded-2xl',
+                'border-0 sm:border',
+                'max-h-[100dvh] sm:max-h-[calc(100vh-2rem)]',
+                sizes[size]
+              ] : [
+                'rounded-2xl',
+                sizes[size]
+              ]
             )}
             variants={modalContent}
             initial="hidden"
@@ -137,7 +156,12 @@ export const Modal: React.FC<ModalProps> = ({
             )}
 
             {/* Body */}
-            <div className="p-6 overflow-y-auto max-h-[calc(100vh-16rem)]">
+            <div className={cn(
+              "p-4 sm:p-6 overflow-y-auto",
+              mobileFullscreen
+                ? "max-h-[calc(100dvh-4rem)] sm:max-h-[calc(100vh-16rem)] pb-[env(safe-area-inset-bottom)]"
+                : "max-h-[calc(100vh-16rem)]"
+            )}>
               {children}
             </div>
           </motion.div>

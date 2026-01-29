@@ -132,6 +132,7 @@ model Dinner {
   tags               DinnerTag[]
   groceryBills       GroceryBill[]
   guestReviews       GuestReview[]
+  recipeUsages       RecipeUsage[]
   reviews            Review[]
 
   @@index([hostId])
@@ -391,6 +392,7 @@ model Recipe {
   authorId    String
   title       String
   description String?
+  imageUrl    String?
   isPublic    Boolean          @default(true)
   servings    Int?
   prepTime    String?
@@ -398,15 +400,34 @@ model Recipe {
   ingredients Json
   steps       Json
   tags        Json             @default("[]")
+  viewCount   Int              @default(0)
+  useCount    Int              @default(0)
+  experience  Int              @default(0)
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   author      User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
   comments    RecipeComment[]
   likes       RecipeLike[]
+  usages      RecipeUsage[]
 
   @@index([authorId])
   @@index([isPublic])
   @@index([createdAt])
+}
+
+model RecipeUsage {
+  id        String   @id @default(cuid())
+  recipeId  String
+  dinnerId  String?
+  count     Int      @default(1)
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  dinner    Dinner?  @relation(fields: [dinnerId], references: [id], onDelete: SetNull)
+
+  @@index([recipeId])
+  @@index([dinnerId])
 }
 
 model RecipeComment {

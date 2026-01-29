@@ -326,26 +326,27 @@ export default function ProfileCompletionWizard({
       size="xl"
       showCloseButton={!isComplete}
       closeOnBackdropClick={!hasUnsavedChanges || isComplete}
+      mobileFullscreen
     >
       {isComplete ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center py-12 text-center"
+          className="flex flex-col items-center justify-center py-8 sm:py-12 text-center"
         >
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-            className="mb-6"
+            className="mb-4 sm:mb-6"
           >
-            <div className="h-20 w-20 rounded-full bg-green-500 flex items-center justify-center mx-auto">
-              <Check className="h-10 w-10 text-white" />
+            <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-green-500 flex items-center justify-center mx-auto">
+              <Check className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
             </div>
           </motion.div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Profile Complete!</h2>
-          <p className="text-gray-600 mb-6">You're all set. We're matching you with amazing hosts.</p>
-          <p className="text-sm text-gray-500 mb-4">Closing automatically...</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-[var(--foreground)] mb-2">Profile Complete!</h2>
+          <p className="text-[var(--foreground-secondary)] mb-4 sm:mb-6 px-4">You're all set. We're matching you with amazing hosts.</p>
+          <p className="text-sm text-[var(--foreground-muted)] mb-4">Closing automatically...</p>
           <Button
             onClick={() => {
               onComplete()
@@ -360,28 +361,28 @@ export default function ProfileCompletionWizard({
       ) : (
         <>
           {/* Progress Header */}
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             {/* Step Dots */}
-            <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
               {[1, 2, 3].map((step) => (
                 <div key={step} className="flex items-center">
                   <motion.div
                     initial={false}
                     animate={{
                       scale: currentStep === step ? 1.2 : 1,
-                      backgroundColor:
-                        currentStep > step
-                          ? '#10b981'
-                          : currentStep === step
-                          ? '#6366f1'
-                          : '#e5e7eb',
                     }}
-                    className="h-3 w-3 rounded-full transition-colors"
+                    className={`h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full transition-colors ${
+                      currentStep > step
+                        ? 'bg-green-500'
+                        : currentStep === step
+                        ? 'bg-coral-500'
+                        : 'bg-[var(--border)]'
+                    }`}
                   />
                   {step < 3 && (
                     <div
-                      className={`h-0.5 w-8 mx-1 ${
-                        currentStep > step ? 'bg-green-500' : 'bg-gray-300'
+                      className={`h-0.5 w-6 sm:w-8 mx-1 transition-colors ${
+                        currentStep > step ? 'bg-green-500' : 'bg-[var(--border)]'
                       }`}
                     />
                   )}
@@ -390,14 +391,14 @@ export default function ProfileCompletionWizard({
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+            <div className="w-full bg-[var(--background-secondary)] rounded-full h-1.5 sm:h-2 mb-3 sm:mb-4">
               <motion.div
                 initial={false}
                 animate={{
                   width: completion ? `${completion.progress}%` : '0%',
                 }}
                 transition={{ duration: 0.3 }}
-                className="h-2 rounded-full bg-gradient-to-r from-indigo-500 to-pink-500"
+                className="h-full rounded-full bg-gradient-to-r from-coral-500 to-coral-400"
               />
             </div>
 
@@ -408,10 +409,10 @@ export default function ProfileCompletionWizard({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <h2 className="text-xl font-semibold text-gray-900 mb-1">
+              <h2 className="text-lg sm:text-xl font-semibold text-[var(--foreground)] mb-0.5 sm:mb-1">
                 Step {currentStep}: {stepTitles[currentStep]}
               </h2>
-              <p className="text-sm text-gray-600">{stepDescriptions[currentStep]}</p>
+              <p className="text-xs sm:text-sm text-[var(--foreground-secondary)]">{stepDescriptions[currentStep]}</p>
             </motion.div>
           </div>
 
@@ -421,14 +422,14 @@ export default function ProfileCompletionWizard({
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg"
+              className="mb-3 sm:mb-4 p-2.5 sm:p-3 bg-red-500/10 border border-red-500/20 rounded-lg"
             >
-              <p className="text-sm text-red-800">{error}</p>
+              <p className="text-xs sm:text-sm text-red-600 dark:text-red-400">{error}</p>
             </motion.div>
           )}
 
           {/* Step Content */}
-          <div className="min-h-[400px]">
+          <div className="min-h-[300px] sm:min-h-[400px]">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
                 key={currentStep}
@@ -442,8 +443,8 @@ export default function ProfileCompletionWizard({
             </AnimatePresence>
           </div>
 
-          {/* Footer Actions */}
-          <div className="flex items-center justify-between pt-6 border-t border-gray-200 mt-6">
+          {/* Footer Actions - Sticky on mobile */}
+          <div className="flex items-center justify-between pt-4 sm:pt-6 border-t border-[var(--border)] mt-4 sm:mt-6 sticky bottom-0 bg-[var(--background-elevated)] pb-[env(safe-area-inset-bottom)]">
             <Button
               variant="ghost"
               onClick={handleBack}

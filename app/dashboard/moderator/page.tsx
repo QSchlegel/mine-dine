@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { getCurrentUser, hasRole } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import { Shield, Users, Calendar, DollarSign, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { Shield, Users, Calendar, DollarSign, CheckCircle, XCircle, Clock, Bot } from 'lucide-react'
 
 // Mark this page as dynamic since it uses getCurrentUser() which calls headers()
 export const dynamic = 'force-dynamic'
@@ -85,6 +85,15 @@ export default async function ModeratorDashboardPage() {
           <p className="text-[var(--foreground-secondary)]">
             Review host applications, moderate dinners, and track your revenue shares
           </p>
+          <div className="mt-4">
+            <Link
+              href="/minebot/moderator"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+            >
+              <Bot className="w-4 h-4" />
+              Open Moderator Bot
+            </Link>
+          </div>
         </div>
 
         {/* Stats Grid */}

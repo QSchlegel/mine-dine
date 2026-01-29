@@ -66,28 +66,28 @@ export default function TagsStep({ selectedTags, onChange, isValid }: TagsStepPr
       variants={fadeInUp}
       initial="initial"
       animate="animate"
-      className="space-y-6"
+      className="space-y-4 sm:space-y-6"
     >
       {/* Selection Counter */}
-      <div className="flex items-center justify-between p-4 bg-indigo-50 rounded-lg border border-indigo-200">
-        <div>
-          <p className="text-sm font-medium text-indigo-900">
+      <div className="flex items-center justify-between p-3 sm:p-4 bg-coral-500/10 rounded-lg border border-coral-500/20">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-[var(--foreground)]">
             {selectedTags.length} tag{selectedTags.length !== 1 ? 's' : ''} selected
             {isValid && selectedTags.length >= 3 && (
-              <span className="text-indigo-600"> (minimum met!)</span>
+              <span className="text-coral-500"> (minimum met!)</span>
             )}
           </p>
           {!isValid ? (
-            <p className="text-xs text-indigo-700 mt-1">
+            <p className="text-xs text-[var(--foreground-secondary)] mt-0.5 sm:mt-1">
               {remaining} more tag{remaining !== 1 ? 's' : ''} needed to continue
             </p>
           ) : (
-            <p className="text-xs text-indigo-700 mt-1">
+            <p className="text-xs text-[var(--foreground-secondary)] mt-0.5 sm:mt-1">
               {selectedTags.length >= 8
-                ? `Excellent! ${selectedTags.length} tags selected - keep adding more!`
+                ? `Excellent! Keep adding more!`
                 : selectedTags.length >= 5
-                ? `Great! ${selectedTags.length} tags - add more for even better matching`
-                : `Good start! Add more tags for better matching`}
+                ? `Great! Add more for better matching`
+                : `Good start! Add more tags`}
             </p>
           )}
         </div>
@@ -95,15 +95,15 @@ export default function TagsStep({ selectedTags, onChange, isValid }: TagsStepPr
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="flex items-center gap-2 text-green-600"
+            className="flex items-center gap-1.5 sm:gap-2 text-green-500 shrink-0 ml-2"
           >
-            <Check className="h-5 w-5" />
-            <span className="text-sm font-medium">
-              {selectedTags.length >= 8 
-                ? `Excellent! ${selectedTags.length} tags` 
-                : selectedTags.length >= 5 
-                ? `Great! ${selectedTags.length} tags`
-                : 'Great selection!'}
+            <Check className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-xs sm:text-sm font-medium hidden sm:inline">
+              {selectedTags.length >= 8
+                ? `Excellent!`
+                : selectedTags.length >= 5
+                ? `Great!`
+                : 'Good!'}
             </span>
           </motion.div>
         )}
@@ -114,14 +114,14 @@ export default function TagsStep({ selectedTags, onChange, isValid }: TagsStepPr
         variants={staggerContainer}
         initial="hidden"
         animate="show"
-        className="space-y-6 max-h-[450px] overflow-y-auto pr-2"
+        className="space-y-4 sm:space-y-6 max-h-[280px] sm:max-h-[450px] overflow-y-auto pr-1 sm:pr-2 -mr-1 sm:-mr-2"
       >
         {Object.entries(tagsByCategory).map(([category, tags]) => (
           <motion.div key={category} variants={staggerItem}>
-            <h3 className="font-medium text-gray-900 mb-3 capitalize text-sm">
+            <h3 className="font-medium text-[var(--foreground)] mb-2 sm:mb-3 capitalize text-xs sm:text-sm">
               {category.toLowerCase().replace('_', ' ')}
             </h3>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {tags.map((tag) => {
                 const isSelected = selectedTags.includes(tag.id)
                 return (
@@ -129,12 +129,11 @@ export default function TagsStep({ selectedTags, onChange, isValid }: TagsStepPr
                     key={tag.id}
                     type="button"
                     onClick={() => toggleTag(tag.id)}
-                    whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                    className={`px-3 sm:px-4 py-2 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation min-h-[36px] sm:min-h-[40px] ${
                       isSelected
-                        ? 'bg-gradient-to-r from-indigo-500 to-pink-500 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+                        ? 'bg-gradient-to-r from-coral-500 to-coral-400 text-white shadow-md'
+                        : 'bg-[var(--background-secondary)] text-[var(--foreground-secondary)] hover:bg-[var(--background-tertiary)] border border-[var(--border)] active:bg-[var(--background-tertiary)]'
                     }`}
                   >
                     {tag.name}
@@ -142,7 +141,7 @@ export default function TagsStep({ selectedTags, onChange, isValid }: TagsStepPr
                       <motion.span
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="ml-2 inline-block"
+                        className="ml-1.5 sm:ml-2 inline-block"
                       >
                         <Check className="h-3 w-3 inline" />
                       </motion.span>
@@ -155,27 +154,27 @@ export default function TagsStep({ selectedTags, onChange, isValid }: TagsStepPr
         ))}
       </motion.div>
 
-      <div className="mt-4 space-y-2">
-        <p className="text-xs text-gray-500">
-          Select tags to help us match you with perfect hosts. Choose at least 3 tags (minimum required), but you can add as many tags as you like for better matching!
+      <div className="mt-3 sm:mt-4 space-y-2">
+        <p className="text-xs text-[var(--foreground-muted)]">
+          Choose at least 3 tags. More tags = better host matching!
         </p>
         {isValid && (
           <motion.div
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg"
+            className="flex items-start gap-2 p-2.5 sm:p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg"
           >
-            <span className="text-blue-600 text-lg">💡</span>
-            <div>
-              <p className="text-xs text-blue-900 font-medium mb-1">
-                {selectedTags.length >= 8 
-                  ? `Excellent! You've selected ${selectedTags.length} tags.`
+            <span className="text-cyan-500 text-base sm:text-lg shrink-0">💡</span>
+            <div className="min-w-0">
+              <p className="text-xs text-[var(--foreground)] font-medium mb-0.5 sm:mb-1">
+                {selectedTags.length >= 8
+                  ? `Excellent! ${selectedTags.length} tags selected.`
                   : 'Add more tags for better matching!'}
               </p>
-              <p className="text-xs text-blue-700">
+              <p className="text-xs text-[var(--foreground-secondary)] hidden sm:block">
                 {selectedTags.length >= 8
-                  ? 'The more tags you select, the better we can match you with hosts who share your interests. Feel free to add even more!'
-                  : 'The more tags you select, the better we can match you with hosts who share your interests. You can add as many tags as you like!'}
+                  ? 'Feel free to add even more!'
+                  : 'The more tags, the better your matches.'}
               </p>
             </div>
           </motion.div>

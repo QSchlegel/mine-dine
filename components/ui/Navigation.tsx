@@ -39,6 +39,7 @@ const authNavLinks: NavLink[] = [
   { href: '/dashboard', label: 'Dashboard', icon: <Home className="h-4 w-4" /> },
   { href: '/dinners', label: 'Browse Dinners', icon: <Utensils className="h-4 w-4" /> },
   { href: '/dashboard/swipe', label: 'Discover', icon: <Heart className="h-4 w-4" /> },
+  { href: '/dashboard/meal-planner', label: 'Meal Calendar', icon: <Calendar className="h-4 w-4" /> },
   { href: '/recipes', label: 'Recipes', icon: <BookOpen className="h-4 w-4" /> },
   { href: '/minebot', label: 'Dine Bot', icon: <Sparkles className="h-4 w-4" /> },
 ]
@@ -47,6 +48,7 @@ const authNavLinks: NavLink[] = [
 const mobileAuthLinks: NavLink[] = [
   { href: '/dashboard/messages', label: 'Messages', icon: <MessageSquare className="h-4 w-4" /> },
   { href: '/dashboard/host/apply', label: 'Become a Host', icon: <ChefHat className="h-4 w-4" /> },
+  { href: '/dashboard/meal-planner', label: 'Meal Calendar', icon: <Calendar className="h-4 w-4" /> },
   { href: '/minebot', label: 'Dine Bot', icon: <Sparkles className="h-4 w-4" /> },
   { href: '/recipes', label: 'Recipes', icon: <BookOpen className="h-4 w-4" /> },
 ]

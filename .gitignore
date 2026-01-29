@@ -37,3 +37,6 @@ next-env.d.ts
 
 # prisma
 # Note: migrations are tracked in git for deployment
+
+# obsidian exports
+obsidian-vault/

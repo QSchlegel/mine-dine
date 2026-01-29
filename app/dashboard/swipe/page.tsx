@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Suspense, useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
@@ -46,7 +47,9 @@ interface MatchData {
   matchedAt: string
 }
 
-export default function SwipePage() {
+function SwipePageContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [hosts, setHosts] = useState<Host[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -78,12 +81,10 @@ export default function SwipePage() {
 
         setHosts(hostsData.hosts || [])
         setCurrentUser(profileData.profile || null)
-        
-        // Check if user has completed guest tour
-        if (profileData.profile && !profileData.profile.hasCompletedGuestTour) {
+        const tourDone = profileData.profile?.hasCompletedGuestTour ?? false
+        setHasCompletedTour(tourDone)
+        if (!tourDone) {
           setShowTour(true)
-        } else {
-          setHasCompletedTour(true)
         }
         
         setError(null)
@@ -97,6 +98,16 @@ export default function SwipePage() {
 
     fetchData()
   }, [])
+
+  // Allow manual tour relaunch via ?tour=guest
+  useEffect(() => {
+    if (searchParams?.get('tour') === 'guest') {
+      setShowTour(true)
+      setHasCompletedTour(false)
+      // Clean up the query param so the tour doesn't auto-open again
+      router.replace('/dashboard/swipe', { scroll: false })
+    }
+  }, [router, searchParams])
 
   const handleSwipe = useCallback(async (action: 'LIKE' | 'PASS') => {
     if (currentIndex >= hosts.length || swiping) return
@@ -364,8 +375,8 @@ export default function SwipePage() {
                   zIndex: 10,
                 }}
                 drag={!swiping}
-                dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-                dragElastic={0.9}
+                dragConstraints={{ left: -480, right: 480, top: -320, bottom: 320 }}
+                dragElastic={0.35}
                 onDragEnd={handleDragEnd}
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -615,5 +626,13 @@ export default function SwipePage() {
         onComplete={handleMatchClose}
       />
     </div>
+  )
+}
+
+export default function SwipePage() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <SwipePageContent />
+    </Suspense>
   )
 }
