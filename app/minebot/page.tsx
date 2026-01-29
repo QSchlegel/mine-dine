@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useSession } from '@/lib/auth-client'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { ChefHat, Utensils, Sparkles } from 'lucide-react'
+import { ChefHat, Utensils, Sparkles, Shield } from 'lucide-react'
 
 export default function MineBotHubPage() {
   const { data: session, isPending } = useSession()
@@ -13,7 +13,7 @@ export default function MineBotHubPage() {
     return (
       <div className="min-h-screen bg-[var(--background)] py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl font-bold text-[var(--foreground)]">MineBot</h1>
+          <h1 className="text-3xl font-bold text-[var(--foreground)]">Dine Bot</h1>
           <p className="text-[var(--foreground-muted)] mt-2">Loading...</p>
         </div>
       </div>
@@ -24,9 +24,9 @@ export default function MineBotHubPage() {
     return (
       <div className="min-h-screen bg-[var(--background)] py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-3xl font-bold text-[var(--foreground)]">MineBot</h1>
+          <h1 className="text-3xl font-bold text-[var(--foreground)]">Dine Bot</h1>
           <p className="text-[var(--foreground-muted)] mt-3">
-            Sign in to plan dinners and recipes with MineBot.
+            Sign in to plan dinners and recipes with Dine Bot.
           </p>
           <Button href="/login" className="mt-6" size="lg">
             Sign in
@@ -40,9 +40,9 @@ export default function MineBotHubPage() {
     <div className="min-h-screen bg-[var(--background)] py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-[var(--foreground)]">MineBot</h1>
+          <h1 className="text-3xl font-bold text-[var(--foreground)]">Dine Bot</h1>
           <p className="text-[var(--foreground-secondary)] mt-2">
-            Collaborate with MineBot to plan dinners and build shareable recipes.
+            Collaborate with Dine Bot to plan dinners and build shareable recipes.
           </p>
         </div>
 
@@ -80,6 +80,25 @@ export default function MineBotHubPage() {
               </Button>
             </CardContent>
           </Card>
+
+          {(session?.user as any)?.role === 'MODERATOR' || (session?.user as any)?.role === 'ADMIN' ? (
+            <Card className="border-[var(--border)]">
+              <CardContent className="p-6 space-y-4">
+                <div className="w-12 h-12 rounded-xl bg-amber-500/15 text-amber-600 flex items-center justify-center">
+                  <Shield className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-[var(--foreground)]">Moderator Bot</h2>
+                  <p className="text-sm text-[var(--foreground-muted)] mt-1">
+                    Ask Dine Bot to triage applications, draft rejection notes, or summarize reports.
+                  </p>
+                </div>
+                <Button href="/minebot/moderator" variant="secondary" size="lg">
+                  Open mod bot
+                </Button>
+              </CardContent>
+            </Card>
+          ) : null}
         </div>
 
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--background-elevated)] p-6 flex items-center gap-4">

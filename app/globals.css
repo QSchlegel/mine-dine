@@ -4,7 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@keyframes minebot-wiggle {
+@keyframes dinebot-wiggle {
   0%, 84% {
     transform: translateY(0) rotate(0deg);
   }
@@ -22,8 +22,8 @@
   }
 }
 
-.minebot-wiggle {
-  animation: minebot-wiggle 6s ease-in-out infinite;
+.dinebot-wiggle {
+  animation: dinebot-wiggle 6s ease-in-out infinite;
   transform-origin: center;
 }
 

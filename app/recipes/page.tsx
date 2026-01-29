@@ -6,13 +6,14 @@ import { useSession } from '@/lib/auth-client'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
-import { Heart, MessageCircle, Utensils } from 'lucide-react'
+import { Heart, MessageCircle, Utensils, Eye, Flame } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface RecipeListItem {
   id: string
   title: string
   description: string | null
+  imageUrl: string | null
   servings: number | null
   prepTime: string | null
   cookTime: string | null
@@ -22,6 +23,11 @@ interface RecipeListItem {
     id: string
     name: string | null
     profileImageUrl: string | null
+  }
+  stats?: {
+    views: number
+    uses: number
+    experience: number
   }
   _count: {
     likes: number
@@ -84,7 +90,7 @@ export default function RecipesPage() {
           <div>
             <h1 className="text-3xl font-bold text-[var(--foreground)]">Recipes</h1>
             <p className="text-[var(--foreground-secondary)] mt-2">
-              Discover community recipes crafted with MineBot.
+              Discover community recipes crafted with Dine Bot.
             </p>
           </div>
           {session?.user && (
@@ -125,6 +131,15 @@ export default function RecipesPage() {
                     </div>
                   </div>
 
+                  {recipe.imageUrl && (
+                    <div className="rounded-lg overflow-hidden border border-[var(--border)] aspect-video mb-3">
+                      <img
+                        src={recipe.imageUrl}
+                        alt={recipe.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
                   <div>
                     <h2 className="text-lg font-semibold text-[var(--foreground)]">{recipe.title}</h2>
                     {recipe.description && (
@@ -182,6 +197,18 @@ export default function RecipesPage() {
                         <MessageCircle className="w-4 h-4" />
                         {recipe._count.comments}
                       </div>
+                      {recipe.stats && (
+                        <>
+                          <div className="flex items-center gap-1">
+                            <Eye className="w-4 h-4" />
+                            {recipe.stats.views}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Flame className="w-4 h-4" />
+                            {recipe.stats.uses}
+                          </div>
+                        </>
+                      )}
                     </div>
                     <Link
                       href={`/recipes/${recipe.id}`}

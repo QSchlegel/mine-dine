@@ -58,6 +58,11 @@ export default function CreateDinnerPage() {
   const [location, setLocation] = useState('')
   const [dateTime, setDateTime] = useState('')
   const [imageUrl, setImageUrl] = useState('')
+  const [locationSearchTerm, setLocationSearchTerm] = useState('')
+  const [locationResults, setLocationResults] = useState<
+    Array<{ label: string; city: string | null; state: string | null; country: string | null }>
+  >([])
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false)
 
   // Add-on form state
   const [newAddOnName, setNewAddOnName] = useState('')
@@ -108,6 +113,25 @@ export default function CreateDinnerPage() {
     )
   }
 
+  const searchLocations = async () => {
+    const q = locationSearchTerm.trim() || location.trim()
+    if (!q) return
+    setIsSearchingLocation(true)
+    try {
+      const res = await fetch(`/api/locations/search?q=${encodeURIComponent(q)}`)
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to search locations')
+      }
+      setLocationResults(data.results || [])
+    } catch (error) {
+      console.error('Location search failed:', error)
+      setLocationResults([])
+    } finally {
+      setIsSearchingLocation(false)
+    }
+  }
+
   const handleAddAddOn = () => {
     if (!newAddOnName.trim() || newAddOnPrice <= 0) return
 
@@ -154,8 +178,21 @@ export default function CreateDinnerPage() {
     if (plan.pricingBreakdown.suggestedPricePerPerson) {
       setBasePricePerPerson(plan.pricingBreakdown.suggestedPricePerPerson)
     }
+    if (!title && plan.menuItems?.length) {
+      const heroDish = plan.menuItems.find((item) => item.course.toLowerCase().includes('main')) || plan.menuItems[0]
+      if (heroDish?.name) {
+        setTitle(`${heroDish.name} Dinner`)
+      }
+    }
     // Switch to manual mode to review and edit
     setPlanningMode('manual')
+  }
+
+  const openPlanInMineBot = () => {
+    if (typeof window !== 'undefined' && aiPlan) {
+      window.localStorage.setItem('mindine_pending_dinner_plan', JSON.stringify(aiPlan))
+    }
+    router.push('/minebot/plan-dinner')
   }
 
   const handleSubmit = async (status: 'DRAFT' | 'PUBLISHED') => {
@@ -275,7 +312,7 @@ export default function CreateDinnerPage() {
             {aiPlan && (
               <Card className="mb-6 border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20">
                 <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div>
                       <h3 className="font-semibold text-foreground mb-1">AI Plan Generated</h3>
                       <p className="text-sm text-foreground-secondary">
@@ -291,6 +328,13 @@ export default function CreateDinnerPage() {
                       }}
                     >
                       View Plan
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={openPlanInMineBot}
+                    >
+                      Open in Dine Bot
                     </Button>
                   </div>
                 </CardContent>
@@ -403,6 +447,43 @@ export default function CreateDinnerPage() {
                     placeholder="e.g., Amsterdam, Netherlands"
                     error={errors.location}
                   />
+                </div>
+                <div className="mt-3 space-y-2">
+                  <div className="flex flex-col md:flex-row gap-2">
+                    <Input
+                      value={locationSearchTerm}
+                      onChange={(e) => setLocationSearchTerm(e.target.value)}
+                      placeholder="Search city, neighborhood, or address"
+                    />
+                    <Button
+                      variant="secondary"
+                      onClick={searchLocations}
+                      disabled={isSearchingLocation || (!locationSearchTerm.trim() && !location.trim())}
+                    >
+                      {isSearchingLocation ? 'Searching…' : 'Find location'}
+                    </Button>
+                  </div>
+                  {locationResults.length > 0 && (
+                    <div className="rounded-lg border border-foreground/10 bg-foreground/5 p-3 space-y-2 max-h-48 overflow-y-auto">
+                      {locationResults.map((result, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            setLocation(result.label)
+                            setLocationSearchTerm(result.label)
+                            setLocationResults([])
+                          }}
+                          className="w-full text-left p-2 rounded-md hover:bg-background border border-transparent hover:border-border transition"
+                        >
+                          <p className="text-sm font-medium text-foreground">{result.label}</p>
+                          <p className="text-xs text-foreground-muted">
+                            {[result.city, result.state, result.country].filter(Boolean).join(', ')}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>

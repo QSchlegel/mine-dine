@@ -40,14 +40,14 @@ const authNavLinks: NavLink[] = [
   { href: '/dinners', label: 'Browse Dinners', icon: <Utensils className="h-4 w-4" /> },
   { href: '/dashboard/swipe', label: 'Discover', icon: <Heart className="h-4 w-4" /> },
   { href: '/recipes', label: 'Recipes', icon: <BookOpen className="h-4 w-4" /> },
-  { href: '/minebot', label: 'MineBot', icon: <Sparkles className="h-4 w-4" /> },
+  { href: '/minebot', label: 'Dine Bot', icon: <Sparkles className="h-4 w-4" /> },
 ]
 
 // Mobile menu links for authenticated users (secondary actions not in bottom nav)
 const mobileAuthLinks: NavLink[] = [
   { href: '/dashboard/messages', label: 'Messages', icon: <MessageSquare className="h-4 w-4" /> },
   { href: '/dashboard/host/apply', label: 'Become a Host', icon: <ChefHat className="h-4 w-4" /> },
-  { href: '/minebot', label: 'MineBot', icon: <Sparkles className="h-4 w-4" /> },
+  { href: '/minebot', label: 'Dine Bot', icon: <Sparkles className="h-4 w-4" /> },
   { href: '/recipes', label: 'Recipes', icon: <BookOpen className="h-4 w-4" /> },
 ]
 

@@ -26,10 +26,19 @@ interface AssistantMessage {
 const STORAGE_KEY = 'mindine_assistant_last_prompt'
 const COOLDOWN_MS = 8 * 60 * 1000
 
+const CHAT_CAPTIONS = [
+  "What's for dinner?",
+  'Plan a recipe',
+  'Ask Dine Bot',
+  'Get cooking',
+  'Recipe ideas',
+]
+
 export function ProactiveAssistant() {
   const pathname = usePathname()
   const { data: session, isPending } = useSession()
   const [isOpen, setIsOpen] = useState(false)
+  const [captionIndex, setCaptionIndex] = useState(0)
   const [messages, setMessages] = useState<AssistantMessage[]>([])
   const [input, setInput] = useState('')
   const [isSending, setIsSending] = useState(false)
@@ -37,6 +46,7 @@ export function ProactiveAssistant() {
   const hasPromptedRef = useRef(false)
   const assistantRef = useRef<HTMLDivElement | null>(null)
   const isAuthRoute = pathname?.startsWith('/login') || pathname?.startsWith('/signup')
+  const isMineBotStudioRoute = pathname?.startsWith('/minebot/plan-recipe') || pathname?.startsWith('/minebot/plan-dinner')
 
   const canPromptNow = () => {
     if (typeof window === 'undefined') return false
@@ -94,6 +104,15 @@ export function ProactiveAssistant() {
     assistantRef.current.scrollTop = assistantRef.current.scrollHeight
   }, [isOpen, messages])
 
+  useEffect(() => {
+    if (isOpen) return
+    const id = setInterval(
+      () => setCaptionIndex((i) => (i + 1) % CHAT_CAPTIONS.length),
+      2500
+    )
+    return () => clearInterval(id)
+  }, [isOpen])
+
   const handleSend = async () => {
     const trimmed = input.trim()
     if (!trimmed || isSending) return
@@ -124,7 +143,7 @@ export function ProactiveAssistant() {
     }
   }
 
-  if (isAuthRoute || isPending || !session?.user) {
+  if (isAuthRoute || isMineBotStudioRoute || isPending || !session?.user) {
     return null
   }
 
@@ -139,9 +158,9 @@ export function ProactiveAssistant() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-pink-500/15 text-pink-500">
-                  <Bot className="h-4 w-4 minebot-wiggle" />
+                  <Bot className="h-4 w-4 dinebot-wiggle" />
                 </span>
-                <p className="text-sm font-semibold text-[var(--foreground)]">MineBot</p>
+                <p className="text-sm font-semibold text-[var(--foreground)]">Dine Bot</p>
               </div>
               <p className="text-xs text-[var(--foreground-muted)]">Here to help</p>
             </div>
@@ -232,9 +251,9 @@ export function ProactiveAssistant() {
       >
         <span className="inline-flex items-center gap-2">
           <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/20">
-            <Bot className="h-4 w-4 minebot-wiggle" />
+            <Bot className="h-4 w-4 dinebot-wiggle" />
           </span>
-          {isOpen ? 'Hide MineBot' : 'Talk to MineBot'}
+          {isOpen ? 'Hide Dine Bot' : CHAT_CAPTIONS[captionIndex]}
         </span>
       </Button>
     </div>

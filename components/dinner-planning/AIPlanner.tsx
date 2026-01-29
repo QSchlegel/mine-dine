@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Loader2, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react'
+import { Loader2, CheckCircle, AlertCircle, RefreshCw, Bot } from 'lucide-react'
 import PlanningSteps from './PlanningSteps'
 import MenuPreview from './MenuPreview'
 import PricingSuggestions from './PricingSuggestions'
@@ -21,6 +21,8 @@ export default function AIPlanner({ onPlanGenerated, onCancel }: AIPlannerProps)
   const [plan, setPlan] = useState<DinnerPlan | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [assistantNote, setAssistantNote] = useState<string | null>(null)
+  const [isConsulting, setIsConsulting] = useState(false)
 
   const handlePlanningComplete = async (params: DinnerPlanningParams) => {
     setStep('generating')
@@ -60,6 +62,38 @@ export default function AIPlanner({ onPlanGenerated, onCancel }: AIPlannerProps)
   const handleAccept = () => {
     if (plan) {
       onPlanGenerated(plan)
+    }
+  }
+
+  const handleAskAssistant = async () => {
+    if (!plan || isConsulting) return
+    setIsConsulting(true)
+    setAssistantNote(null)
+    try {
+      const summary = plan.menuItems
+        .map((item) => `${item.course}: ${item.name}`)
+        .slice(0, 5)
+        .join('; ')
+      const response = await fetch('/api/assistant/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `We drafted this dinner plan: ${summary}. Give 3 crisp improvement ideas (menu swaps, plating, pacing) and a punchy title.`,
+          mode: 'plan_dinner',
+          path: '/minebot/plan-dinner',
+        }),
+      })
+      const data = await response.json()
+      if (response.ok && data?.reply?.message) {
+        setAssistantNote(data.reply.message)
+      } else {
+        setAssistantNote('Dine Bot could not respond right now. Try again in a moment.')
+      }
+    } catch (err) {
+      console.error('Assistant suggestion failed:', err)
+      setAssistantNote('Dine Bot could not respond right now. Try again in a moment.')
+    } finally {
+      setIsConsulting(false)
     }
   }
 
@@ -105,6 +139,37 @@ export default function AIPlanner({ onPlanGenerated, onCancel }: AIPlannerProps)
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
+            {/* Dine Bot quick suggestions */}
+            <Card className="border-[var(--border)] bg-[var(--background-secondary)]">
+              <CardContent className="p-4 flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-primary-500/10 text-primary-500">
+                  <Bot className="w-5 h-5" />
+                </div>
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-foreground">Dine Bot suggestions</h3>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleAskAssistant}
+                      isLoading={isConsulting}
+                      disabled={isConsulting}
+                    >
+                      {isConsulting ? 'Thinking...' : 'Ask for tweaks'}
+                    </Button>
+                  </div>
+                  <p className="text-sm text-foreground-secondary">
+                    Get 3 quick improvements and a title idea before you move on.
+                  </p>
+                  {assistantNote && (
+                    <div className="rounded-lg bg-background p-3 text-sm text-foreground-secondary whitespace-pre-wrap">
+                      {assistantNote}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Success Message */}
             <Card className="border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20">
               <CardContent className="p-4">

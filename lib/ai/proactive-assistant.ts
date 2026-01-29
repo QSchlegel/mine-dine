@@ -33,6 +33,62 @@ export interface AssistantSuggestion {
   action?: AssistantAction
 }
 
+type Season = 'winter' | 'spring' | 'summer' | 'fall'
+
+interface SuggestionPair {
+  message: string
+  actionId: AssistantActionId
+}
+
+function getSeason(): Season {
+  const month = new Date().getMonth() + 1 // 1-12
+  if (month >= 12 || month <= 2) return 'winter'
+  if (month <= 5) return 'spring'
+  if (month <= 8) return 'summer'
+  return 'fall'
+}
+
+function getDailyIndex(): number {
+  const now = new Date()
+  const start = new Date(now.getFullYear(), 0, 0)
+  const dayOfYear = Math.floor((now.getTime() - start.getTime()) / (24 * 60 * 60 * 1000))
+  const weekday = now.getDay()
+  return (dayOfYear + weekday) % 30
+}
+
+const SUGGESTION_PAIRS: SuggestionPair[] = [
+  { message: 'Need a quick assist finding the right dinner or host?', actionId: 'browse_dinners' },
+  { message: 'Want to discover dinners that match your taste?', actionId: 'open_swipe' },
+  { message: 'Ready to plan a recipe? I can help you from idea to publish.', actionId: 'plan_recipe' },
+  { message: 'Browse community recipes for inspiration.', actionId: 'browse_recipes' },
+  { message: 'Perfect for a {{season}} evening—find a dinner near you.', actionId: 'browse_dinners' },
+  { message: 'Swipe through hosts and dinners that fit your vibe.', actionId: 'open_swipe' },
+  { message: 'Have a dish in mind? Plan a recipe with Dine Bot.', actionId: 'plan_recipe' },
+  { message: 'Check out what others are cooking and share your own.', actionId: 'browse_recipes' },
+  { message: '{{season}} is great for trying new dinners. Want to browse?', actionId: 'browse_dinners' },
+  { message: 'Find your next dinner match in a few swipes.', actionId: 'open_swipe' },
+  { message: 'From a quick idea to a full recipe—I can guide you.', actionId: 'plan_recipe' },
+  { message: 'Explore recipes from the community.', actionId: 'browse_recipes' },
+  { message: 'Looking for a dinner tonight? I can help you explore options.', actionId: 'browse_dinners' },
+  { message: 'Discover hosts and dinners that suit you.', actionId: 'open_swipe' },
+  { message: 'Tell me a dish and I’ll help you build a recipe plan.', actionId: 'plan_recipe' },
+  { message: 'Cozy {{season}} dinners are just a few clicks away.', actionId: 'browse_dinners' },
+  { message: 'Swipe to find dinners and hosts you’ll love.', actionId: 'open_swipe' },
+  { message: 'Plan a recipe step by step with Dine Bot.', actionId: 'plan_recipe' },
+  { message: '{{season}} vibes—browse dinners that fit the season.', actionId: 'browse_dinners' },
+  { message: 'Quick way to find dinners: try the swipe experience.', actionId: 'open_swipe' },
+  { message: 'Start with an idea; I’ll help you turn it into a recipe.', actionId: 'plan_recipe' },
+  { message: 'Find a dinner that fits your mood today.', actionId: 'browse_dinners' },
+  { message: 'Explore dinners and hosts with a simple swipe.', actionId: 'open_swipe' },
+  { message: 'Plan a {{season}} dinner with Dine Bot.', actionId: 'plan_dinner' },
+  { message: 'Create your next dinner and invite guests.', actionId: 'create_dinner' },
+  { message: 'Finish your profile so hosts can find you.', actionId: 'complete_profile' },
+  { message: 'Check your messages and stay in the loop.', actionId: 'open_messages' },
+  { message: 'Become a host and share your table.', actionId: 'apply_host' },
+  { message: 'Sign in to save your progress and matches.', actionId: 'sign_in' },
+  { message: 'Create an account to join the community.', actionId: 'sign_up' },
+]
+
 const actionCatalog: Record<AssistantActionId, AssistantAction> = {
   browse_dinners: {
     id: 'browse_dinners',
@@ -89,6 +145,22 @@ const actionCatalog: Record<AssistantActionId, AssistantAction> = {
     label: 'Create account',
     href: '/signup',
   },
+}
+
+function getSuggestionFromPool(context: AssistantContext): AssistantSuggestion | null {
+  const actions = getAvailableActions(context)
+  const actionIds = new Set(actions.map((a) => a.id))
+  const filtered = SUGGESTION_PAIRS.filter((p) => actionIds.has(p.actionId))
+  if (filtered.length === 0) return null
+
+  const season = getSeason()
+  const dailyIndex = getDailyIndex()
+  const seasonOffset: Record<Season, number> = { winter: 0, spring: 8, summer: 15, fall: 22 }
+  const index = (dailyIndex + seasonOffset[season]) % filtered.length
+  const pair = filtered[index]
+  const action = actionCatalog[pair.actionId]
+  const message = pair.message.replace(/\{\{season\}\}/g, season)
+  return { message, action }
 }
 
 function getAvailableActions(context: AssistantContext): AssistantAction[] {
@@ -254,6 +326,11 @@ export async function generateProactiveSuggestion(
   context: AssistantContext
 ): Promise<AssistantSuggestion> {
   const actions = getAvailableActions(context)
+
+  const fromPool = getSuggestionFromPool(context)
+  if (fromPool) {
+    return fromPool
+  }
 
   if (!openai) {
     return {

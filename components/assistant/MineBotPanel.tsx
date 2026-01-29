@@ -21,17 +21,19 @@ interface AssistantMessage {
 }
 
 interface MineBotPanelProps {
-  mode?: 'plan_dinner' | 'plan_recipe' | 'general'
+  mode?: 'plan_dinner' | 'plan_recipe' | 'moderator' | 'general'
   title?: string
   subtitle?: string
   initialMessage?: string
+  inputId?: string
 }
 
 export function MineBotPanel({
   mode = 'general',
-  title = 'MineBot',
+  title = 'Dine Bot',
   subtitle = 'Collaborate on your plan',
   initialMessage,
+  inputId = 'minebot-input',
 }: MineBotPanelProps) {
   const [messages, setMessages] = useState<AssistantMessage[]>(() =>
     initialMessage
@@ -76,7 +78,7 @@ export function MineBotPanel({
         pushAssistantMessage('I can help you shape the plan. What should we refine?')
       }
     } catch (error) {
-      console.error('Failed to fetch MineBot reply:', error)
+      console.error('Failed to fetch Dine Bot reply:', error)
       pushAssistantMessage('I can help you shape the plan. What should we refine?')
     } finally {
       setIsSending(false)
@@ -144,10 +146,11 @@ export function MineBotPanel({
       <div className="border-t border-[var(--border)] px-5 py-4 bg-[var(--background)]">
         <div className="flex gap-2 items-end">
           <Textarea
+            id={inputId}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             rows={3}
-            placeholder="Ask MineBot to refine, rename, or improve..."
+            placeholder="Ask Dine Bot to refine, rename, or improve..."
             className="flex-1 min-h-[90px]"
           />
           <Button

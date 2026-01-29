@@ -15,6 +15,11 @@ export default function MineBotPlanDinnerPage() {
   const [userRole, setUserRole] = useState<string | null>(null)
   const [loadingRole, setLoadingRole] = useState(true)
   const [latestPlan, setLatestPlan] = useState<DinnerPlan | null>(null)
+  const [locationQuery, setLocationQuery] = useState('')
+  const [locationResults, setLocationResults] = useState<
+    Array<{ label: string; city: string | null; state: string | null; country: string | null }>
+  >([])
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false)
 
   useEffect(() => {
     if (isPending) {
@@ -61,7 +66,7 @@ export default function MineBotPlanDinnerPage() {
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="text-3xl font-bold text-[var(--foreground)]">Plan a Dinner</h1>
           <p className="text-[var(--foreground-muted)] mt-3">
-            Sign in to build a MineBot-assisted dinner plan.
+            Sign in to build a Dine Bot-assisted dinner plan.
           </p>
           <Button href="/login" className="mt-6" size="lg">
             Sign in
@@ -100,13 +105,32 @@ export default function MineBotPlanDinnerPage() {
     router.push('/dashboard/host/dinners/new')
   }
 
+  const searchLocations = async () => {
+    const q = locationQuery.trim()
+    if (!q) return
+    setIsSearchingLocation(true)
+    try {
+      const res = await fetch(`/api/locations/search?q=${encodeURIComponent(q)}`)
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to search locations')
+      }
+      setLocationResults(data.results || [])
+    } catch (error) {
+      console.error('Location lookup failed:', error)
+      setLocationResults([])
+    } finally {
+      setIsSearchingLocation(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-8">
         <div>
           <h1 className="text-3xl font-bold text-[var(--foreground)]">Plan a Dinner</h1>
           <p className="text-[var(--foreground-secondary)] mt-2">
-            Work with MineBot to craft a full dinner experience, then carry it into your listing.
+            Work with Dine Bot to craft a full dinner experience, then carry it into your listing.
           </p>
         </div>
 
@@ -131,12 +155,60 @@ export default function MineBotPlanDinnerPage() {
             )}
           </div>
 
-          <MineBotPanel
-            mode="plan_dinner"
-            title="MineBot Dinner Studio"
-            subtitle="Refine your menu, timing, and pricing"
-            initialMessage="Tell me the vibe you want and I’ll help shape your dinner plan."
-          />
+          <div className="space-y-4">
+            <MineBotPanel
+              mode="plan_dinner"
+              title="Dine Bot Dinner Studio"
+              subtitle="Refine your menu, timing, and pricing"
+              initialMessage="Tell me the vibe you want and I’ll help shape your dinner plan."
+            />
+
+            <Card className="border-[var(--border)]">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-[var(--foreground)]">Location lookup</p>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={searchLocations}
+                    disabled={isSearchingLocation || !locationQuery.trim()}
+                  >
+                    {isSearchingLocation ? 'Searching…' : 'Find'}
+                  </Button>
+                </div>
+                <input
+                  className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm text-[var(--foreground)]"
+                  placeholder="City, neighborhood, or address"
+                  value={locationQuery}
+                  onChange={(e) => setLocationQuery(e.target.value)}
+                />
+                {locationResults.length === 0 ? (
+                  <p className="text-xs text-[var(--foreground-muted)]">
+                    Quick lookup for addresses or neighborhoods to paste into your listing.
+                  </p>
+                ) : (
+                  <div className="space-y-2 max-h-52 overflow-y-auto">
+                    {locationResults.map((result, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          setLocationQuery(result.label)
+                          navigator?.clipboard?.writeText?.(result.label).catch(() => null)
+                        }}
+                        className="w-full text-left rounded-md border border-[var(--border)] bg-[var(--background-secondary)] px-3 py-2 hover:bg-[var(--background-elevated)] transition"
+                      >
+                        <p className="text-sm font-medium text-[var(--foreground)]">{result.label}</p>
+                        <p className="text-xs text-[var(--foreground-muted)]">
+                          {[result.city, result.state, result.country].filter(Boolean).join(', ')}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
