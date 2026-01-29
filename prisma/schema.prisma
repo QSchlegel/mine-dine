@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  engineType = "binary"
 }
 
 datasource db {
@@ -39,6 +40,11 @@ model User {
   passkeys                  Passkey[]
   revenueShares             RevenueShare[]
   reviews                   Review[]
+  givenGuestReviews         GuestReview[] @relation("HostGuestReviews")
+  receivedGuestReviews      GuestReview[] @relation("GuestReviewsReceived")
+  recipes                   Recipe[]
+  recipeLikes               RecipeLike[]
+  recipeComments            RecipeComment[]
   sessions                  Session[]
   targetSwipeActions        SwipeAction[]     @relation("SwipeTarget")
   swipeActions              SwipeAction[]     @relation("SwipeUser")
@@ -96,6 +102,58 @@ model UserTag {
   @@index([tagId])
 }
 
+model Recipe {
+  id          String          @id @default(cuid())
+  authorId    String
+  title       String
+  description String?
+  servings    Int?
+  prepTime    String?
+  cookTime    String?
+  ingredients Json
+  steps       Json
+  tags        String[]        @default([])
+  isPublic    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  author      User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likes       RecipeLike[]
+  comments    RecipeComment[]
+
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model RecipeLike {
+  id        String   @id @default(cuid())
+  recipeId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([recipeId, userId])
+  @@index([recipeId])
+  @@index([userId])
+}
+
+model RecipeComment {
+  id        String   @id @default(cuid())
+  recipeId  String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([recipeId])
+  @@index([userId])
+}
+
 model Dinner {
   id                 String                 @id @default(cuid())
   hostId             String
@@ -126,6 +184,7 @@ model Dinner {
   tags               DinnerTag[]
   groceryBills       GroceryBill[]
   reviews            Review[]
+  guestReviews       GuestReview[]
 
   @@index([hostId])
   @@index([status])
@@ -190,6 +249,7 @@ model Booking {
   messages              Message[]
   revenueShares         RevenueShare?
   review                Review?
+  guestReview           GuestReview?
 
   @@index([userId])
   @@index([dinnerId])
@@ -218,7 +278,17 @@ model Review {
   bookingId String   @unique
   userId    String
   dinnerId  String
-  rating    Int
+
+  // Category ratings (0-5 stars each)
+  hospitalityStars Int @default(0)
+  cleanlinessStars Int @default(0)
+  tasteStars       Int @default(0)
+
+  // Tip tracking
+  tipStars           Int      @default(0) // 0-10 additional stars purchased
+  tipAmount          Float    @default(0) // EUR amount paid as tip
+  tipPaymentIntentId String?  @unique     // Stripe payment ID for tip
+
   comment   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -228,7 +298,30 @@ model Review {
 
   @@index([userId])
   @@index([dinnerId])
-  @@index([rating])
+  @@index([hospitalityStars])
+  @@index([cleanlinessStars])
+  @@index([tasteStars])
+}
+
+model GuestReview {
+  id        String         @id @default(cuid())
+  bookingId String         @unique
+  hostId    String
+  guestId   String
+  dinnerId  String
+  sentiment GuestSentiment
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  host    User    @relation("HostGuestReviews", fields: [hostId], references: [id], onDelete: Cascade)
+  guest   User    @relation("GuestReviewsReceived", fields: [guestId], references: [id], onDelete: Cascade)
+  dinner  Dinner  @relation(fields: [dinnerId], references: [id], onDelete: Cascade)
+
+  @@index([hostId])
+  @@index([guestId])
+  @@index([dinnerId])
+  @@index([sentiment])
 }
 
 model Message {
@@ -418,4 +511,9 @@ enum RevenueShareStatus {
   PENDING
   PAID
   CANCELLED
+}
+
+enum GuestSentiment {
+  LIKE
+  DISLIKE
 }
