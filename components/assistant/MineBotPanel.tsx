@@ -25,14 +25,18 @@ interface MineBotPanelProps {
   title?: string
   subtitle?: string
   initialMessage?: string
+  inputPlaceholder?: string
   inputId?: string
 }
+
+const DEFAULT_INPUT_PLACEHOLDER = 'Ask Dine Bot to refine, rename, or improve...'
 
 export function MineBotPanel({
   mode = 'general',
   title = 'Dine Bot',
   subtitle = 'Collaborate on your plan',
   initialMessage,
+  inputPlaceholder = DEFAULT_INPUT_PLACEHOLDER,
   inputId = 'minebot-input',
 }: MineBotPanelProps) {
   const [messages, setMessages] = useState<AssistantMessage[]>(() =>
@@ -85,6 +89,13 @@ export function MineBotPanel({
     }
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault()
+      handleSend()
+    }
+  }
+
   return (
     <Card className="h-full border border-[var(--border-strong)]" hover="none">
       <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] bg-[var(--background-secondary)]">
@@ -96,6 +107,8 @@ export function MineBotPanel({
 
       <div
         ref={scrollRef}
+        role="log"
+        aria-label="Chat messages"
         className="min-h-[420px] max-h-[520px] overflow-y-auto px-5 py-4 space-y-3"
       >
         {messages.length === 0 ? (
@@ -149,8 +162,9 @@ export function MineBotPanel({
             id={inputId}
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
             rows={3}
-            placeholder="Ask Dine Bot to refine, rename, or improve..."
+            placeholder={inputPlaceholder}
             className="flex-1 min-h-[90px]"
           />
           <Button
@@ -159,6 +173,7 @@ export function MineBotPanel({
             size="sm"
             disabled={!input.trim() || isSending}
             onClick={handleSend}
+            aria-label="Send message"
           >
             Send
           </Button>
