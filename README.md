@@ -134,3 +134,6 @@ MIT
 ## Support
 
 For support, please open an issue in the repository.
+
+## Project management
+See `docs/pm/README.md`.
