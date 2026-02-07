@@ -46,6 +46,30 @@ const dinnerImages = [
   'https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=800&h=600&fit=crop', // Kitchen table
 ]
 
+// Simple seeded RNG to keep seed data deterministic across runs.
+const createSeededRng = (seed: number) => {
+  let state = seed >>> 0
+  const next = () => {
+    state = (state * 1664525 + 1013904223) >>> 0
+    return state / 0x100000000
+  }
+  return {
+    next,
+    int: (max: number) => Math.floor(next() * Math.max(1, max)),
+    pick: <T,>(items: T[]) => items[Math.floor(next() * items.length)],
+    shuffle: <T,>(items: T[]) => {
+      const copy = [...items]
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(next() * (i + 1))
+        const temp = copy[i]
+        copy[i] = copy[j]
+        copy[j] = temp
+      }
+      return copy
+    },
+  }
+}
+
 async function main() {
   console.log('🌱 Starting seed...')
 
@@ -135,7 +159,7 @@ async function main() {
   })
 
   // Create hosts
-  const hostsData = [
+  const baseHostsData = [
     {
       email: 'marco@example.com',
       name: 'Marco Rossi',
@@ -194,6 +218,37 @@ async function main() {
       coverImageUrl: coverImages[7],
     },
   ]
+
+  const rng = createSeededRng(20240207)
+  const extraHostFirstNames = ['Ava', 'Liam', 'Noah', 'Mia', 'Elena', 'Mateo', 'Amir', 'Zoe', 'Hana', 'Leo', 'Nina', 'Arjun', 'Sasha', 'Rina', 'Omar', 'Jade']
+  const extraHostLastNames = ['Bennett', 'Kim', 'Patel', 'Nguyen', 'Hernandez', 'Kumar', 'Cohen', 'Lopez', 'Singh', 'Ito', 'Alvarez', 'Moreno', 'Khan', 'Ivanov', 'Santos', 'Rossi']
+  const extraHostCuisines = ['Italian', 'French', 'Japanese', 'Mexican', 'Indian', 'Thai', 'Mediterranean', 'American', 'Chinese', 'Korean']
+  const extraHostSignatureDishes = ['slow-braised ragu', 'seasonal tasting menu', 'hand-rolled sushi', 'fresh masa tacos', 'spiced curry platters', 'bright herb salads', 'wood-fired flatbreads', 'comfort classics', 'dim sum assortment', 'Korean BBQ feast']
+  const extraHostVibes = [
+    'I host relaxed, family-style dinners with warm conversation and big flavors.',
+    'Expect a cozy supper club vibe with plenty of stories and thoughtful pairings.',
+    'I love teaching guests the techniques behind each course while keeping the night fun.',
+    'My table is all about community, shared plates, and bold seasonal ingredients.',
+  ]
+  const extraHostNeighborhoods = ['Amsterdam Centrum', 'Amsterdam Oost', 'Amsterdam West', 'Amsterdam Noord', 'Amsterdam Zuid', 'Amsterdam De Pijp']
+
+  const extraHostsData = Array.from({ length: 12 }, (_, index) => {
+    const firstName = extraHostFirstNames[index % extraHostFirstNames.length]
+    const lastName = extraHostLastNames[(index * 3) % extraHostLastNames.length]
+    const cuisine = extraHostCuisines[index % extraHostCuisines.length]
+    const signature = extraHostSignatureDishes[(index * 5) % extraHostSignatureDishes.length]
+    const vibe = extraHostVibes[index % extraHostVibes.length]
+    const neighborhood = extraHostNeighborhoods[index % extraHostNeighborhoods.length]
+    return {
+      email: `host${index + 1}@example.com`,
+      name: `${firstName} ${lastName}`,
+      bio: `${vibe} My specialty is ${cuisine.toLowerCase()} cooking, and my signature is ${signature}. Join me in ${neighborhood} for a delicious, welcoming evening.`,
+      profileImageUrl: profileImages[(index + baseHostsData.length) % profileImages.length],
+      coverImageUrl: coverImages[(index + baseHostsData.length) % coverImages.length],
+    }
+  })
+
+  const hostsData = [...baseHostsData, ...extraHostsData]
 
   const hosts = await Promise.all(
     hostsData.map(data =>
@@ -270,6 +325,28 @@ async function main() {
     { hostIndex: 7, tagNames: ['Chinese', 'Home Cook', 'Social', 'Family Friendly', 'Foodie'] },
   ]
 
+  const cuisineTags = ['Italian', 'French', 'Japanese', 'Mexican', 'Indian', 'Thai', 'Mediterranean', 'American', 'Chinese', 'Korean']
+  const dietaryTags = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 'Pescatarian', 'Keto', 'Halal']
+  const interestTags = ['Wine Lover', 'Foodie', 'Cooking Enthusiast', 'Spice Lover', 'Fine Dining', 'Street Food', 'Organic', 'Farm to Table', 'Craft Beer']
+  const lifestyleTags = ['Social', 'Intimate Gatherings', 'Family Friendly', 'Date Night', 'Business Casual', 'Adventure Seeker']
+  const skillTags = ['Professional Chef', 'Home Cook', 'Pastry Expert', 'BBQ Master', 'Sommelier', 'Baker']
+
+  for (let i = hostTagAssignments.length; i < hosts.length; i += 1) {
+    const hostCuisine = extraHostCuisines[(i - baseHostsData.length) % extraHostCuisines.length]
+    const generatedTags = new Set<string>()
+    if (cuisineTags.includes(hostCuisine)) {
+      generatedTags.add(hostCuisine)
+    }
+    generatedTags.add(rng.pick(dietaryTags))
+    generatedTags.add(rng.pick(interestTags))
+    generatedTags.add(rng.pick(lifestyleTags))
+    generatedTags.add(rng.pick(skillTags))
+    while (generatedTags.size < 5) {
+      generatedTags.add(rng.pick([...dietaryTags, ...interestTags, ...lifestyleTags, ...skillTags]))
+    }
+    hostTagAssignments.push({ hostIndex: i, tagNames: Array.from(generatedTags) })
+  }
+
   for (const assignment of hostTagAssignments) {
     const host = hosts[assignment.hostIndex]
     for (const tagName of assignment.tagNames) {
@@ -314,17 +391,14 @@ async function main() {
   const now = new Date()
   const oneDay = 24 * 60 * 60 * 1000
 
-  const dinnersData = [
+  const dinnerTemplates = [
     {
-      hostIndex: 0,
       title: 'Authentic Roman Pasta Night',
-      description: 'Join me for a journey through Rome\'s classic pasta dishes. We\'ll prepare cacio e pepe, carbonara, and amatriciana from scratch. Learn the secrets of perfect al dente pasta and the importance of quality ingredients. Wine pairing included!',
+      description: 'A hands-on pasta workshop with cacio e pepe, carbonara, and amatriciana. Learn timing, texture, and sauce secrets with plenty of wine.',
       cuisine: 'Italian',
       maxGuests: 8,
       basePricePerPerson: 65,
       location: 'Amsterdam Centrum',
-      daysFromNow: 7,
-      imageUrl: dinnerImages[0],
       tagNames: ['Italian', 'Wine Lover', 'Fine Dining'],
       addOns: [
         { name: 'Wine Pairing', description: 'Selection of Italian wines', price: 25 },
@@ -332,15 +406,12 @@ async function main() {
       ],
     },
     {
-      hostIndex: 1,
       title: 'Omakase Experience',
-      description: 'Trust the chef for a 12-course omakase journey. Fresh fish flown in from Tsukiji market, seasonal ingredients, and traditional Japanese techniques. An intimate dining experience for true sushi enthusiasts.',
+      description: 'A 10-course chef\'s choice dinner using seasonal fish and traditional techniques. Intimate seating and detailed explanations.',
       cuisine: 'Japanese',
       maxGuests: 6,
       basePricePerPerson: 95,
       location: 'Amsterdam Zuid',
-      daysFromNow: 10,
-      imageUrl: dinnerImages[4],
       tagNames: ['Japanese', 'Fine Dining', 'Pescatarian'],
       addOns: [
         { name: 'Sake Pairing', description: 'Premium sake selection', price: 35 },
@@ -348,15 +419,12 @@ async function main() {
       ],
     },
     {
-      hostIndex: 2,
       title: 'Vegetarian Indian Feast',
-      description: 'A colorful spread of vegetarian Indian dishes from different regions. From crispy samosas to creamy dal makhani, fragrant biryani to fresh naan. Spice levels can be adjusted to your preference!',
+      description: 'A colorful spread from different regions, featuring crispy starters, slow-cooked dals, and fresh naan. Spice levels adjustable.',
       cuisine: 'Indian',
       maxGuests: 10,
       basePricePerPerson: 45,
       location: 'Amsterdam West',
-      daysFromNow: 5,
-      imageUrl: dinnerImages[5],
       tagNames: ['Indian', 'Vegetarian', 'Family Friendly'],
       addOns: [
         { name: 'Mango Lassi', description: 'Refreshing yogurt drink', price: 5 },
@@ -364,15 +432,12 @@ async function main() {
       ],
     },
     {
-      hostIndex: 3,
       title: 'French Bistro Evening',
-      description: 'A classic French dinner starting with French onion soup, followed by coq au vin or beef bourguignon, and finishing with crème brûlée. Paired with carefully selected French wines.',
+      description: 'A classic three-course bistro menu with seasonal starters, coq au vin or bourguignon, and a creme brulee finale.',
       cuisine: 'French',
       maxGuests: 8,
       basePricePerPerson: 75,
       location: 'Amsterdam Oud-Zuid',
-      daysFromNow: 12,
-      imageUrl: dinnerImages[9],
       tagNames: ['French', 'Wine Lover', 'Date Night'],
       addOns: [
         { name: 'Champagne Aperitif', description: 'Start with bubbles', price: 20 },
@@ -380,15 +445,12 @@ async function main() {
       ],
     },
     {
-      hostIndex: 4,
       title: 'Taco Tuesday Fiesta',
-      description: 'An authentic Mexican taco night with handmade tortillas, slow-cooked meats, fresh salsas, and all the fixings. Learn to make the perfect taco and enjoy margaritas!',
+      description: 'Fresh masa tortillas, slow-cooked fillings, and bright salsas. Learn assembly tricks and enjoy a lively night.',
       cuisine: 'Mexican',
       maxGuests: 12,
       basePricePerPerson: 40,
       location: 'Amsterdam Noord',
-      daysFromNow: 3,
-      imageUrl: dinnerImages[3],
       tagNames: ['Mexican', 'Street Food', 'Social'],
       addOns: [
         { name: 'Margarita Pitcher', description: 'Classic lime margarita', price: 15 },
@@ -396,15 +458,12 @@ async function main() {
       ],
     },
     {
-      hostIndex: 5,
       title: 'Plant-Based Gourmet',
-      description: 'Discover how delicious vegan food can be! A 5-course plant-based menu using seasonal, organic ingredients. From creamy cashew risotto to decadent chocolate avocado mousse.',
+      description: 'A five-course vegan menu using seasonal produce, housemade sauces, and playful textures. Satisfying and elegant.',
       cuisine: 'Vegan',
       maxGuests: 8,
       basePricePerPerson: 55,
       location: 'Amsterdam De Pijp',
-      daysFromNow: 8,
-      imageUrl: dinnerImages[7],
       tagNames: ['Vegan', 'Organic', 'Farm to Table'],
       addOns: [
         { name: 'Natural Wine', description: 'Organic vegan wines', price: 22 },
@@ -412,15 +471,12 @@ async function main() {
       ],
     },
     {
-      hostIndex: 6,
       title: 'Mediterranean Mezze Night',
-      description: 'A feast of small plates from across the Mediterranean. Hummus, falafel, tabbouleh, shawarma, and more. Perfect for sharing and socializing!',
+      description: 'An abundant table of mezze: hummus, falafel, tabbouleh, shawarma, and warm flatbread for sharing.',
       cuisine: 'Mediterranean',
       maxGuests: 10,
       basePricePerPerson: 50,
       location: 'Amsterdam Oost',
-      daysFromNow: 6,
-      imageUrl: dinnerImages[1],
       tagNames: ['Mediterranean', 'Social', 'Family Friendly'],
       addOns: [
         { name: 'Mint Tea Service', description: 'Traditional mint tea', price: 8 },
@@ -428,15 +484,12 @@ async function main() {
       ],
     },
     {
-      hostIndex: 7,
       title: 'Dim Sum Brunch',
-      description: 'A Sunday dim sum experience with over 15 different varieties of dumplings, buns, and small plates. Learn the art of dumpling folding while enjoying authentic Cantonese tea.',
+      description: 'A weekend brunch with dumplings, buns, and small plates. Learn folding techniques and sip premium tea.',
       cuisine: 'Chinese',
       maxGuests: 8,
       basePricePerPerson: 45,
       location: 'Amsterdam Chinatown',
-      daysFromNow: 4,
-      imageUrl: dinnerImages[2],
       tagNames: ['Chinese', 'Social', 'Family Friendly'],
       addOns: [
         { name: 'Tea Flight', description: 'Premium Chinese tea selection', price: 15 },
@@ -444,15 +497,12 @@ async function main() {
       ],
     },
     {
-      hostIndex: 6,
       title: 'Levantine Grill Night',
-      description: 'Smoky grills and bright mezze plates inspired by Lebanon and Turkey. Expect fresh flatbreads, herb salads, and slow-roasted meats with plenty of vegetarian options.',
+      description: 'Smoky grilled meats, herb salads, and bright sauces inspired by Lebanon and Turkey. Plenty of vegetarian options.',
       cuisine: 'Mediterranean',
       maxGuests: 10,
       basePricePerPerson: 58,
       location: 'Amsterdam Oost',
-      daysFromNow: 14,
-      imageUrl: dinnerImages[10],
       tagNames: ['Mediterranean', 'Social', 'Family Friendly'],
       addOns: [
         { name: 'Arak Pairing', description: 'Traditional anise spirit', price: 18 },
@@ -460,15 +510,12 @@ async function main() {
       ],
     },
     {
-      hostIndex: 1,
       title: 'Tokyo Ramen Lab',
-      description: 'Build your perfect bowl with handmade noodles, slow-simmered broth, and a toppings bar. Learn why good ramen takes 12 hours and tastes like it.',
+      description: 'Build your perfect bowl with handmade noodles, slow-simmered broth, and a toppings bar.',
       cuisine: 'Japanese',
       maxGuests: 8,
       basePricePerPerson: 52,
       location: 'Amsterdam Zuid',
-      daysFromNow: 16,
-      imageUrl: dinnerImages[11],
       tagNames: ['Japanese', 'Street Food', 'Pescatarian'],
       addOns: [
         { name: 'Extra Chashu', description: 'Double pork belly', price: 9 },
@@ -476,15 +523,12 @@ async function main() {
       ],
     },
     {
-      hostIndex: 5,
       title: 'Seasonal Vegan Brunch',
-      description: 'A slow Sunday brunch featuring baked oats, herbed tofu scramble, citrus salad, and small-batch pastries. Bright, fresh, and satisfying.',
+      description: 'A slow brunch with baked oats, herbed tofu scramble, citrus salad, and small-batch pastries.',
       cuisine: 'Vegan',
       maxGuests: 10,
       basePricePerPerson: 48,
       location: 'Amsterdam De Pijp',
-      daysFromNow: 18,
-      imageUrl: dinnerImages[12],
       tagNames: ['Vegan', 'Organic', 'Farm to Table'],
       addOns: [
         { name: 'Cold-Pressed Juice', description: 'Seasonal blend', price: 8 },
@@ -492,79 +536,89 @@ async function main() {
       ],
     },
     {
-      hostIndex: 7,
       title: 'Cantonese Hot Pot Night',
-      description: 'A cozy hot pot dinner with fresh seafood, thin-sliced meats, and a variety of broths. Perfect for sharing and lingering conversations.',
+      description: 'A cozy hot pot dinner with fresh seafood, thin-sliced meats, and a variety of broths for sharing.',
       cuisine: 'Chinese',
       maxGuests: 10,
       basePricePerPerson: 60,
       location: 'Amsterdam Chinatown',
-      daysFromNow: 20,
-      imageUrl: dinnerImages[13],
       tagNames: ['Chinese', 'Social', 'Family Friendly'],
       addOns: [
         { name: 'Premium Seafood Set', description: 'Extra prawns and scallops', price: 20 },
         { name: 'Dessert Soup', description: 'Sweet red bean soup', price: 6 },
       ],
     },
-    // Past dinners (for reviews)
     {
-      hostIndex: 0,
-      title: 'Sunday Sugo Session',
-      description: 'Learn to make the perfect Italian tomato sauce. A hands-on cooking experience followed by a family-style meal.',
-      cuisine: 'Italian',
-      maxGuests: 6,
-      basePricePerPerson: 55,
-      location: 'Amsterdam Centrum',
-      daysFromNow: -14,
-      imageUrl: dinnerImages[6],
-      tagNames: ['Italian', 'Home Cook'],
-      addOns: [],
-      status: DinnerStatus.COMPLETED,
+      title: 'Korean BBQ Night',
+      description: 'Tabletop grilling with marinated meats, banchan, and ssam wraps. Learn how to build the perfect bite.',
+      cuisine: 'Korean',
+      maxGuests: 10,
+      basePricePerPerson: 62,
+      location: 'Amsterdam Zuid',
+      tagNames: ['Korean', 'Social', 'Family Friendly'],
+      addOns: [
+        { name: 'Soju Flight', description: 'Three house flavors', price: 14 },
+        { name: 'Kimchi Trio', description: 'Housemade kimchi sampler', price: 7 },
+      ],
     },
     {
-      hostIndex: 3,
-      title: 'Wine & Cheese Soirée',
-      description: 'An evening dedicated to the art of French wine and cheese pairing.',
-      cuisine: 'French',
-      maxGuests: 8,
-      basePricePerPerson: 60,
-      location: 'Amsterdam Oud-Zuid',
-      daysFromNow: -7,
-      imageUrl: dinnerImages[8],
-      tagNames: ['French', 'Wine Lover'],
-      addOns: [],
-      status: DinnerStatus.COMPLETED,
-    },
-    {
-      hostIndex: 4,
-      title: 'Oaxaca Street Food Pop-Up',
-      description: 'A casual night of street-food favorites: tlayudas, esquites, and handmade tortillas with regional salsas.',
-      cuisine: 'Mexican',
-      maxGuests: 14,
-      basePricePerPerson: 35,
-      location: 'Amsterdam Noord',
-      daysFromNow: -10,
-      imageUrl: dinnerImages[3],
-      tagNames: ['Mexican', 'Street Food', 'Social'],
-      addOns: [],
-      status: DinnerStatus.COMPLETED,
-    },
-    {
-      hostIndex: 2,
-      title: 'Monsoon Comforts',
-      description: 'A cozy winter menu inspired by Mumbai monsoon foods. Think warming soups, spiced snacks, and aromatic curries.',
-      cuisine: 'Indian',
-      maxGuests: 8,
-      basePricePerPerson: 50,
+      title: 'Thai Street Food Night',
+      description: 'Pad thai, spicy salads, and coconut curries with plenty of herbs and heat. Expect bright, fresh flavors.',
+      cuisine: 'Thai',
+      maxGuests: 12,
+      basePricePerPerson: 46,
       location: 'Amsterdam West',
-      daysFromNow: -3,
-      imageUrl: dinnerImages[5],
-      tagNames: ['Indian', 'Family Friendly'],
-      addOns: [],
-      status: DinnerStatus.CANCELLED,
+      tagNames: ['Thai', 'Street Food', 'Spice Lover'],
+      addOns: [
+        { name: 'Thai Iced Tea', description: 'Sweet and creamy', price: 6 },
+        { name: 'Mango Sticky Rice', description: 'Seasonal mango dessert', price: 9 },
+      ],
+    },
+    {
+      title: 'American Smokehouse Supper',
+      description: 'Slow-smoked brisket, crispy slaw, and cornbread with all the classic sides. Backyard vibes indoors.',
+      cuisine: 'American',
+      maxGuests: 12,
+      basePricePerPerson: 54,
+      location: 'Amsterdam Noord',
+      tagNames: ['American', 'Social', 'BBQ Master'],
+      addOns: [
+        { name: 'Craft Beer Flight', description: 'Local brewery picks', price: 12 },
+        { name: 'Pecan Pie', description: 'Warm slice with cream', price: 8 },
+      ],
     },
   ]
+
+  const titleSuffixes = ['Supper Club', 'Chef\'s Table', 'Family Style', 'Tasting Night', 'Weekend Edition']
+  const descriptionExtras = [
+    'Expect generous portions and a welcoming host.',
+    'Perfect for meeting fellow food lovers in the city.',
+    'Great for celebrating a special night out.',
+    'Come hungry and ready to learn a few tricks.',
+  ]
+
+  const dinnersData = Array.from({ length: 30 }, (_, index) => {
+    const template = dinnerTemplates[index % dinnerTemplates.length]
+    const dayOffset = (index % 30) + 1
+    const status = index % 12 === 0 ? DinnerStatus.DRAFT : index % 10 === 0 ? DinnerStatus.CANCELLED : DinnerStatus.PUBLISHED
+    const dateTime = new Date(now.getTime() + dayOffset * oneDay)
+    dateTime.setHours(18 + (index % 3), index % 2 === 0 ? 0 : 30, 0, 0)
+    return {
+      hostIndex: index % hosts.length,
+      title: `${template.title} - ${titleSuffixes[index % titleSuffixes.length]}`,
+      description: `${template.description} ${descriptionExtras[index % descriptionExtras.length]}`,
+      cuisine: template.cuisine,
+      maxGuests: template.maxGuests,
+      basePricePerPerson: template.basePricePerPerson,
+      location: template.location,
+      daysFromNow: dayOffset,
+      imageUrl: dinnerImages[index % dinnerImages.length],
+      tagNames: template.tagNames,
+      addOns: template.addOns,
+      status,
+      dateTime,
+    }
+  })
 
   const dinners = []
   for (const dinnerData of dinnersData) {
@@ -578,7 +632,7 @@ async function main() {
         maxGuests: dinnerData.maxGuests,
         basePricePerPerson: dinnerData.basePricePerPerson,
         location: dinnerData.location,
-        dateTime: new Date(now.getTime() + dinnerData.daysFromNow * oneDay),
+        dateTime: dinnerData.dateTime || new Date(now.getTime() + dinnerData.daysFromNow * oneDay),
         imageUrl: dinnerData.imageUrl,
         status: dinnerData.status || DinnerStatus.PUBLISHED,
       },
@@ -616,23 +670,23 @@ async function main() {
   // Create Bookings
   console.log('📅 Creating bookings...')
   const bookingsData = [
-    { guestIndex: 0, dinnerIndex: 0, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
-    { guestIndex: 1, dinnerIndex: 1, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
-    { guestIndex: 2, dinnerIndex: 4, numberOfGuests: 4, status: BookingStatus.CONFIRMED },
-    { guestIndex: 3, dinnerIndex: 3, numberOfGuests: 2, status: BookingStatus.PENDING },
-    { guestIndex: 4, dinnerIndex: 2, numberOfGuests: 3, status: BookingStatus.CONFIRMED },
-    { guestIndex: 4, dinnerIndex: 5, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
-    { guestIndex: 1, dinnerIndex: 10, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
-    { guestIndex: 2, dinnerIndex: 11, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
-    { guestIndex: 3, dinnerIndex: 12, numberOfGuests: 3, status: BookingStatus.PENDING },
-    { guestIndex: 0, dinnerIndex: 13, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
-    // Past bookings (completed)
-    { guestIndex: 0, dinnerIndex: 8, numberOfGuests: 2, status: BookingStatus.COMPLETED },
-    { guestIndex: 1, dinnerIndex: 9, numberOfGuests: 2, status: BookingStatus.COMPLETED },
-    { guestIndex: 2, dinnerIndex: 8, numberOfGuests: 2, status: BookingStatus.COMPLETED },
-    { guestIndex: 3, dinnerIndex: 14, numberOfGuests: 2, status: BookingStatus.COMPLETED },
+    { guestIndex: 0, dinnerIndex: 1, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
+    { guestIndex: 1, dinnerIndex: 2, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
+    { guestIndex: 2, dinnerIndex: 3, numberOfGuests: 4, status: BookingStatus.CONFIRMED },
+    { guestIndex: 3, dinnerIndex: 4, numberOfGuests: 2, status: BookingStatus.PENDING },
+    { guestIndex: 4, dinnerIndex: 5, numberOfGuests: 3, status: BookingStatus.CONFIRMED },
+    { guestIndex: 4, dinnerIndex: 6, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
+    { guestIndex: 1, dinnerIndex: 7, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
+    { guestIndex: 2, dinnerIndex: 8, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
+    { guestIndex: 3, dinnerIndex: 9, numberOfGuests: 3, status: BookingStatus.PENDING },
+    { guestIndex: 0, dinnerIndex: 11, numberOfGuests: 2, status: BookingStatus.CONFIRMED },
+    { guestIndex: 0, dinnerIndex: 13, numberOfGuests: 2, status: BookingStatus.COMPLETED },
+    { guestIndex: 1, dinnerIndex: 14, numberOfGuests: 2, status: BookingStatus.COMPLETED },
+    { guestIndex: 2, dinnerIndex: 15, numberOfGuests: 2, status: BookingStatus.COMPLETED },
+    { guestIndex: 3, dinnerIndex: 16, numberOfGuests: 2, status: BookingStatus.COMPLETED },
   ]
 
+  const bookingRng = createSeededRng(20240207 + 77)
   const bookings = []
   for (const bookingData of bookingsData) {
     const guest = guests[bookingData.guestIndex]
@@ -649,7 +703,7 @@ async function main() {
         addOnsTotal: 0,
         totalPrice,
         status: bookingData.status,
-        stripePaymentIntentId: `pi_mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        stripePaymentIntentId: `pi_seed_${bookingData.guestIndex}_${bookingData.dinnerIndex}_${bookingRng.int(1_000_000_000)}`,
       },
     })
     bookings.push(booking)
@@ -660,17 +714,17 @@ async function main() {
   console.log('⭐ Creating reviews...')
   const reviewsData = [
     {
-      bookingIndex: 6,
+      bookingIndex: 10,
       rating: 5,
       comment: 'Absolutely incredible experience! Marco\'s pasta was the best I\'ve ever had outside of Italy. The atmosphere was warm and welcoming, and I learned so much about Italian cooking techniques. Can\'t wait to come back!',
     },
     {
-      bookingIndex: 7,
+      bookingIndex: 11,
       rating: 5,
       comment: 'Pierre is a true artist. The wine and cheese pairing was perfect, and his knowledge of French cuisine is impressive. The crème brûlée was divine!',
     },
     {
-      bookingIndex: 8,
+      bookingIndex: 12,
       rating: 4,
       comment: 'Great food and lovely host. The sugo was delicious and I\'ve already made it at home twice! Only giving 4 stars because the space was a bit cramped, but the experience was worth it.',
     },
