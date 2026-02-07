@@ -8,8 +8,9 @@ import GeometricGridBackground from '@/components/backgrounds/GeometricGridBackg
 import MeshGradientBackground from '@/components/backgrounds/MeshGradientBackground'
 import RadialGradientBackground from '@/components/backgrounds/RadialGradientBackground'
 import WavePatternBackground from '@/components/backgrounds/WavePatternBackground'
+import FloatingFoodBackground from '@/components/backgrounds/FloatingFoodBackground'
 
-type AnimationType = 'particles' | 'waves' | 'geometric' | 'mesh' | 'radial' | 'wave-pattern'
+type AnimationType = 'particles' | 'waves' | 'geometric' | 'mesh' | 'radial' | 'wave-pattern' | 'floating-food'
 
 const ANIMATION_MAP: Record<string, AnimationType> = {
   '/': 'particles',
@@ -24,6 +25,9 @@ const ANIMATION_MAP: Record<string, AnimationType> = {
   '/dashboard/messages': 'mesh',
   '/dashboard/host': 'geometric',
   '/dashboard/moderator': 'geometric',
+  '/recipes': 'floating-food',
+  '/minebot': 'floating-food',
+  '/dashboard/meal-planner': 'floating-food',
 }
 
 export default function GlobalBackground() {
@@ -68,6 +72,7 @@ export default function GlobalBackground() {
       {animationType === 'mesh' && <MeshGradientBackground />}
       {animationType === 'radial' && <RadialGradientBackground />}
       {animationType === 'wave-pattern' && <WavePatternBackground />}
+      {animationType === 'floating-food' && <FloatingFoodBackground />}
     </div>
   )
 }
