@@ -456,6 +456,22 @@ model RecipeLike {
   @@index([userId])
 }
 
+model AdminActionLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  action     String
+  entityType String
+  entityId   String
+  decision   String?
+  note       String?
+  createdAt  DateTime @default(now())
+  actor      User     @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
 enum UserRole {
   USER
   HOST
