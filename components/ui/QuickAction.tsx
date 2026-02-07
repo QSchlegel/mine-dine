@@ -15,6 +15,8 @@ export interface QuickActionProps {
   badge?: string | number
   /** Icon color variant */
   variant?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info'
+  /** Surface style */
+  surface?: 'default' | 'glass'
   /** Click handler */
   onClick?: () => void
   /** Href for link behavior */
@@ -28,6 +30,7 @@ export const QuickAction: React.FC<QuickActionProps> = ({
   icon,
   badge,
   variant = 'default',
+  surface = 'glass',
   onClick,
   href,
   className,
@@ -42,6 +45,7 @@ export const QuickAction: React.FC<QuickActionProps> = ({
   return (
     <Card
       className={cn('cursor-pointer group', className)}
+      variant={surface === 'glass' ? 'glass' : 'default'}
       hover="subtle"
       onClick={handleClick}
     >

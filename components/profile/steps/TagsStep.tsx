@@ -56,7 +56,7 @@ export default function TagsStep({ selectedTags, onChange, isValid }: TagsStepPr
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-gray-500">Loading tags...</div>
+        <div className="text-[var(--foreground-muted)]">Loading tags...</div>
       </div>
     )
   }

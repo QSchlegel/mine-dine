@@ -8,7 +8,7 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
   label?: string
   error?: string
   hint?: string
-  variant?: 'default' | 'filled'
+  variant?: 'default' | 'filled' | 'glass'
   showCount?: boolean
 }
 
@@ -46,6 +46,12 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         'border-2 border-transparent',
         'hover:bg-[var(--background-elevated)]',
         'shadow-xs hover:shadow-sm'
+      ),
+      glass: cn(
+        'glass',
+        'border-2 border-[var(--glass-border)]',
+        'shadow-sm hover:shadow-md',
+        'backdrop-blur-lg'
       ),
     }
 

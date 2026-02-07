@@ -88,7 +88,7 @@ export default async function ModeratorDashboardPage() {
           <div className="mt-4">
             <Link
               href="/minebot/moderator"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-600 text-white hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400 transition-colors"
             >
               <Bot className="w-4 h-4" />
               Open Moderator Bot
@@ -101,59 +101,59 @@ export default async function ModeratorDashboardPage() {
           <div className="bg-[var(--background-secondary)] rounded-lg p-6 border border-[var(--border)]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[var(--foreground-secondary)] mb-1">
-                  Pending Applications
-                </p>
-                <p className="text-2xl font-bold text-[var(--foreground)]">
-                  {pendingApplications.length}
-                </p>
-              </div>
-              <Users className="h-8 w-8 text-blue-500" />
+              <p className="text-sm text-[var(--foreground-secondary)] mb-1">
+                Pending Applications
+              </p>
+              <p className="text-2xl font-bold text-[var(--foreground)]">
+                {pendingApplications.length}
+              </p>
+            </div>
+              <Users className="h-8 w-8 text-blue-500 dark:text-blue-300" />
             </div>
           </div>
 
           <div className="bg-[var(--background-secondary)] rounded-lg p-6 border border-[var(--border)]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[var(--foreground-secondary)] mb-1">
-                  Pending Dinners
-                </p>
-                <p className="text-2xl font-bold text-[var(--foreground)]">
-                  {pendingDinners.length}
-                </p>
-              </div>
-              <Calendar className="h-8 w-8 text-purple-500" />
+              <p className="text-sm text-[var(--foreground-secondary)] mb-1">
+                Pending Dinners
+              </p>
+              <p className="text-2xl font-bold text-[var(--foreground)]">
+                {pendingDinners.length}
+              </p>
+            </div>
+              <Calendar className="h-8 w-8 text-purple-500 dark:text-purple-300" />
             </div>
           </div>
 
           <div className="bg-[var(--background-secondary)] rounded-lg p-6 border border-[var(--border)]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[var(--foreground-secondary)] mb-1">
-                  Hosts Onboarded
-                </p>
-                <p className="text-2xl font-bold text-[var(--foreground)]">
-                  {hostsOnboarded}
-                </p>
-              </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <p className="text-sm text-[var(--foreground-secondary)] mb-1">
+                Hosts Onboarded
+              </p>
+              <p className="text-2xl font-bold text-[var(--foreground)]">
+                {hostsOnboarded}
+              </p>
+            </div>
+              <CheckCircle className="h-8 w-8 text-green-500 dark:text-emerald-300" />
             </div>
           </div>
 
           <div className="bg-[var(--background-secondary)] rounded-lg p-6 border border-[var(--border)]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[var(--foreground-secondary)] mb-1">
-                  Total Revenue
-                </p>
-                <p className="text-2xl font-bold text-[var(--foreground)]">
-                  €{totalRevenue.toFixed(2)}
-                </p>
-                <p className="text-xs text-amber-600 mt-1">
-                  €{pendingRevenue.toFixed(2)} pending
-                </p>
-              </div>
-              <DollarSign className="h-8 w-8 text-amber-500" />
+              <p className="text-sm text-[var(--foreground-secondary)] mb-1">
+                Total Revenue
+              </p>
+              <p className="text-2xl font-bold text-[var(--foreground)]">
+                €{totalRevenue.toFixed(2)}
+              </p>
+              <p className="text-xs text-amber-600 dark:text-amber-300 mt-1">
+                €{pendingRevenue.toFixed(2)} pending
+              </p>
+            </div>
+              <DollarSign className="h-8 w-8 text-amber-500 dark:text-amber-300" />
             </div>
           </div>
         </div>
@@ -168,7 +168,7 @@ export default async function ModeratorDashboardPage() {
               </h2>
               <Link
                 href="/dashboard/moderator/applications"
-                className="text-sm text-blue-600 hover:underline"
+                className="text-sm text-blue-600 dark:text-blue-300 hover:underline"
               >
                 View all
               </Link>
@@ -221,7 +221,7 @@ export default async function ModeratorDashboardPage() {
               </h2>
               <Link
                 href="/dashboard/moderator/dinners"
-                className="text-sm text-blue-600 hover:underline"
+                className="text-sm text-blue-600 dark:text-blue-300 hover:underline"
               >
                 View all
               </Link>
@@ -275,7 +275,7 @@ export default async function ModeratorDashboardPage() {
             </h2>
             <Link
               href="/dashboard/moderator/revenue"
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-blue-600 dark:text-blue-300 hover:underline"
             >
               View details
             </Link>

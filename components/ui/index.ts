@@ -65,6 +65,9 @@ export { Rating } from './Rating'
 export { TagChip, TagGroup } from './TagChip'
 export type { TagChipProps, TagGroupProps } from './TagChip'
 
+export { Calendar } from './Calendar'
+export type { CalendarProps, CalendarRange, CalendarMarker } from './Calendar'
+
 export { PriceDisplay, PriceRange } from './PriceDisplay'
 export type { PriceDisplayProps, PriceRangeProps } from './PriceDisplay'
 

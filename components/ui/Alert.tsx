@@ -8,6 +8,8 @@ import { AlertCircle, CheckCircle, Info, AlertTriangle, X } from 'lucide-react'
 export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Alert variant determines color scheme */
   variant?: 'info' | 'success' | 'warning' | 'error'
+  /** Surface style */
+  surface?: 'solid' | 'glass'
   /** Alert title */
   title?: string
   /** Whether the alert can be dismissed */
@@ -59,6 +61,7 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   ({
     className,
     variant = 'info',
+    surface = 'solid',
     title,
     dismissible = false,
     onDismiss,
@@ -77,7 +80,9 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
         className={cn(
           'relative rounded-xl border p-4 sm:p-6',
           'transition-colors duration-200',
-          config.container,
+          surface === 'glass'
+            ? cn('glass', 'backdrop-blur-lg', 'border-[var(--glass-border)]', 'shadow-sm hover:shadow-md')
+            : config.container,
           className
         )}
         {...props}

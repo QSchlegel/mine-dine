@@ -190,12 +190,20 @@ export default function SignupPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, name: name || undefined }),
+        credentials: 'include',
       })
 
       const data = await response.json()
 
       if (!response.ok) {
         throw new Error(data.message || data.error || 'Sign up failed')
+      }
+
+      // Immediately create an authenticated session so the user lands in the app logged in
+      const signInResult = await authClient.signIn.email({ email, password })
+
+      if (signInResult.error) {
+        throw new Error(signInResult.error.message || 'Sign in failed after registration')
       }
 
       router.push('/dashboard')

@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import { buttonPress } from '@/lib/animations'
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'glass'
   size?: 'sm' | 'md' | 'lg'
   isLoading?: boolean
   leftIcon?: React.ReactNode
@@ -62,6 +62,14 @@ const variantStyles = {
     'hover:shadow-[0_0_24px_rgba(229,72,77,0.35),0_0_8px_rgba(229,72,77,0.2)]',
     'focus:ring-danger-500 focus:ring-offset-2',
     'border border-red-400/20'
+  ),
+  glass: cn(
+    'glass text-[var(--foreground)]',
+    'border border-[var(--glass-border)]',
+    'hover:border-[var(--border-strong)]',
+    'shadow-sm hover:shadow-md',
+    'backdrop-blur-lg',
+    'focus:ring-pink-500 focus:ring-offset-2'
   ),
 }
 

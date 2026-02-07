@@ -145,7 +145,7 @@ const avatarSizes = {
 
 const statusColors = {
   online: 'bg-success-500',
-  offline: 'bg-gray-400',
+  offline: 'bg-[var(--foreground-muted)]',
   away: 'bg-amber-500',
   busy: 'bg-danger-500',
 }

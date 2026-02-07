@@ -15,7 +15,7 @@ export interface ActionCardProps extends Omit<React.HTMLAttributes<HTMLDivElemen
   /** Icon to display */
   icon?: React.ReactNode
   /** Gradient variant for featured cards */
-  variant?: 'default' | 'primary' | 'secondary' | 'accent'
+  variant?: 'default' | 'primary' | 'secondary' | 'accent' | 'glass'
   /** Show arrow indicator */
   showArrow?: boolean
   /** Click handler */
@@ -29,10 +29,11 @@ export interface ActionCardProps extends Omit<React.HTMLAttributes<HTMLDivElemen
 const variantStyles = {
   default: {
     container: cn(
-      'bg-[var(--background-elevated)]',
-      'border border-[var(--border)]',
+      'glass',
+      'border border-[var(--glass-border)]',
       'hover:border-[var(--border-strong)]',
-      'hover:shadow-md'
+      'shadow-sm hover:shadow-md',
+      'backdrop-blur-lg'
     ),
     text: 'text-[var(--foreground)]',
     description: 'text-[var(--foreground-secondary)]',
@@ -70,6 +71,17 @@ const variantStyles = {
     text: 'text-white',
     description: 'text-white/90',
     icon: 'text-white',
+  },
+  glass: {
+    container: cn(
+      'glass',
+      'border border-[var(--glass-border)]',
+      'shadow-sm hover:shadow-md',
+      'backdrop-blur-lg'
+    ),
+    text: 'text-[var(--foreground)]',
+    description: 'text-[var(--foreground-secondary)]',
+    icon: 'text-[var(--foreground-secondary)]',
   },
 }
 

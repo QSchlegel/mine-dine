@@ -131,56 +131,55 @@
 /* Dark mode - OS preference - Matrix/Tron Terminal Aesthetic with MineDine brand colors */
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    /* Deep void black - terminal background */
-    --background: #020406;
-    --background-secondary: #040810;
-    --background-tertiary: #081018;
-    --background-elevated: #0C1620;
+    /* Deep charcoal base with softened contrast for long reading sessions */
+    --background: #0B1117;
+    --background-secondary: #0F1724;
+    --background-tertiary: #111A2B;
+    --background-elevated: #162235;
 
-    /* Neon teal text hierarchy - based on MineDine accent teal */
-    --foreground: #4DFFE6;
-    --foreground-secondary: #2EC4B6;
-    --foreground-muted: #1A9488;
+    /* Cooler neutral text with subtle tint from brand teal */
+    --foreground: #E9EEF5;
+    --foreground-secondary: #C7D0DD;
+    --foreground-muted: #9AA6B7;
 
-    /* Glowing neon borders - teal tinted */
-    --border: rgba(46, 196, 182, 0.18);
-    --border-strong: rgba(46, 196, 182, 0.35);
+    /* Gentle borders to separate glass panels without harsh neon */
+    --border: rgba(233, 238, 245, 0.08);
+    --border-strong: rgba(233, 238, 245, 0.16);
 
-    /* Primary - Neon coral/rose (MineDine primary electrified) */
-    --primary: #FF6B8A;
-    --primary-hover: #FF8FA8;
-    --primary-light: rgba(255, 107, 138, 0.15);
+    /* Primary & accent keep brand warmth but with toned-down luminance */
+    --primary: #F4729A;
+    --primary-hover: #FF8FB4;
+    --primary-light: rgba(244, 114, 154, 0.16);
 
-    /* Accent - Electric teal (MineDine teal neon) */
-    --accent: #4DFFE6;
-    --accent-hover: #80FFF0;
-    --accent-light: rgba(77, 255, 230, 0.15);
+    --accent: #4EE0C8;
+    --accent-hover: #6AF7DE;
+    --accent-light: rgba(78, 224, 200, 0.14);
 
-    /* Secondary - Neon amber (MineDine amber electrified) */
-    --secondary: #FFD666;
-    --secondary-hover: #FFE599;
-    --secondary-light: rgba(255, 214, 102, 0.15);
+    /* Secondary amber for highlights */
+    --secondary: #F6C56B;
+    --secondary-hover: #FFD89C;
+    --secondary-light: rgba(246, 197, 107, 0.16);
 
-    /* Glassy terminal panels - teal tinted */
-    --glass-background: rgba(4, 16, 24, 0.9);
-    --glass-border: rgba(46, 196, 182, 0.25);
+    /* Glass panels tuned for dark mode comfort */
+    --glass-background: rgba(17, 26, 43, 0.78);
+    --glass-border: rgba(255, 255, 255, 0.08);
 
-    /* Deep shadows with brand color bleed */
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.6);
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.7), 0 0 4px rgba(46, 196, 182, 0.08);
-    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.8), 0 0 8px rgba(46, 196, 182, 0.1);
-    --shadow-lg: 0 14px 30px rgba(0, 0, 0, 0.85), 0 0 16px rgba(46, 196, 182, 0.12);
-    --shadow-xl: 0 28px 54px rgba(0, 0, 0, 0.9), 0 0 24px rgba(46, 196, 182, 0.15);
+    /* Softer shadows to reduce glare in dark mode */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.55);
+    --shadow-lg: 0 14px 32px rgba(0, 0, 0, 0.6);
+    --shadow-xl: 0 24px 58px rgba(0, 0, 0, 0.65);
 
-    /* Neon glow effects - brand colors */
-    --glow-primary: 0 0 20px rgba(255, 107, 138, 0.4), 0 0 40px rgba(255, 107, 138, 0.2), 0 0 60px rgba(255, 107, 138, 0.1);
-    --glow-accent: 0 0 20px rgba(77, 255, 230, 0.4), 0 0 40px rgba(77, 255, 230, 0.2), 0 0 60px rgba(77, 255, 230, 0.1);
-    --glow-primary-strong: 0 0 30px rgba(255, 107, 138, 0.6), 0 0 60px rgba(255, 107, 138, 0.3), 0 0 90px rgba(255, 107, 138, 0.15);
-    --glow-accent-strong: 0 0 30px rgba(77, 255, 230, 0.6), 0 0 60px rgba(77, 255, 230, 0.3), 0 0 90px rgba(77, 255, 230, 0.15);
+    /* Balanced glow for UI focus states */
+    --glow-primary: 0 0 18px rgba(244, 114, 154, 0.28), 0 0 8px rgba(244, 114, 154, 0.18);
+    --glow-accent: 0 0 18px rgba(78, 224, 200, 0.3), 0 0 8px rgba(78, 224, 200, 0.18);
+    --glow-primary-strong: 0 0 28px rgba(244, 114, 154, 0.42), 0 0 12px rgba(244, 114, 154, 0.24);
+    --glow-accent-strong: 0 0 28px rgba(78, 224, 200, 0.42), 0 0 12px rgba(78, 224, 200, 0.24);
 
-    /* Teal neon selection */
-    --selection-background: rgba(77, 255, 230, 0.3);
-    --selection-foreground: #020406;
+    /* Teal-tinted selection that still preserves text contrast */
+    --selection-background: rgba(78, 224, 200, 0.26);
+    --selection-foreground: #0B1117;
 
     color-scheme: dark;
   }
@@ -188,56 +187,55 @@
 
 /* Dark mode - Manual toggle - Matrix/Tron Terminal Aesthetic with MineDine brand colors */
 .dark {
-  /* Deep void black - terminal background */
-  --background: #020406;
-  --background-secondary: #040810;
-  --background-tertiary: #081018;
-  --background-elevated: #0C1620;
+  /* Deep charcoal base with softened contrast for long reading sessions */
+  --background: #0B1117;
+  --background-secondary: #0F1724;
+  --background-tertiary: #111A2B;
+  --background-elevated: #162235;
 
-  /* Neon teal text hierarchy - based on MineDine accent teal */
-  --foreground: #4DFFE6;
-  --foreground-secondary: #2EC4B6;
-  --foreground-muted: #1A9488;
+  /* Cooler neutral text with subtle tint from brand teal */
+  --foreground: #E9EEF5;
+  --foreground-secondary: #C7D0DD;
+  --foreground-muted: #9AA6B7;
 
-  /* Glowing neon borders - teal tinted */
-  --border: rgba(46, 196, 182, 0.18);
-  --border-strong: rgba(46, 196, 182, 0.35);
+  /* Gentle borders to separate glass panels without harsh neon */
+  --border: rgba(233, 238, 245, 0.08);
+  --border-strong: rgba(233, 238, 245, 0.16);
 
-  /* Primary - Neon coral/rose (MineDine primary electrified) */
-  --primary: #FF6B8A;
-  --primary-hover: #FF8FA8;
-  --primary-light: rgba(255, 107, 138, 0.15);
+  /* Primary & accent keep brand warmth but with toned-down luminance */
+  --primary: #F4729A;
+  --primary-hover: #FF8FB4;
+  --primary-light: rgba(244, 114, 154, 0.16);
 
-  /* Accent - Electric teal (MineDine teal neon) */
-  --accent: #4DFFE6;
-  --accent-hover: #80FFF0;
-  --accent-light: rgba(77, 255, 230, 0.15);
+  --accent: #4EE0C8;
+  --accent-hover: #6AF7DE;
+  --accent-light: rgba(78, 224, 200, 0.14);
 
-  /* Secondary - Neon amber (MineDine amber electrified) */
-  --secondary: #FFD666;
-  --secondary-hover: #FFE599;
-  --secondary-light: rgba(255, 214, 102, 0.15);
+  /* Secondary amber for highlights */
+  --secondary: #F6C56B;
+  --secondary-hover: #FFD89C;
+  --secondary-light: rgba(246, 197, 107, 0.16);
 
-  /* Glassy terminal panels - teal tinted */
-  --glass-background: rgba(4, 16, 24, 0.9);
-  --glass-border: rgba(46, 196, 182, 0.25);
+  /* Glass panels tuned for dark mode comfort */
+  --glass-background: rgba(17, 26, 43, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.08);
 
-  /* Deep shadows with brand color bleed */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.6);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.7), 0 0 4px rgba(46, 196, 182, 0.08);
-  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.8), 0 0 8px rgba(46, 196, 182, 0.1);
-  --shadow-lg: 0 14px 30px rgba(0, 0, 0, 0.85), 0 0 16px rgba(46, 196, 182, 0.12);
-  --shadow-xl: 0 28px 54px rgba(0, 0, 0, 0.9), 0 0 24px rgba(46, 196, 182, 0.15);
+  /* Softer shadows to reduce glare in dark mode */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 14px 32px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 24px 58px rgba(0, 0, 0, 0.65);
 
-  /* Neon glow effects - brand colors */
-  --glow-primary: 0 0 20px rgba(255, 107, 138, 0.4), 0 0 40px rgba(255, 107, 138, 0.2), 0 0 60px rgba(255, 107, 138, 0.1);
-  --glow-accent: 0 0 20px rgba(77, 255, 230, 0.4), 0 0 40px rgba(77, 255, 230, 0.2), 0 0 60px rgba(77, 255, 230, 0.1);
-  --glow-primary-strong: 0 0 30px rgba(255, 107, 138, 0.6), 0 0 60px rgba(255, 107, 138, 0.3), 0 0 90px rgba(255, 107, 138, 0.15);
-  --glow-accent-strong: 0 0 30px rgba(77, 255, 230, 0.6), 0 0 60px rgba(77, 255, 230, 0.3), 0 0 90px rgba(77, 255, 230, 0.15);
+  /* Balanced glow for UI focus states */
+  --glow-primary: 0 0 18px rgba(244, 114, 154, 0.28), 0 0 8px rgba(244, 114, 154, 0.18);
+  --glow-accent: 0 0 18px rgba(78, 224, 200, 0.3), 0 0 8px rgba(78, 224, 200, 0.18);
+  --glow-primary-strong: 0 0 28px rgba(244, 114, 154, 0.42), 0 0 12px rgba(244, 114, 154, 0.24);
+  --glow-accent-strong: 0 0 28px rgba(78, 224, 200, 0.42), 0 0 12px rgba(78, 224, 200, 0.24);
 
-  /* Teal neon selection */
-  --selection-background: rgba(77, 255, 230, 0.3);
-  --selection-foreground: #020406;
+  /* Teal-tinted selection that still preserves text contrast */
+  --selection-background: rgba(78, 224, 200, 0.26);
+  --selection-foreground: #0B1117;
 
   color-scheme: dark;
 }

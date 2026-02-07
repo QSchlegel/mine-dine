@@ -37,14 +37,20 @@ export default function LoginPage() {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   }
 
-  // Attempt passkey authentication on component mount
+  // Attempt passkey authentication on component mount.
+  // In React Strict Mode (dev) effects run twice; starting two WebAuthn flows
+  // back-to-back triggers simplewebauthn's abort service, which emits the
+  // noisy AbortError we observed. Deferring the call and cancelling on unmount
+  // ensures only one prompt actually fires.
   useEffect(() => {
-    const attemptPasskeyLogin = async () => {
+    let isActive = true
+
+    const timer = window.setTimeout(async () => {
       try {
         const result = await authClient.signIn.passkey()
 
         if (!result.error) {
-          // Passkey authentication successful
+          if (!isActive) return
           router.push('/dashboard')
           router.refresh()
           return
@@ -53,11 +59,16 @@ export default function LoginPage() {
         // Silently fail - no passkeys available or user cancelled
         // This is expected behavior, so we don't show an error
       } finally {
-        setIsCheckingPasskeys(false)
+        if (isActive) {
+          setIsCheckingPasskeys(false)
+        }
       }
-    }
+    }, 0)
 
-    attemptPasskeyLogin()
+    return () => {
+      isActive = false
+      window.clearTimeout(timer)
+    }
   }, [router])
 
   const handleEmailContinue = useCallback(async (e: React.FormEvent) => {

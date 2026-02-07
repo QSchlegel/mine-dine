@@ -189,7 +189,7 @@ export default function HostApplyPage() {
               <p className={`text-sm ${
                 applicationText.length < 50 
                   ? 'text-red-500' 
-                  : 'text-gray-500'
+                  : 'text-[var(--foreground-muted)]'
               }`}>
                 {applicationText.length}/50 characters {applicationText.length < 50 && '(minimum 50)'}
               </p>

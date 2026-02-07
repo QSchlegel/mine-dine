@@ -477,7 +477,7 @@ export default function ProfileCompletionWizard({
                       : 'Complete Profile'}
                   </Button>
                   {isComplete && selectedTags.length >= 3 && (
-                    <p className="text-xs text-gray-500 text-right max-w-xs">
+                    <p className="text-xs text-[var(--foreground-muted)] text-right max-w-xs">
                       {selectedTags.length < 5
                         ? 'You can add more tags later in your profile settings'
                         : 'Feel free to add even more tags before finishing!'}

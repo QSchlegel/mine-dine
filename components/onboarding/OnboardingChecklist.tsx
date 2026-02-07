@@ -16,6 +16,7 @@ interface OnboardingChecklistProps {
   onOpenWizard: () => void
   onStartTour: () => void
   onBookDinner?: () => void
+  onStartGuidedFlow?: () => void
   className?: string
 }
 
@@ -38,6 +39,7 @@ export default function OnboardingChecklist({
   onOpenWizard,
   onStartTour,
   onBookDinner,
+  onStartGuidedFlow,
   className,
 }: OnboardingChecklistProps) {
   const [isDismissed, setIsDismissed] = useState(false)
@@ -100,7 +102,7 @@ export default function OnboardingChecklist({
           transition={{ duration: 0.18 }}
           className={className}
         >
-          <Card className="border border-coral-100/70 dark:border-coral-900/40 bg-white/90 dark:bg-[var(--background)]/90 shadow-[0_12px_45px_-25px_rgba(232,93,117,0.55)]">
+          <Card className="border border-[var(--border)] bg-[var(--background-elevated)]/90 shadow-[0_12px_45px_-25px_rgba(232,93,117,0.55)] backdrop-blur-sm transition-theme">
             <CardHeader className="flex flex-row items-start justify-between gap-4 pb-4">
               <div className="space-y-1">
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -111,13 +113,25 @@ export default function OnboardingChecklist({
                   A three-step path to unlock better matches and bookings.
                 </p>
               </div>
-              <button
-                aria-label="Dismiss onboarding tips"
-                onClick={handleDismiss}
-                className="text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                {onStartGuidedFlow && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-coral-600 hover:text-coral-700"
+                    onClick={onStartGuidedFlow}
+                  >
+                    Guided steps
+                  </Button>
+                )}
+                <button
+                  aria-label="Dismiss onboarding tips"
+                  onClick={handleDismiss}
+                  className="text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </CardHeader>
 
             <CardContent className="space-y-4 pt-0">
@@ -135,7 +149,7 @@ export default function OnboardingChecklist({
                     className="rounded-xl border border-[var(--border)] bg-[var(--background-secondary)]/60 p-4 flex flex-col gap-3"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="mt-0.5 rounded-full bg-coral-500/10 text-coral-600 p-2">
+                      <div className="mt-0.5 rounded-full bg-coral-500/10 dark:bg-coral-500/20 text-coral-600 dark:text-coral-300 p-2">
                         {step.id === 'profile' && <Compass className="w-4 h-4" />}
                         {step.id === 'tour' && <Sparkles className="w-4 h-4" />}
                         {step.id === 'booking' && <CalendarRange className="w-4 h-4" />}
@@ -156,8 +170,8 @@ export default function OnboardingChecklist({
                         size="sm"
                         variant={step.id === 'profile' ? 'primary' : 'outline'}
                         className={step.id === 'profile'
-                          ? 'bg-coral-500 hover:bg-coral-600 text-white'
-                          : 'border-coral-200 text-coral-600 hover:border-coral-300 hover:text-coral-700'}
+                          ? 'bg-coral-500 hover:bg-coral-600 text-white shadow-[var(--glow-primary)]'
+                          : 'border border-[var(--border)] text-[var(--foreground)] hover:border-coral-400/60 hover:text-coral-500 dark:text-coral-200 dark:hover:border-coral-400'}
                         onClick={step.onAction}
                       >
                         {step.actionLabel}

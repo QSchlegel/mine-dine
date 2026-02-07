@@ -58,27 +58,27 @@ export default function HostDashboardPage() {
     if (!application) return null
     switch (application.status) {
       case 'APPROVED':
-        return <CheckCircle className="w-5 h-5 text-green-600" />
+        return <CheckCircle className="w-5 h-5 text-green-600 dark:text-emerald-300" />
       case 'PENDING':
-        return <Clock className="w-5 h-5 text-yellow-600" />
+        return <Clock className="w-5 h-5 text-yellow-600 dark:text-amber-300" />
       case 'REJECTED':
-        return <XCircle className="w-5 h-5 text-red-600" />
+        return <XCircle className="w-5 h-5 text-red-600 dark:text-rose-300" />
       default:
         return null
     }
   }
 
   const getStatusColor = () => {
-    if (!application) return 'bg-gray-100 text-gray-800'
+    if (!application) return 'bg-[var(--background-secondary)] text-[var(--foreground)] border border-[var(--border)]'
     switch (application.status) {
       case 'APPROVED':
-        return 'bg-green-100 text-green-800'
+        return 'bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:border-emerald-800/60'
       case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800'
+        return 'bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:border-amber-800/60'
       case 'REJECTED':
-        return 'bg-red-100 text-red-800'
+        return 'bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-900/30 dark:text-rose-200 dark:border-rose-800/60'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-[var(--background-secondary)] text-[var(--foreground)] border border-[var(--border)]'
     }
   }
 
@@ -130,7 +130,7 @@ export default function HostDashboardPage() {
             <CardContent>
               {application.status === 'APPROVED' && (
                 <div className="space-y-4">
-                  <p className="text-green-700">
+                  <p className="text-green-700 dark:text-emerald-200">
                     Congratulations! Your application has been approved. You can now create and manage dinners.
                   </p>
                   <Button onClick={() => router.push('/dashboard/host/dinners')}>
@@ -140,7 +140,7 @@ export default function HostDashboardPage() {
               )}
               {application.status === 'PENDING' && (
                 <div className="space-y-4">
-                  <p className="text-yellow-700">
+                  <p className="text-yellow-700 dark:text-amber-200">
                     Your application is currently under review. We'll notify you once a decision has been made.
                   </p>
                   <p className="text-sm text-[var(--foreground-muted)]">
@@ -152,13 +152,13 @@ export default function HostDashboardPage() {
               )}
               {application.status === 'REJECTED' && (
                 <div className="space-y-4">
-                  <p className="text-red-700">
+                  <p className="text-red-700 dark:text-rose-200">
                     Your application was not approved at this time.
                   </p>
                   {application.rejectionReason && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <p className="text-sm font-medium text-red-800 mb-1">Reason:</p>
-                      <p className="text-sm text-red-700">{application.rejectionReason}</p>
+                    <div className="bg-rose-50 border border-rose-200 rounded-lg p-4 dark:bg-rose-900/20 dark:border-rose-800/60">
+                      <p className="text-sm font-medium text-rose-800 dark:text-rose-200 mb-1">Reason:</p>
+                      <p className="text-sm text-rose-700 dark:text-rose-100">{application.rejectionReason}</p>
                     </div>
                   )}
                   <Button variant="outline" onClick={() => router.push('/dashboard/host/apply')}>

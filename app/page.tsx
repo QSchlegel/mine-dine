@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { staggerContainer, staggerItem, fadeInUp } from '@/lib/animations'
 import InteractiveFloatingIcons from '@/components/InteractiveFloatingIcons'
-import CustomCursor from '@/components/CustomCursor'
 import DynamicSlogan from '@/components/ui/DynamicSlogan'
 import { useInteraction, requestGyroscopePermission } from '@/hooks/useInteraction'
 import {
@@ -43,9 +42,6 @@ export default function Home() {
       onClick={handleFirstInteraction}
       onTouchStart={handleFirstInteraction}
     >
-      {/* Custom cursor (desktop only) */}
-      <CustomCursor enabled={!interaction.isMobile} />
-
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-[var(--background)]">
         {/* Background layer - adapts to theme */}

@@ -10,7 +10,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   hint?: string
   leftIcon?: React.ReactNode
   rightIcon?: React.ReactNode
-  variant?: 'default' | 'filled'
+  variant?: 'default' | 'filled' | 'glass'
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -43,6 +43,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         'border-2 border-transparent',
         'hover:bg-[var(--background-elevated)]',
         'shadow-xs hover:shadow-sm'
+      ),
+      glass: cn(
+        'glass',
+        'border-2 border-[var(--glass-border)]',
+        'shadow-sm hover:shadow-md',
+        'backdrop-blur-lg'
       ),
     }
 

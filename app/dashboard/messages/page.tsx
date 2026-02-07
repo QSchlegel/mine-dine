@@ -211,7 +211,7 @@ export default function MessagesPage() {
               </Card>
             ) : (
               <Card>
-                <CardContent className="py-12 text-center text-gray-500">
+                <CardContent className="py-12 text-center text-[var(--foreground-muted)]">
                   Select a conversation to start messaging
                 </CardContent>
               </Card>

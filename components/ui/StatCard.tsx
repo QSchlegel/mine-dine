@@ -26,6 +26,8 @@ export interface StatCardProps {
   isLoading?: boolean
   /** Additional class names */
   className?: string
+  /** Glass surface */
+  surface?: 'default' | 'glass'
 }
 
 export const StatCard: React.FC<StatCardProps> = ({
@@ -37,6 +39,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   onClick,
   isLoading = false,
   className,
+  surface = 'glass',
 }) => {
   const content = (
     <Card
@@ -44,6 +47,7 @@ export const StatCard: React.FC<StatCardProps> = ({
         onClick && 'cursor-pointer',
         className
       )}
+      variant={surface === 'glass' ? 'glass' : 'default'}
       hover={onClick ? 'subtle' : 'none'}
       onClick={onClick}
     >

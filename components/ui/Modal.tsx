@@ -17,6 +17,8 @@ export interface ModalProps {
   closeOnEscape?: boolean
   /** Makes modal fullscreen on mobile devices */
   mobileFullscreen?: boolean
+  /** Applies glass morphism surface */
+  glass?: boolean
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -30,6 +32,7 @@ export const Modal: React.FC<ModalProps> = ({
   closeOnBackdropClick = true,
   closeOnEscape = true,
   mobileFullscreen = false,
+  glass = false,
 }) => {
   // Handle escape key
   const handleEscape = useCallback(
@@ -86,9 +89,9 @@ export const Modal: React.FC<ModalProps> = ({
           <motion.div
             className={cn(
               'relative z-50 w-full overflow-hidden',
-              'bg-[var(--background-elevated)]',
-              'border border-[var(--border)]',
-              'shadow-lg dark:shadow-2xl',
+              glass
+                ? ['glass', 'backdrop-blur-lg', 'border border-[var(--glass-border)]', 'shadow-lg dark:shadow-2xl']
+                : ['bg-[var(--background-elevated)]', 'border border-[var(--border)]', 'shadow-lg dark:shadow-2xl'],
               // Mobile fullscreen mode
               mobileFullscreen ? [
                 'h-full sm:h-auto',

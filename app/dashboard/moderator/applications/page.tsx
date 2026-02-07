@@ -70,11 +70,11 @@ export default function ApplicationsListPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'APPROVED':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
+        return <CheckCircle className="h-4 w-4 text-green-600 dark:text-emerald-300" />
       case 'REJECTED':
-        return <XCircle className="h-4 w-4 text-red-600" />
+        return <XCircle className="h-4 w-4 text-red-600 dark:text-rose-300" />
       case 'PENDING':
-        return <Clock className="h-4 w-4 text-amber-600" />
+        return <Clock className="h-4 w-4 text-amber-600 dark:text-amber-300" />
       default:
         return null
     }
@@ -83,13 +83,13 @@ export default function ApplicationsListPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'APPROVED':
-        return 'text-green-600 bg-green-50 border-green-200'
+        return 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-200 dark:bg-emerald-900/30 dark:border-emerald-800/60'
       case 'REJECTED':
-        return 'text-red-600 bg-red-50 border-red-200'
+        return 'text-rose-700 bg-rose-50 border-rose-200 dark:text-rose-200 dark:bg-rose-900/30 dark:border-rose-800/60'
       case 'PENDING':
-        return 'text-amber-600 bg-amber-50 border-amber-200'
+        return 'text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-200 dark:bg-amber-900/30 dark:border-amber-800/60'
       default:
-        return ''
+        return 'text-[var(--foreground)] bg-[var(--background-secondary)] border-[var(--border)]'
     }
   }
 
@@ -140,7 +140,7 @@ export default function ApplicationsListPage() {
                 >
                   {status}
                   {statusCounts[status] > 0 && (
-                    <span className="ml-2 px-2 py-0.5 rounded-full bg-white/20 text-xs">
+                    <span className="ml-2 px-2 py-0.5 rounded-full bg-[var(--background-elevated)]/40 text-xs text-[var(--foreground)]">
                       {statusCounts[status]}
                     </span>
                   )}
@@ -154,7 +154,7 @@ export default function ApplicationsListPage() {
         {error && (
           <Card className="mb-6">
             <CardContent className="pt-6">
-              <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700">
+              <div className="p-4 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-900/20 dark:border-rose-800/60 dark:text-rose-100">
                 {error}
               </div>
             </CardContent>
