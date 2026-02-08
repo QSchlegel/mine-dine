@@ -146,6 +146,9 @@ export const POST = withAuth(async (
           dinnerTitle: dinner.title,
           dinnerDate,
           inviteUrl,
+          eventId: dinnerId,
+          location: dinner.location ?? undefined,
+          isPrivateEvent: dinner.visibility === 'PRIVATE',
         })
         if (!result.ok) {
           failed.push(addr)

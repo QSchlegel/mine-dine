@@ -60,6 +60,7 @@ export default function EventDetailPage() {
   const eventId = params?.id as string
 
   const [event, setEvent] = useState<Event | null>(null)
+  const [invitations, setInvitations] = useState<Invitation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -75,27 +76,38 @@ export default function EventDetailPage() {
   const [cancelling, setCancelling] = useState(false)
 
   const fetchEvent = async () => {
-    try {
-      const res = await fetch(`/api/dinners/${eventId}`)
-      if (!res.ok) {
-        if (res.status === 404) throw new Error('Event not found')
-        if (res.status === 403) throw new Error('You do not have access to this event')
-        throw new Error('Failed to load event')
-      }
-      const data = await res.json()
-      setEvent(data.dinner)
-      setNewDateTime(new Date(data.dinner.dateTime).toISOString().slice(0, 16))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
-    } finally {
-      setLoading(false)
+    const res = await fetch(`/api/dinners/${eventId}`, { cache: 'no-store' })
+    if (!res.ok) {
+      if (res.status === 404) throw new Error('Event not found')
+      if (res.status === 403) throw new Error('You do not have access to this event')
+      throw new Error('Failed to load event')
     }
+    const data = await res.json()
+    setEvent(data.dinner)
+    setNewDateTime(new Date(data.dinner.dateTime).toISOString().slice(0, 16))
+    return data.dinner
+  }
+
+  const fetchInvitations = async () => {
+    const res = await fetch(`/api/dinners/${eventId}/invitations`, { cache: 'no-store' })
+    const data = await res.json()
+    if (res.ok) setInvitations(data.invitations ?? [])
   }
 
   useEffect(() => {
-    if (eventId) {
-      fetchEvent()
+    if (!eventId) {
+      setLoading(false)
+      return
     }
+    setLoading(true)
+    setError(null)
+    Promise.all([
+      fetchEvent().catch((err) => {
+        setError(err instanceof Error ? err.message : 'Something went wrong')
+        return null
+      }),
+      fetchInvitations(),
+    ]).finally(() => setLoading(false))
   }, [eventId])
 
   const handleReschedule = async () => {
@@ -118,7 +130,7 @@ export default function EventDetailPage() {
         throw new Error(data.error || 'Failed to reschedule')
       }
 
-      await fetchEvent()
+      await Promise.all([fetchEvent(), fetchInvitations()])
       setShowReschedule(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to reschedule')
@@ -175,7 +187,6 @@ export default function EventDetailPage() {
     )
   }
 
-  const invitations = event.invitations || []
   const accepted = invitations.filter((i) => i.status === 'ACCEPTED')
   const pending = invitations.filter((i) => i.status === 'PENDING')
   const declined = invitations.filter((i) => i.status === 'DECLINED')

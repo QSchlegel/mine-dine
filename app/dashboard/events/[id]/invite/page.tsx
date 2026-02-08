@@ -51,14 +51,14 @@ export default function EventInvitePage() {
 
   const fetchEvent = async () => {
     if (!eventId) return
-    const res = await fetch(`/api/dinners/${eventId}`)
+    const res = await fetch(`/api/dinners/${eventId}`, { cache: 'no-store' })
     const data = await res.json()
     if (res.ok) setEvent(data.dinner)
   }
 
   const fetchInvitations = async () => {
     if (!eventId) return
-    const res = await fetch(`/api/dinners/${eventId}/invitations`)
+    const res = await fetch(`/api/dinners/${eventId}/invitations`, { cache: 'no-store' })
     const data = await res.json()
     if (res.ok) setInvitations(data.invitations ?? [])
     else setError(data.error ?? 'Failed to load invitations')
