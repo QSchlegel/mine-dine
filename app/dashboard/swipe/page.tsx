@@ -235,22 +235,22 @@ function SwipePageContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4 relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4 sm:p-6 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/3 left-1/3 w-48 h-48 bg-red-500/10 rounded-full blur-[80px]" />
+          <div className="absolute top-1/3 left-1/3 w-32 sm:w-48 h-32 sm:h-48 bg-red-500/10 rounded-full blur-[60px] sm:blur-[80px]" />
         </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative glass-premium rounded-3xl p-10 max-w-md w-full text-center"
+          className="relative glass-premium rounded-2xl sm:rounded-3xl p-6 sm:p-10 max-w-md w-full text-center"
         >
-          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-            <X className="w-8 h-8 text-red-500" />
+          <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 sm:mb-6 rounded-xl sm:rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+            <X className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
           </div>
-          <h2 className="text-2xl font-display font-bold text-[var(--foreground)] mb-3">Something went wrong</h2>
-          <p className="text-[var(--foreground-secondary)] mb-8">{error}</p>
-          <Button onClick={() => window.location.reload()} size="lg" className="!rounded-2xl">
+          <h2 className="text-xl sm:text-2xl font-sans font-bold text-[var(--foreground)] mb-2 sm:mb-3">Something went wrong</h2>
+          <p className="text-sm sm:text-base text-[var(--foreground-secondary)] mb-6 sm:mb-8">{error}</p>
+          <Button onClick={() => window.location.reload()} size="lg" className="w-full sm:w-auto !rounded-xl sm:!rounded-2xl">
             Try Again
           </Button>
         </motion.div>
@@ -260,30 +260,30 @@ function SwipePageContent() {
 
   if (currentIndex >= hosts.length) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4 relative overflow-hidden">
-        {/* Background decorations */}
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4 sm:p-6 relative overflow-hidden">
+        {/* Background decorations - smaller on mobile */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-coral-500/10 rounded-full blur-[100px]" />
-          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-accent-500/10 rounded-full blur-[100px]" />
+          <div className="absolute top-1/4 left-1/4 w-40 sm:w-64 h-40 sm:h-64 bg-coral-500/10 rounded-full blur-[70px] sm:blur-[100px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-40 sm:w-64 h-40 sm:h-64 bg-accent-500/10 rounded-full blur-[70px] sm:blur-[100px]" />
         </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative glass-premium rounded-3xl p-10 max-w-md w-full text-center"
+          className="relative glass-premium rounded-2xl sm:rounded-3xl p-6 sm:p-10 max-w-md w-full text-center"
         >
           <motion.div
-            className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-coral-100 to-coral-200 dark:from-coral-900/30 dark:to-coral-800/20 flex items-center justify-center"
+            className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 rounded-xl sm:rounded-2xl bg-gradient-to-br from-coral-100 to-coral-200 dark:from-coral-900/30 dark:to-coral-800/20 flex items-center justify-center"
             animate={{ rotate: [0, 5, -5, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <span className="text-4xl">🎉</span>
+            <span className="text-3xl sm:text-4xl">🎉</span>
           </motion.div>
-          <h2 className="text-2xl font-display font-bold text-[var(--foreground)] mb-3">All caught up!</h2>
-          <p className="text-[var(--foreground-secondary)] mb-8">
+          <h2 className="text-xl sm:text-2xl font-sans font-bold text-[var(--foreground)] mb-2 sm:mb-3">All caught up!</h2>
+          <p className="text-sm sm:text-base text-[var(--foreground-secondary)] mb-6 sm:mb-8">
             You&apos;ve discovered all available hosts. Check back later for new chefs joining the platform!
           </p>
-          <Button onClick={() => window.location.reload()} size="lg" className="!rounded-2xl">
+          <Button onClick={() => window.location.reload()} size="lg" className="w-full sm:w-auto !rounded-xl sm:!rounded-2xl">
             Refresh
           </Button>
         </motion.div>
@@ -321,15 +321,15 @@ function SwipePageContent() {
         onComplete={handleTourComplete}
       />
 
-      {/* Animated background */}
+      {/* Animated background - smaller on mobile */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div
-          className="absolute top-[10%] left-[10%] w-[400px] h-[400px] bg-gradient-to-br from-coral-400/20 to-coral-600/5 rounded-full blur-[100px]"
+          className="absolute top-[10%] left-[5%] sm:left-[10%] w-[250px] sm:w-[350px] lg:w-[400px] h-[250px] sm:h-[350px] lg:h-[400px] bg-gradient-to-br from-coral-400/20 to-coral-600/5 rounded-full blur-[80px] sm:blur-[100px]"
           animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
           transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute bottom-[20%] right-[10%] w-[350px] h-[350px] bg-gradient-to-br from-accent-400/15 to-accent-600/5 rounded-full blur-[80px]"
+          className="absolute bottom-[20%] right-[5%] sm:right-[10%] w-[220px] sm:w-[300px] lg:w-[350px] h-[220px] sm:h-[300px] lg:h-[350px] bg-gradient-to-br from-accent-400/15 to-accent-600/5 rounded-full blur-[60px] sm:blur-[80px]"
           animate={{ x: [0, -20, 0], y: [0, 25, 0] }}
           transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
         />
@@ -351,30 +351,30 @@ function SwipePageContent() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 py-6 px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 py-4 sm:py-6 px-3 sm:px-6 lg:px-8">
         <div className="max-w-lg mx-auto">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8 text-center"
+            className="mb-5 sm:mb-8 text-center"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-premium mb-4">
-              <Heart className="w-4 h-4 text-coral-500" />
-              <span className="text-sm font-medium text-[var(--foreground-secondary)]">
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full glass-premium mb-3 sm:mb-4">
+              <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-coral-500" />
+              <span className="text-xs sm:text-sm font-medium text-[var(--foreground-secondary)]">
                 {hosts.length - currentIndex} hosts to discover
               </span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-display font-bold text-[var(--foreground)] tracking-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-sans font-bold text-[var(--foreground)] tracking-tight">
               Find Your Host
             </h1>
-            <p className="text-sm text-[var(--foreground-muted)] mt-2">
+            <p className="text-xs sm:text-sm text-[var(--foreground-muted)] mt-1.5 sm:mt-2">
               Swipe right to like, left to pass
             </p>
           </motion.div>
 
           {/* Card Stack */}
-          <div className="relative h-[550px]" style={{ perspective: '1000px' }}>
+          <div className="relative h-[480px] sm:h-[520px] lg:h-[550px]" style={{ perspective: '1000px' }}>
             {/* Background cards (stack effect) */}
             {hosts.slice(currentIndex + 1, currentIndex + 3).map((host, i) => (
               <motion.div
@@ -435,7 +435,7 @@ function SwipePageContent() {
                   className="absolute top-8 left-8 z-20 rotate-[-15deg] px-5 py-2.5 rounded-2xl pointer-events-none bg-green-500/90 backdrop-blur-sm shadow-lg"
                   style={{ opacity: likeOpacity }}
                 >
-                  <span className="font-display font-bold text-2xl text-white tracking-wide">LIKE</span>
+                  <span className="font-sans font-bold text-2xl text-white tracking-wide">LIKE</span>
                 </motion.div>
 
                 {/* NOPE stamp */}
@@ -443,7 +443,7 @@ function SwipePageContent() {
                   className="absolute top-8 right-8 z-20 rotate-[15deg] px-5 py-2.5 rounded-2xl pointer-events-none bg-red-500/90 backdrop-blur-sm shadow-lg"
                   style={{ opacity: nopeOpacity }}
                 >
-                  <span className="font-display font-bold text-2xl text-white tracking-wide">NOPE</span>
+                  <span className="font-sans font-bold text-2xl text-white tracking-wide">NOPE</span>
                 </motion.div>
 
                 <motion.div
@@ -622,18 +622,18 @@ function SwipePageContent() {
           </div>
 
           {/* Action buttons */}
-          <div className="flex justify-center items-center gap-6 mt-8" data-tour="swipe">
+          <div className="flex justify-center items-center gap-4 sm:gap-6 mt-5 sm:mt-8" data-tour="swipe">
             {/* Pass button */}
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => handleSwipe('PASS')}
               disabled={swiping}
-              className="group relative w-16 h-16 rounded-full flex items-center justify-center transition-all disabled:opacity-50"
+              className="group relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center transition-all disabled:opacity-50"
             >
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/20 group-hover:from-red-200 group-hover:to-red-300 dark:group-hover:from-red-800/40 dark:group-hover:to-red-700/30 transition-all" />
               <div className="absolute inset-0 rounded-full border-2 border-red-300 dark:border-red-600/50 group-hover:border-red-400 dark:group-hover:border-red-500/70 transition-colors" />
-              <X className="relative w-7 h-7 text-red-500 dark:text-red-400" />
+              <X className="relative w-6 h-6 sm:w-7 sm:h-7 text-red-500 dark:text-red-400" />
             </motion.button>
 
             {/* Like button - larger and more prominent */}
@@ -642,14 +642,14 @@ function SwipePageContent() {
               whileTap={{ scale: 0.9 }}
               onClick={() => handleSwipe('LIKE')}
               disabled={swiping}
-              className="group relative w-20 h-20 rounded-full flex items-center justify-center transition-all disabled:opacity-50"
+              className="group relative w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center transition-all disabled:opacity-50"
             >
               <motion.div
                 className="absolute inset-0 rounded-full bg-gradient-to-br from-green-400 to-green-500 dark:from-green-500 dark:to-green-600 shadow-lg group-hover:shadow-xl group-hover:shadow-green-500/30"
                 animate={swiping ? {} : { scale: [1, 1.05, 1] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
               />
-              <Heart className="relative w-9 h-9 text-white fill-white" />
+              <Heart className="relative w-7 h-7 sm:w-9 sm:h-9 text-white fill-white" />
             </motion.button>
           </div>
 
@@ -658,11 +658,11 @@ function SwipePageContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="mt-8"
+            className="mt-5 sm:mt-8"
           >
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <span className="text-sm font-medium text-[var(--foreground)]">{currentIndex + 1}</span>
-              <div className="flex-1 max-w-[200px] h-1.5 bg-[var(--border)] rounded-full overflow-hidden">
+            <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <span className="text-xs sm:text-sm font-medium text-[var(--foreground)]">{currentIndex + 1}</span>
+              <div className="flex-1 max-w-[160px] sm:max-w-[200px] h-1 sm:h-1.5 bg-[var(--border)] rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-gradient-to-r from-coral-400 to-coral-500 rounded-full"
                   initial={{ width: 0 }}
@@ -670,9 +670,9 @@ function SwipePageContent() {
                   transition={{ duration: 0.3 }}
                 />
               </div>
-              <span className="text-sm text-[var(--foreground-muted)]">{hosts.length}</span>
+              <span className="text-xs sm:text-sm text-[var(--foreground-muted)]">{hosts.length}</span>
             </div>
-            <p className="text-xs text-center text-[var(--foreground-muted)]">
+            <p className="text-[10px] sm:text-xs text-center text-[var(--foreground-muted)] hidden sm:block">
               Use ← → arrow keys to swipe
             </p>
           </motion.div>

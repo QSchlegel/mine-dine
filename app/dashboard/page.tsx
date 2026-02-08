@@ -205,10 +205,10 @@ export default function DashboardPage() {
 
   return (
     <div className="relative min-h-screen bg-[var(--background)] py-8 sm:py-12 overflow-hidden">
-      {/* Animated background blobs */}
+      {/* Animated background blobs - smaller on mobile */}
       <div className="pointer-events-none absolute inset-0">
         <motion.div
-          className="absolute top-[5%] left-[5%] w-[500px] h-[500px] bg-gradient-to-br from-coral-400/15 to-coral-600/5 rounded-full blur-[120px]"
+          className="absolute top-[5%] left-[5%] w-[280px] sm:w-[400px] lg:w-[500px] h-[280px] sm:h-[400px] lg:h-[500px] bg-gradient-to-br from-coral-400/15 to-coral-600/5 rounded-full blur-[80px] sm:blur-[100px] lg:blur-[120px]"
           animate={{
             x: [0, 30, 0],
             y: [0, -20, 0],
@@ -221,7 +221,7 @@ export default function DashboardPage() {
           }}
         />
         <motion.div
-          className="absolute bottom-[10%] right-[5%] w-[450px] h-[450px] bg-gradient-to-br from-accent-400/12 to-accent-600/5 rounded-full blur-[100px]"
+          className="absolute bottom-[10%] right-[5%] w-[250px] sm:w-[350px] lg:w-[450px] h-[250px] sm:h-[350px] lg:h-[450px] bg-gradient-to-br from-accent-400/12 to-accent-600/5 rounded-full blur-[70px] sm:blur-[85px] lg:blur-[100px]"
           animate={{
             x: [0, -25, 0],
             y: [0, 25, 0],
@@ -235,7 +235,7 @@ export default function DashboardPage() {
           }}
         />
         <motion.div
-          className="absolute top-[40%] right-[20%] w-[300px] h-[300px] bg-gradient-to-br from-amber-400/10 to-amber-600/5 rounded-full blur-[80px]"
+          className="absolute top-[40%] right-[20%] w-[200px] sm:w-[250px] lg:w-[300px] h-[200px] sm:h-[250px] lg:h-[300px] bg-gradient-to-br from-amber-400/10 to-amber-600/5 rounded-full blur-[60px] sm:blur-[70px] lg:blur-[80px] hidden sm:block"
           animate={{
             x: [0, 20, 0],
             y: [0, -15, 0],
@@ -256,19 +256,19 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-10">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 sm:gap-6 mb-6 sm:mb-10">
             <div>
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.1 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-coral-100 dark:bg-coral-900/30 text-coral-700 dark:text-coral-300 text-sm font-medium mb-4"
+                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-coral-100 dark:bg-coral-900/30 text-coral-700 dark:text-coral-300 text-xs sm:text-sm font-medium mb-3 sm:mb-4"
               >
-                <span className="text-lg">{getMealEmoji()}</span>
-                <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
+                <span className="text-base sm:text-lg">{getMealEmoji()}</span>
+                <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
               </motion.div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-[var(--foreground)] tracking-tight leading-[1.1]">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-sans font-bold text-[var(--foreground)] tracking-tight leading-[1.1]">
                 {getGreeting()}
                 {userName && (
                   <>
@@ -278,7 +278,7 @@ export default function DashboardPage() {
                 )}
               </h1>
 
-              <p className="mt-4 text-lg text-[var(--foreground-secondary)] max-w-lg">
+              <p className="mt-3 sm:mt-4 text-base sm:text-lg text-[var(--foreground-secondary)] max-w-lg">
                 {stats.upcomingBookings > 0
                   ? `You have ${stats.upcomingBookings} upcoming dinner${stats.upcomingBookings > 1 ? 's' : ''} to look forward to.`
                   : 'Ready to discover your next memorable dining experience?'}
@@ -286,35 +286,35 @@ export default function DashboardPage() {
             </div>
 
             {/* Quick stats cards */}
-            <div className="flex gap-4">
+            <div className="flex gap-3 sm:gap-4">
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
-                className="glass-premium rounded-2xl p-5 min-w-[140px]"
+                className="glass-premium rounded-xl sm:rounded-2xl p-4 sm:p-5 flex-1 sm:flex-none sm:min-w-[140px]"
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="h-8 w-8 rounded-lg bg-coral-100 dark:bg-coral-900/30 flex items-center justify-center">
-                    <TrendingUp className="h-4 w-4 text-coral-600 dark:text-coral-400" />
+                <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+                  <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-coral-100 dark:bg-coral-900/30 flex items-center justify-center">
+                    <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-coral-600 dark:text-coral-400" />
                   </div>
                 </div>
-                <p className="text-3xl font-display font-bold text-[var(--foreground)]">{stats.bookings}</p>
-                <p className="text-sm text-[var(--foreground-muted)]">Total bookings</p>
+                <p className="text-2xl sm:text-3xl font-sans font-bold text-[var(--foreground)]">{stats.bookings}</p>
+                <p className="text-xs sm:text-sm text-[var(--foreground-muted)]">Total bookings</p>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
-                className="glass-premium rounded-2xl p-5 min-w-[140px]"
+                className="glass-premium rounded-xl sm:rounded-2xl p-4 sm:p-5 flex-1 sm:flex-none sm:min-w-[140px]"
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="h-8 w-8 rounded-lg bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center">
-                    <Clock className="h-4 w-4 text-accent-600 dark:text-accent-400" />
+                <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+                  <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center">
+                    <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent-600 dark:text-accent-400" />
                   </div>
                 </div>
-                <p className="text-3xl font-display font-bold text-[var(--foreground)]">{stats.upcomingBookings}</p>
-                <p className="text-sm text-[var(--foreground-muted)]">Upcoming</p>
+                <p className="text-2xl sm:text-3xl font-sans font-bold text-[var(--foreground)]">{stats.upcomingBookings}</p>
+                <p className="text-xs sm:text-sm text-[var(--foreground-muted)]">Upcoming</p>
               </motion.div>
             </div>
           </div>
@@ -325,7 +325,7 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.5 }}
-          className="grid gap-3 sm:grid-cols-3 mb-10"
+          className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-6 sm:mb-10"
         >
           {[
             {
@@ -353,17 +353,17 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 + idx * 0.08 }}
               className={`
-                relative overflow-hidden rounded-2xl p-4 border transition-all duration-300 cursor-default
+                relative overflow-hidden rounded-xl sm:rounded-2xl p-3 sm:p-4 border transition-all duration-300 cursor-default
                 ${pill.color === 'coral' ? 'border-coral-200/50 dark:border-coral-800/30 bg-gradient-to-br from-coral-50 to-white dark:from-coral-900/20 dark:to-transparent hover:border-coral-300 dark:hover:border-coral-700/50' : ''}
                 ${pill.color === 'accent' ? 'border-accent-200/50 dark:border-accent-800/30 bg-gradient-to-br from-accent-50 to-white dark:from-accent-900/20 dark:to-transparent hover:border-accent-300 dark:hover:border-accent-700/50' : ''}
                 ${pill.color === 'amber' ? 'border-amber-200/50 dark:border-amber-800/30 bg-gradient-to-br from-amber-50 to-white dark:from-amber-900/20 dark:to-transparent hover:border-amber-300 dark:hover:border-amber-700/50' : ''}
               `}
             >
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{pill.icon}</span>
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <span className="text-xl sm:text-2xl">{pill.icon}</span>
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-[var(--foreground-muted)] font-medium">{pill.label}</p>
-                  <p className="text-sm font-semibold text-[var(--foreground)]">{pill.value}</p>
+                  <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[var(--foreground-muted)] font-medium">{pill.label}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-[var(--foreground)]">{pill.value}</p>
                 </div>
               </div>
             </motion.div>
@@ -441,7 +441,7 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="flex-1">
-                    <h3 className="text-lg font-display font-semibold text-amber-900 dark:text-amber-100 mb-1">
+                    <h3 className="text-lg font-sans font-semibold text-amber-900 dark:text-amber-100 mb-1">
                       Complete your profile
                     </h3>
                     <p className="text-sm text-amber-700/80 dark:text-amber-300/80 mb-3">
@@ -480,33 +480,33 @@ export default function DashboardPage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="mb-12"
+          className="mb-8 sm:mb-12"
         >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-display font-bold text-[var(--foreground)]">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-sans font-bold text-[var(--foreground)]">
               Get Started
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Primary action - Discover */}
             <motion.div
               whileHover={{ y: -4, scale: 1.01 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-coral-500 to-coral-600 dark:from-coral-600 dark:to-coral-700 p-6 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-coral-500/20 transition-shadow"
+              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-coral-500 to-coral-600 dark:from-coral-600 dark:to-coral-700 p-5 sm:p-6 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-coral-500/20 transition-shadow"
               onClick={() => router.push('/dashboard/swipe')}
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-8 -translate-y-8 group-hover:scale-150 transition-transform duration-500" />
+              <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-white/10 rounded-full blur-2xl transform translate-x-8 -translate-y-8 group-hover:scale-150 transition-transform duration-500" />
 
               <div className="relative">
-                <div className="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Heart className="h-7 w-7 text-white" />
+                <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
+                  <Heart className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                 </div>
-                <h3 className="text-xl font-display font-bold text-white mb-2">Discover Hosts</h3>
-                <p className="text-coral-100 text-sm mb-6">Swipe to find your perfect dining match</p>
-                <div className="flex items-center text-white font-medium">
+                <h3 className="text-lg sm:text-xl font-sans font-bold text-white mb-1.5 sm:mb-2">Discover Hosts</h3>
+                <p className="text-coral-100 text-xs sm:text-sm mb-4 sm:mb-6">Swipe to find your perfect dining match</p>
+                <div className="flex items-center text-white text-sm sm:text-base font-medium">
                   Start Swiping
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             </motion.div>
@@ -515,20 +515,20 @@ export default function DashboardPage() {
             <motion.div
               whileHover={{ y: -4, scale: 1.01 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-accent-500 to-accent-600 dark:from-accent-600 dark:to-accent-700 p-6 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-accent-500/20 transition-shadow"
+              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-accent-500 to-accent-600 dark:from-accent-600 dark:to-accent-700 p-5 sm:p-6 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-accent-500/20 transition-shadow"
               onClick={() => router.push('/dinners')}
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-8 -translate-y-8 group-hover:scale-150 transition-transform duration-500" />
+              <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-white/10 rounded-full blur-2xl transform translate-x-8 -translate-y-8 group-hover:scale-150 transition-transform duration-500" />
 
               <div className="relative">
-                <div className="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Utensils className="h-7 w-7 text-white" />
+                <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
+                  <Utensils className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                 </div>
-                <h3 className="text-xl font-display font-bold text-white mb-2">Browse Dinners</h3>
-                <p className="text-accent-100 text-sm mb-6">Explore unique dining experiences near you</p>
-                <div className="flex items-center text-white font-medium">
+                <h3 className="text-lg sm:text-xl font-sans font-bold text-white mb-1.5 sm:mb-2">Browse Dinners</h3>
+                <p className="text-accent-100 text-xs sm:text-sm mb-4 sm:mb-6">Explore unique dining experiences near you</p>
+                <div className="flex items-center text-white text-sm sm:text-base font-medium">
                   View All
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             </motion.div>
@@ -537,20 +537,20 @@ export default function DashboardPage() {
             <motion.div
               whileHover={{ y: -4, scale: 1.01 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="group relative overflow-hidden rounded-3xl border-2 border-[var(--border)] bg-[var(--background-elevated)] p-6 cursor-pointer hover:border-coral-300 dark:hover:border-coral-700 hover:shadow-lg transition-all"
+              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-[var(--border)] bg-[var(--background-elevated)] p-5 sm:p-6 cursor-pointer hover:border-coral-300 dark:hover:border-coral-700 hover:shadow-lg transition-all sm:col-span-2 lg:col-span-1"
               onClick={handleOpenWizard}
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-coral-500/5 rounded-full blur-2xl transform translate-x-8 -translate-y-8 group-hover:scale-150 transition-transform duration-500" />
+              <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-coral-500/5 rounded-full blur-2xl transform translate-x-8 -translate-y-8 group-hover:scale-150 transition-transform duration-500" />
 
               <div className="relative">
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-coral-100 to-accent-100 dark:from-coral-900/30 dark:to-accent-900/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <User className="h-7 w-7 text-coral-600 dark:text-coral-400" />
+                <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-coral-100 to-accent-100 dark:from-coral-900/30 dark:to-accent-900/30 flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
+                  <User className="h-6 w-6 sm:h-7 sm:w-7 text-coral-600 dark:text-coral-400" />
                 </div>
-                <h3 className="text-xl font-display font-bold text-[var(--foreground)] mb-2">Update Profile</h3>
-                <p className="text-[var(--foreground-secondary)] text-sm mb-6">Refine your bio for better matches</p>
-                <div className="flex items-center text-coral-600 dark:text-coral-400 font-medium">
+                <h3 className="text-lg sm:text-xl font-sans font-bold text-[var(--foreground)] mb-1.5 sm:mb-2">Update Profile</h3>
+                <p className="text-[var(--foreground-secondary)] text-xs sm:text-sm mb-4 sm:mb-6">Refine your bio for better matches</p>
+                <div className="flex items-center text-coral-600 dark:text-coral-400 text-sm sm:text-base font-medium">
                   Edit Now
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             </motion.div>
@@ -564,36 +564,36 @@ export default function DashboardPage() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-display font-bold text-[var(--foreground)]">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-sans font-bold text-[var(--foreground)]">
               Quick Actions
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {[
               {
                 label: 'My Bookings',
-                icon: <Calendar className="h-5 w-5" />,
+                icon: <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />,
                 badge: stats.upcomingBookings > 0 ? stats.upcomingBookings : undefined,
                 color: 'coral',
                 onClick: () => router.push('/dashboard/bookings'),
               },
               {
                 label: 'Messages',
-                icon: <MessageSquare className="h-5 w-5" />,
+                icon: <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />,
                 color: 'accent',
                 onClick: () => router.push('/dashboard/messages'),
               },
               {
                 label: 'Profile',
-                icon: <User className="h-5 w-5" />,
+                icon: <User className="h-4 w-4 sm:h-5 sm:w-5" />,
                 color: 'amber',
                 onClick: () => router.push('/dashboard/profile'),
               },
               {
                 label: 'Become Host',
-                icon: <ChefHat className="h-5 w-5" />,
+                icon: <ChefHat className="h-4 w-4 sm:h-5 sm:w-5" />,
                 color: 'purple',
                 onClick: () => router.push('/dashboard/host/apply'),
               },
@@ -607,19 +607,19 @@ export default function DashboardPage() {
                 whileTap={{ scale: 0.98 }}
                 onClick={action.onClick}
                 className={`
-                  relative group p-5 rounded-2xl border transition-all duration-300 text-left
+                  relative group p-4 sm:p-5 rounded-xl sm:rounded-2xl border transition-all duration-300 text-left
                   border-[var(--border)] bg-[var(--background-elevated)]
                   hover:border-${action.color}-300 dark:hover:border-${action.color}-700
                   hover:shadow-md
                 `}
               >
                 {action.badge && (
-                  <span className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center rounded-full bg-coral-500 text-white text-xs font-bold shadow-lg">
+                  <span className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 h-5 w-5 sm:h-6 sm:w-6 flex items-center justify-center rounded-full bg-coral-500 text-white text-[10px] sm:text-xs font-bold shadow-lg">
                     {action.badge}
                   </span>
                 )}
                 <div className={`
-                  h-11 w-11 rounded-xl flex items-center justify-center mb-3 transition-transform group-hover:scale-110
+                  h-9 w-9 sm:h-11 sm:w-11 rounded-lg sm:rounded-xl flex items-center justify-center mb-2.5 sm:mb-3 transition-transform group-hover:scale-110
                   ${action.color === 'coral' ? 'bg-coral-100 dark:bg-coral-900/30 text-coral-600 dark:text-coral-400' : ''}
                   ${action.color === 'accent' ? 'bg-accent-100 dark:bg-accent-900/30 text-accent-600 dark:text-accent-400' : ''}
                   ${action.color === 'amber' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' : ''}
@@ -627,7 +627,7 @@ export default function DashboardPage() {
                 `}>
                   {action.icon}
                 </div>
-                <p className="font-heading font-semibold text-[var(--foreground)]">{action.label}</p>
+                <p className="font-sans text-sm sm:text-base font-semibold text-[var(--foreground)]">{action.label}</p>
               </motion.button>
             ))}
           </div>

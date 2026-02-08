@@ -1,5 +1,5 @@
-/* Typography: Distinctive display font paired with refined body text */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+/* Typography: Clean, modern sans-serif system */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -74,11 +74,9 @@
    ======================================== */
 
 :root {
-  /* Font variables - distinctive typography system */
-  --font-display: 'Fraunces', Georgia, serif; /* Editorial display for headlines */
-  --font-heading: 'Outfit', system-ui, sans-serif; /* Modern geometric for subheads */
-  --font-body: 'DM Sans', system-ui, sans-serif; /* Refined body text */
-  --font-mono: 'JetBrains Mono', monospace;
+  /* Font variables - clean modern typography */
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   /* Light mode colors - warm and inviting */
   --background: #FFFCFA;
@@ -303,61 +301,41 @@ html {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   letter-spacing: -0.01em;
   transition: background-color 0.3s ease, color 0.3s ease;
-  font-optical-sizing: auto;
 }
 
-/* Distinctive typography hierarchy */
+/* Clean typography hierarchy */
 h1 {
-  font-family: var(--font-display);
   font-weight: 700;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.025em;
   line-height: 1.1;
-  font-optical-sizing: auto;
 }
 
 h2 {
-  font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.15;
 }
 
 h3, h4 {
-  font-family: var(--font-heading);
   font-weight: 600;
   letter-spacing: -0.015em;
   line-height: 1.25;
 }
 
 h5, h6 {
-  font-family: var(--font-heading);
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.3;
 }
 
 p {
-  line-height: 1.65;
-  letter-spacing: -0.005em;
-}
-
-/* Utility classes for typography */
-.font-display {
-  font-family: var(--font-display);
-}
-
-.font-heading {
-  font-family: var(--font-heading);
-}
-
-.font-body {
-  font-family: var(--font-body);
+  line-height: 1.6;
 }
 
 /* ========================================

@@ -102,10 +102,8 @@ const config: Config = {
       },
 
       fontFamily: {
-        sans: ["var(--font-body)", "DM Sans", "system-ui", "sans-serif"],
-        display: ["var(--font-display)", "Fraunces", "Georgia", "serif"],
-        heading: ["var(--font-heading)", "Outfit", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "JetBrains Mono", "Menlo", "monospace"],
+        sans: ["var(--font-sans)", "Plus Jakarta Sans", "system-ui", "-apple-system", "sans-serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "ui-monospace", "monospace"],
       },
 
       animation: {
