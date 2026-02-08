@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/middleware'
-import { hasRole } from '@/lib/auth'
+import { hasRole, getCurrentUser } from '@/lib/auth'
 import { dinnerUpdateSchema } from '@/lib/validations'
 import { prisma } from '@/lib/prisma'
+import { canAccessEvent } from '@/lib/permissions'
+import { sendEmail } from '@/lib/email'
 
 /**
  * Get a single dinner by ID
@@ -54,6 +56,7 @@ export async function GET(
           select: {
             bookings: true,
             reviews: true,
+            invitations: true,
           },
         },
       },
@@ -64,6 +67,18 @@ export async function GET(
         { error: 'Dinner not found' },
         { status: 404 }
       )
+    }
+
+    // Check access for private events
+    if (dinner.visibility === 'PRIVATE') {
+      const user = await getCurrentUser()
+      const hasAccess = await canAccessEvent(id, user?.id ?? null)
+      if (!hasAccess) {
+        return NextResponse.json(
+          { error: 'This event is private' },
+          { status: 403 }
+        )
+      }
     }
 
     return NextResponse.json({ dinner })
@@ -79,6 +94,10 @@ export async function GET(
 /**
  * Update a dinner listing
  * PATCH /api/dinners/[id]
+ *
+ * When dateTime is changed (reschedule):
+ * - Optionally reset invitation statuses to PENDING
+ * - Optionally send notification emails to guests
  */
 export const PATCH = withAuth(async (
   req: NextRequest,
@@ -94,9 +113,18 @@ export const PATCH = withAuth(async (
         { status: 400 }
       )
     }
-    
+
     const dinner = await prisma.dinner.findUnique({
       where: { id },
+      include: {
+        invitations: {
+          select: {
+            id: true,
+            email: true,
+            status: true,
+          },
+        },
+      },
     })
 
     if (!dinner) {
@@ -127,7 +155,11 @@ export const PATCH = withAuth(async (
     }
 
     const body = await req.json()
-    const validatedData = dinnerUpdateSchema.parse(body)
+    const { notifyGuests, resetRsvps, ...updateData } = body
+    const validatedData = dinnerUpdateSchema.parse(updateData)
+
+    const isReschedule = validatedData.dateTime &&
+      new Date(validatedData.dateTime).getTime() !== new Date(dinner.dateTime).getTime()
 
     const updatedDinner = await prisma.dinner.update({
       where: { id },
@@ -158,7 +190,45 @@ export const PATCH = withAuth(async (
       },
     })
 
-    return NextResponse.json({ dinner: updatedDinner })
+    // Handle reschedule: reset RSVPs and notify guests
+    if (isReschedule && resetRsvps) {
+      await prisma.dinnerInvitation.updateMany({
+        where: { dinnerId: id },
+        data: { status: 'PENDING' },
+      })
+    }
+
+    // Send notification emails if requested
+    if (isReschedule && notifyGuests && dinner.invitations.length > 0) {
+      const newDate = new Date(validatedData.dateTime!).toLocaleString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      })
+
+      const hostName = user.name || 'Your host'
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+      // Send emails in parallel
+      await Promise.all(
+        dinner.invitations.map(async (inv) => {
+          const inviteUrl = `${baseUrl}/invitations/${inv.id}`
+          await sendEmail({
+            to: inv.email,
+            subject: `Event Rescheduled: ${updatedDinner.title}`,
+            html: `<p>${hostName} has rescheduled <strong>${updatedDinner.title}</strong>.</p>
+              <p>New date: <strong>${newDate}</strong></p>
+              <p>Please confirm your attendance: <a href="${inviteUrl}">Respond to invitation</a></p>`,
+            text: `${hostName} has rescheduled ${updatedDinner.title}.\n\nNew date: ${newDate}\n\nPlease confirm your attendance: ${inviteUrl}`,
+          })
+        })
+      )
+    }
+
+    return NextResponse.json({ dinner: updatedDinner, rescheduled: isReschedule })
   } catch (error) {
     if (error instanceof Error && error.name === 'ZodError') {
       return NextResponse.json(

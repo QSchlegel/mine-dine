@@ -20,18 +20,36 @@ interface TagsStepProps {
 export default function TagsStep({ selectedTags, onChange, isValid }: TagsStepProps) {
   const [allTags, setAllTags] = useState<Tag[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const fetchTags = () => {
+    setLoading(true)
+    setError(null)
     fetch('/api/tags')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          return res.json().then((data) => Promise.reject(new Error(data.error || 'Failed to load tags')))
+        }
+        return res.json()
+      })
       .then((data) => {
-        setAllTags(data.tags || [])
+        const list = Array.isArray(data.tags) ? data.tags : []
+        setAllTags(list)
+        if (list.length === 0) {
+          setError('No tags available. Please try again later.')
+        }
         setLoading(false)
       })
       .catch((err) => {
         console.error('Error fetching tags:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load tags')
+        setAllTags([])
         setLoading(false)
       })
+  }
+
+  useEffect(() => {
+    fetchTags()
   }, [])
 
   const toggleTag = (tagId: string) => {
@@ -58,6 +76,30 @@ export default function TagsStep({ selectedTags, onChange, isValid }: TagsStepPr
       <div className="flex items-center justify-center py-12">
         <div className="text-[var(--foreground-muted)]">Loading tags...</div>
       </div>
+    )
+  }
+
+  if (error || allTags.length === 0) {
+    return (
+      <motion.div
+        variants={fadeInUp}
+        initial="initial"
+        animate="animate"
+        className="space-y-4 sm:space-y-6"
+      >
+        <div className="flex flex-col items-center justify-center py-8 sm:py-12 px-4 text-center">
+          <p className="text-[var(--foreground-secondary)] mb-4">
+            {error || 'No tags available. Please try again later.'}
+          </p>
+          <button
+            type="button"
+            onClick={fetchTags}
+            className="px-4 py-2 rounded-full text-sm font-medium bg-coral-500 text-white hover:bg-coral-600 transition-colors"
+          >
+            Try again
+          </button>
+        </div>
+      </motion.div>
     )
   }
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { format } from 'date-fns'
-import { Calendar, MapPin, User, Check, X } from 'lucide-react'
+import { Calendar, MapPin, User, Check, X, ChevronDown, Download, ExternalLink } from 'lucide-react'
 import { Container, Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
 
 interface DinnerSummary {
@@ -14,6 +14,7 @@ interface DinnerSummary {
   location: string
   cuisine: string | null
   maxGuests: number
+  visibility?: string
   host: {
     id: string
     name: string | null
@@ -37,6 +38,7 @@ export default function InvitationPage() {
   const [error, setError] = useState<string | null>(null)
   const [responding, setResponding] = useState(false)
   const [responded, setResponded] = useState<string | null>(null)
+  const [showCalendarMenu, setShowCalendarMenu] = useState(false)
 
   useEffect(() => {
     if (!token) {
@@ -80,7 +82,7 @@ export default function InvitationPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
-        <div className="animate-pulse text-[var(--foreground-secondary)]">Loading invitation…</div>
+        <div className="animate-pulse text-[var(--foreground-secondary)]">Loading invitation...</div>
       </div>
     )
   }
@@ -105,8 +107,10 @@ export default function InvitationPage() {
 
   const dinner = inv.dinner
   const hostName = dinner.host?.name ?? 'Your host'
-  const dinnerDate = format(new Date(dinner.dateTime), 'EEEE, MMMM d, yyyy \'at\' HH:mm')
+  const dinnerDate = format(new Date(dinner.dateTime), 'EEEE, MMMM d, yyyy \'at\' h:mm a')
   const alreadyResponded = inv.status !== 'PENDING' || responded
+  const hasAccepted = responded === 'ACCEPTED' || inv.status === 'ACCEPTED'
+  const isPrivateEvent = dinner.visibility === 'PRIVATE'
 
   return (
     <div className="min-h-screen bg-[var(--background)] py-12">
@@ -114,9 +118,9 @@ export default function InvitationPage() {
         <div className="max-w-xl mx-auto space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl">You&apos;re invited</CardTitle>
+              <CardTitle className="text-xl">You're invited!</CardTitle>
               <p className="text-[var(--foreground-secondary)] text-sm mt-1">
-                {hostName} invited you to a dinner
+                {hostName} invited you to {isPrivateEvent ? 'a private event' : 'a dinner'}
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -151,34 +155,110 @@ export default function InvitationPage() {
               )}
 
               {alreadyResponded ? (
-                <div className="pt-2">
-                  <p className="text-[var(--foreground-secondary)]">
-                    You {responded === 'ACCEPTED' || inv.status === 'ACCEPTED' ? 'accepted' : 'declined'} this invitation.
-                  </p>
+                <div className="pt-4 space-y-4">
+                  {/* Confirmation Message */}
+                  <div
+                    className={`p-4 rounded-lg ${
+                      hasAccepted
+                        ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+                        : 'bg-[var(--background-secondary)] border border-[var(--border)]'
+                    }`}
+                  >
+                    <p
+                      className={`font-medium ${
+                        hasAccepted
+                          ? 'text-green-800 dark:text-green-200'
+                          : 'text-[var(--foreground)]'
+                      }`}
+                    >
+                      {hasAccepted ? "You're going! See you there." : "Thanks for letting us know."}
+                    </p>
+                    <p
+                      className={`text-sm mt-1 ${
+                        hasAccepted
+                          ? 'text-green-700 dark:text-green-300'
+                          : 'text-[var(--foreground-secondary)]'
+                      }`}
+                    >
+                      {hasAccepted
+                        ? 'Add this event to your calendar so you don\'t forget.'
+                        : 'We hope to see you at a future event!'}
+                    </p>
+                  </div>
+
+                  {/* Calendar Export (only show if accepted) */}
+                  {hasAccepted && (
+                    <div className="relative">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between"
+                        onClick={() => setShowCalendarMenu(!showCalendarMenu)}
+                        rightIcon={<ChevronDown className={`h-4 w-4 transition-transform ${showCalendarMenu ? 'rotate-180' : ''}`} />}
+                        leftIcon={<Calendar className="h-4 w-4" />}
+                      >
+                        Add to Calendar
+                      </Button>
+
+                      {showCalendarMenu && (
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--background-elevated)] border border-[var(--border)] rounded-lg shadow-lg overflow-hidden z-10">
+                          <a
+                            href={`/api/events/${dinner.id}/calendar?format=google`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--background-secondary)] transition-colors"
+                          >
+                            <ExternalLink className="h-4 w-4 text-[var(--foreground-muted)]" />
+                            <span className="text-[var(--foreground)]">Google Calendar</span>
+                          </a>
+                          <a
+                            href={`/api/events/${dinner.id}/calendar?format=ics`}
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--background-secondary)] transition-colors border-t border-[var(--border)]"
+                          >
+                            <Download className="h-4 w-4 text-[var(--foreground-muted)]" />
+                            <span className="text-[var(--foreground)]">Apple Calendar (.ics)</span>
+                          </a>
+                          <a
+                            href={`/api/events/${dinner.id}/calendar?format=outlook`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--background-secondary)] transition-colors border-t border-[var(--border)]"
+                          >
+                            <ExternalLink className="h-4 w-4 text-[var(--foreground-muted)]" />
+                            <span className="text-[var(--foreground)]">Outlook</span>
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <Button
                     href={`/dinners/${dinner.id}`}
                     variant="secondary"
-                    className="mt-3"
+                    className="w-full"
                   >
-                    View dinner
+                    View Event Details
                   </Button>
                 </div>
               ) : (
-                <div className="flex flex-wrap gap-3 pt-2">
+                <div className="pt-4 space-y-3">
+                  {/* RSVP Buttons */}
                   <Button
                     onClick={() => handleRespond('ACCEPTED')}
                     disabled={responding}
-                    leftIcon={<Check className="h-4 w-4" />}
+                    className="w-full bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-500"
+                    size="lg"
+                    leftIcon={<Check className="h-5 w-5" />}
                   >
-                    {responding ? 'Sending…' : 'Accept'}
+                    {responding ? 'Sending...' : "I can come!"}
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => handleRespond('DECLINED')}
                     disabled={responding}
+                    className="w-full"
                     leftIcon={<X className="h-4 w-4" />}
                   >
-                    Decline
+                    Can't make it
                   </Button>
                 </div>
               )}

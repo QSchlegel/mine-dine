@@ -65,15 +65,102 @@ export interface DinnerInvitationEmailParams {
   dinnerTitle: string
   dinnerDate: string
   inviteUrl: string
+  isPrivateEvent?: boolean
+  location?: string
+  eventId?: string
 }
 
 /**
  * Send a dinner invitation email. View event and respond link included.
  */
 export async function sendDinnerInvitationEmail(params: DinnerInvitationEmailParams): Promise<{ ok: boolean; error?: string }> {
-  const { to, hostName, dinnerTitle, dinnerDate, inviteUrl } = params
+  const { to, hostName, dinnerTitle, dinnerDate, inviteUrl, isPrivateEvent, location, eventId } = params
+
+  const eventType = isPrivateEvent ? 'a private event' : 'a dinner'
   const subject = `${hostName} invited you to ${dinnerTitle}`
-  const text = `${hostName} invited you to ${dinnerTitle} – ${dinnerDate}.\n\nView event and respond: ${inviteUrl}`
-  const html = `<p>${escapeHtml(hostName)} invited you to <strong>${escapeHtml(dinnerTitle)}</strong> – ${escapeHtml(dinnerDate)}.</p><p><a href="${escapeHtml(inviteUrl)}">View event and respond</a></p>`
+
+  // Build calendar links if eventId is provided
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const calendarSection = eventId
+    ? `\n\nAdd to calendar:\n- Google Calendar: ${baseUrl}/api/events/${eventId}/calendar?format=google\n- Download .ics: ${baseUrl}/api/events/${eventId}/calendar?format=ics`
+    : ''
+
+  const text = `${hostName} invited you to ${eventType}: ${dinnerTitle}
+
+Date: ${dinnerDate}${location ? `\nLocation: ${location}` : ''}
+
+View event and RSVP: ${inviteUrl}${calendarSection}`
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #333;">You're invited!</h2>
+      <p style="color: #666; font-size: 16px;">
+        ${escapeHtml(hostName)} invited you to ${eventType}:
+      </p>
+      <h3 style="color: #333; margin: 16px 0 8px;">${escapeHtml(dinnerTitle)}</h3>
+      <p style="color: #666; margin: 4px 0;">
+        <strong>When:</strong> ${escapeHtml(dinnerDate)}
+      </p>
+      ${location ? `<p style="color: #666; margin: 4px 0;"><strong>Where:</strong> ${escapeHtml(location)}</p>` : ''}
+      <div style="margin: 24px 0;">
+        <a href="${escapeHtml(inviteUrl)}" style="display: inline-block; background-color: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">
+          RSVP Now
+        </a>
+      </div>
+      <p style="color: #999; font-size: 14px;">
+        Click the button above to let ${escapeHtml(hostName)} know if you can make it.
+      </p>
+    </div>
+  `
+
+  return sendEmail({ to, subject, text, html })
+}
+
+export interface EventRescheduleEmailParams {
+  to: string
+  hostName: string
+  eventTitle: string
+  newDate: string
+  inviteUrl: string
+  location?: string
+}
+
+/**
+ * Send a reschedule notification email asking guests to re-confirm.
+ */
+export async function sendEventRescheduleEmail(params: EventRescheduleEmailParams): Promise<{ ok: boolean; error?: string }> {
+  const { to, hostName, eventTitle, newDate, inviteUrl, location } = params
+
+  const subject = `Event Rescheduled: ${eventTitle}`
+
+  const text = `${hostName} has rescheduled ${eventTitle}.
+
+New date: ${newDate}${location ? `\nLocation: ${location}` : ''}
+
+Please confirm your attendance: ${inviteUrl}`
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #333;">Event Rescheduled</h2>
+      <p style="color: #666; font-size: 16px;">
+        ${escapeHtml(hostName)} has rescheduled <strong>${escapeHtml(eventTitle)}</strong>.
+      </p>
+      <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 16px; margin: 16px 0;">
+        <p style="color: #92400e; margin: 0; font-weight: 600;">
+          New date: ${escapeHtml(newDate)}
+        </p>
+        ${location ? `<p style="color: #92400e; margin: 8px 0 0;">Location: ${escapeHtml(location)}</p>` : ''}
+      </div>
+      <p style="color: #666;">
+        Please confirm if you can still make it:
+      </p>
+      <div style="margin: 24px 0;">
+        <a href="${escapeHtml(inviteUrl)}" style="display: inline-block; background-color: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">
+          Confirm Attendance
+        </a>
+      </div>
+    </div>
+  `
+
   return sendEmail({ to, subject, text, html })
 }

@@ -34,9 +34,27 @@ export const dinnerCreateSchema = z.object({
   tagIds: z.array(z.string()).optional(),
   planningMode: z.enum(['MANUAL', 'AI_ASSISTED', 'AI_GENERATED']).optional(),
   aiPlanData: z.any().optional(), // JSON data from AI plan
+  visibility: z.enum(['PUBLIC', 'PRIVATE']).optional(),
 })
 
 export const dinnerUpdateSchema = dinnerCreateSchema.partial()
+
+/**
+ * Private event validation schema (simplified, no AI planning or add-ons)
+ */
+export const privateEventCreateSchema = z.object({
+  title: z.string().min(3).max(100),
+  description: z.string().min(10).max(2000), // Shorter minimum for private events
+  location: z.string().min(5).max(200),
+  dateTime: z.string().datetime(),
+  maxGuests: z.number().int().min(1).max(100).default(10),
+  imageUrl: z.string().url().optional().nullable(),
+  // Optional cost split for splitting dinner costs among guests
+  enableCostSplit: z.boolean().optional().default(false),
+  basePricePerPerson: z.number().min(0).max(1000).optional().default(0),
+})
+
+export const privateEventUpdateSchema = privateEventCreateSchema.partial()
 
 /**
  * Booking validation schema

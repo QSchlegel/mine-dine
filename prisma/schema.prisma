@@ -117,6 +117,7 @@ model Dinner {
   dateTime           DateTime
   imageUrl           String?
   status             DinnerStatus           @default(DRAFT)
+  visibility         DinnerVisibility       @default(PUBLIC)
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
   aiPlanData         Json?
@@ -141,6 +142,7 @@ model Dinner {
 
   @@index([hostId])
   @@index([status])
+  @@index([visibility])
   @@index([moderationStatus])
   @@index([dateTime])
 }
@@ -574,4 +576,9 @@ enum RevenueShareStatus {
 enum GuestSentiment {
   LIKE
   DISLIKE
+}
+
+enum DinnerVisibility {
+  PUBLIC
+  PRIVATE
 }

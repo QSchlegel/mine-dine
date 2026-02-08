@@ -11,16 +11,19 @@ export const dynamic = 'force-dynamic'
 
 export const POST = withAuth(async (req: NextRequest, user) => {
   try {
-    // Check if user is a host
-    if (user.role !== 'HOST' && user.role !== 'ADMIN') {
+    const body = await req.json()
+    const validatedData = dinnerCreateSchema.parse(body)
+
+    const isPrivateEvent = validatedData.visibility === 'PRIVATE'
+
+    // Check if user is a host (only required for public dinners)
+    // Any user can create private events
+    if (!isPrivateEvent && user.role !== 'HOST' && user.role !== 'ADMIN') {
       return NextResponse.json(
-        { error: 'Only hosts can create dinner listings' },
+        { error: 'Only hosts can create public dinner listings' },
         { status: 403 }
       )
     }
-
-    const body = await req.json()
-    const validatedData = dinnerCreateSchema.parse(body)
 
     // Create dinner
     const dinner = await prisma.dinner.create({
@@ -34,7 +37,10 @@ export const POST = withAuth(async (req: NextRequest, user) => {
         location: validatedData.location,
         dateTime: new Date(validatedData.dateTime),
         imageUrl: validatedData.imageUrl,
-        status: 'DRAFT',
+        visibility: validatedData.visibility || 'PUBLIC',
+        // Private events are auto-approved and published
+        status: isPrivateEvent ? 'PUBLISHED' : 'DRAFT',
+        moderationStatus: isPrivateEvent ? 'APPROVED' : 'PENDING',
         planningMode: validatedData.planningMode || 'MANUAL',
         aiPlanData: validatedData.aiPlanData || null,
         menuItems: validatedData.aiPlanData?.menuItems || null,
@@ -80,7 +86,7 @@ export const POST = withAuth(async (req: NextRequest, user) => {
 })
 
 /**
- * Get all dinner listings (public)
+ * Get all dinner listings (public only - private events are hidden from this endpoint)
  * GET /api/dinners
  */
 export const GET = async (req: NextRequest) => {
@@ -93,6 +99,8 @@ export const GET = async (req: NextRequest) => {
 
     const where: any = {
       status: status as any,
+      // Only show public dinners in the public listing
+      visibility: 'PUBLIC',
     }
 
     if (tagId) {

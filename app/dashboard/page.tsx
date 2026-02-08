@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Utensils, Calendar, MessageSquare, User, Heart, ChefHat, Sparkles, ArrowRight, TrendingUp, Clock } from 'lucide-react'
+import { Utensils, Calendar, MessageSquare, User, Heart, ChefHat, Sparkles, ArrowRight, TrendingUp, Clock, PartyPopper } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { ProfileCompletionResult } from '@/lib/profile'
 import ProfileCompletionWizard from '@/components/profile/ProfileCompletionWizard'
@@ -570,7 +570,7 @@ export default function DashboardPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
             {[
               {
                 label: 'My Bookings',
@@ -578,6 +578,12 @@ export default function DashboardPage() {
                 badge: stats.upcomingBookings > 0 ? stats.upcomingBookings : undefined,
                 color: 'coral',
                 onClick: () => router.push('/dashboard/bookings'),
+              },
+              {
+                label: 'My Events',
+                icon: <PartyPopper className="h-4 w-4 sm:h-5 sm:w-5" />,
+                color: 'green',
+                onClick: () => router.push('/dashboard/events'),
               },
               {
                 label: 'Messages',
@@ -621,6 +627,7 @@ export default function DashboardPage() {
                 <div className={`
                   h-9 w-9 sm:h-11 sm:w-11 rounded-lg sm:rounded-xl flex items-center justify-center mb-2.5 sm:mb-3 transition-transform group-hover:scale-110
                   ${action.color === 'coral' ? 'bg-coral-100 dark:bg-coral-900/30 text-coral-600 dark:text-coral-400' : ''}
+                  ${action.color === 'green' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : ''}
                   ${action.color === 'accent' ? 'bg-accent-100 dark:bg-accent-900/30 text-accent-600 dark:text-accent-400' : ''}
                   ${action.color === 'amber' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' : ''}
                   ${action.color === 'purple' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' : ''}
