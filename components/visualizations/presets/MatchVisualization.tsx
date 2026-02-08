@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useRef, useEffect, useState } from 'react'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 import P5WebGLWrapper from '../P5WebGLWrapper'
 import { ThemeColors } from '../core/types'
 import { useConfetti } from '@/hooks/useConfetti'
@@ -299,7 +300,7 @@ export default function MatchVisualization({
                 {userImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={userImage}
+                    src={getProxiedImageUrl(userImage) ?? userImage}
                     alt={userName || 'You'}
                     className="w-full h-full object-cover"
                   />
@@ -320,7 +321,7 @@ export default function MatchVisualization({
                 {hostImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={hostImage}
+                    src={getProxiedImageUrl(hostImage) ?? hostImage}
                     alt={hostName || 'Host'}
                     className="w-full h-full object-cover"
                   />

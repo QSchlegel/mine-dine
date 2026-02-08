@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import Image from 'next/image'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 import { Heart, X, Star, ChefHat, Utensils } from 'lucide-react'
 import DiscoveryVisualization from '@/components/visualizations/presets/DiscoveryVisualization'
 import MatchVisualization from '@/components/visualizations/presets/MatchVisualization'
@@ -504,7 +505,7 @@ function SwipePageContent() {
                       <div className="relative h-16 w-16 rounded-full overflow-hidden ring-2 ring-primary-500/50 flex-shrink-0">
                         {currentHost.profileImageUrl ? (
                           <Image
-                            src={currentHost.profileImageUrl}
+                            src={getProxiedImageUrl(currentHost.profileImageUrl) ?? currentHost.profileImageUrl}
                             alt={currentHost.name || 'Host'}
                             fill
                             sizes="64px"

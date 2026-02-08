@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 import { signOut } from '@/lib/auth-client'
 import {
   User,
@@ -166,7 +167,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
         {/* Avatar */}
         {avatarUrl ? (
           <img
-            src={avatarUrl}
+            src={getProxiedImageUrl(avatarUrl) ?? avatarUrl}
             alt={displayName}
             className="h-8 w-8 rounded-full object-cover"
           />
@@ -214,7 +215,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
               <div className="flex items-center gap-3">
                 {avatarUrl ? (
                   <img
-                    src={avatarUrl}
+                    src={getProxiedImageUrl(avatarUrl) ?? avatarUrl}
                     alt={displayName}
                     className="h-10 w-10 rounded-full object-cover"
                   />

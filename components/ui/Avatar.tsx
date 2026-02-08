@@ -3,6 +3,7 @@
 import React from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 
 export interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   src?: string | null
@@ -70,7 +71,7 @@ export const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
         >
           {src ? (
             <Image
-              src={src}
+              src={getProxiedImageUrl(src) ?? src}
               alt={alt || name || 'Avatar'}
               fill
               className="object-cover"

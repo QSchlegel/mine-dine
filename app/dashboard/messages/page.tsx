@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/Textarea'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { format } from 'date-fns'
 import Image from 'next/image'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 import { useSession } from '@/lib/auth-client'
 
 interface Message {
@@ -129,7 +130,7 @@ export default function MessagesPage() {
                             <div className="relative h-10 w-10 rounded-full overflow-hidden bg-[var(--background-tertiary)]">
                               {otherUser.profileImageUrl ? (
                                 <Image
-                                  src={otherUser.profileImageUrl}
+                                  src={getProxiedImageUrl(otherUser.profileImageUrl) ?? otherUser.profileImageUrl}
                                   alt={otherUser.name || 'User'}
                                   fill
                                   className="object-cover"
@@ -165,7 +166,7 @@ export default function MessagesPage() {
                         <div className="relative h-8 w-8 rounded-full overflow-hidden bg-[var(--background-tertiary)] flex-shrink-0">
                           {message.sender.profileImageUrl ? (
                             <Image
-                              src={message.sender.profileImageUrl}
+                              src={getProxiedImageUrl(message.sender.profileImageUrl) ?? message.sender.profileImageUrl}
                               alt={message.sender.name || 'User'}
                               fill
                               className="object-cover"

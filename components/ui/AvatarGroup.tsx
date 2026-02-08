@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { cn } from '@/lib/utils'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 
 export interface AvatarGroupItem {
   src?: string
@@ -90,7 +91,7 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({
         >
           {avatar.src ? (
             <img
-              src={avatar.src}
+              src={getProxiedImageUrl(avatar.src) ?? avatar.src}
               alt={avatar.alt || avatar.name || 'Avatar'}
               className="h-full w-full object-cover"
             />
@@ -170,7 +171,7 @@ export const AvatarWithStatus: React.FC<AvatarWithStatusProps> = ({
       >
         {src ? (
           <img
-            src={src}
+            src={getProxiedImageUrl(src) ?? src}
             alt={alt || name || 'Avatar'}
             className="h-full w-full object-cover"
           />

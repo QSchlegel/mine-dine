@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/Textarea'
 import { Badge } from '@/components/ui/Badge'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import Image from 'next/image'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 import { getProfileCompletionProgress, type ProfileCompletionResult } from '@/lib/profile'
 
 interface UserProfile {
@@ -332,7 +333,7 @@ function ProfilePageContent() {
                   <div className="relative h-24 w-24 rounded-full overflow-hidden ring-2 ring-[var(--background)] bg-[var(--background-tertiary)] flex items-center justify-center text-xs text-[var(--foreground-muted)]">
                     {profileImageUrl ? (
                       <Image
-                        src={profileImageUrl}
+                        src={getProxiedImageUrl(profileImageUrl) ?? profileImageUrl}
                         alt="Profile"
                         fill
                         className="object-cover"
@@ -595,7 +596,7 @@ function ProfilePageContent() {
                   <div className="relative h-14 w-14 rounded-full overflow-hidden bg-[var(--background-tertiary)]">
                     {profileImageUrl ? (
                       <Image
-                        src={profileImageUrl}
+                        src={getProxiedImageUrl(profileImageUrl) ?? profileImageUrl}
                         alt="Profile preview"
                         fill
                         className="object-cover"
