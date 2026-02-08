@@ -69,6 +69,17 @@ export async function GET(
       )
     }
 
+    // Draft dinners are only visible to the host (for preview)
+    if (dinner.status === 'DRAFT') {
+      const user = await getCurrentUser()
+      if (user?.id !== dinner.hostId) {
+        return NextResponse.json(
+          { error: 'Dinner not found' },
+          { status: 404 }
+        )
+      }
+    }
+
     // Check access for private events
     if (dinner.visibility === 'PRIVATE') {
       const user = await getCurrentUser()

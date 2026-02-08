@@ -61,17 +61,26 @@ export default function DinnerDetailPage() {
   const router = useRouter()
   const [dinner, setDinner] = useState<Dinner | null>(null)
   const [loading, setLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (params.id) {
+      setErrorMessage(null)
       fetch(`/api/dinners/${params.id}`)
-        .then((res) => res.json())
-        .then((data) => {
+        .then(async (res) => {
+          const data = await res.json()
+          if (!res.ok) {
+            setErrorMessage(data.error ?? 'Failed to load dinner')
+            setDinner(null)
+            setLoading(false)
+            return
+          }
           setDinner(data.dinner)
           setLoading(false)
         })
         .catch((err) => {
           console.error('Error fetching dinner:', err)
+          setErrorMessage('Failed to load dinner')
           setLoading(false)
         })
     }
@@ -98,12 +107,16 @@ export default function DinnerDetailPage() {
   }
 
   if (!dinner) {
+    const isNotFound = errorMessage === 'Dinner not found'
+    const description = isNotFound
+      ? 'This dinner may not be published yet, or it may have been removed. If you\'re the host, log in to preview your draft.'
+      : errorMessage ?? 'This dinner may have been removed or doesn\'t exist.'
     return (
       <div className="min-h-screen bg-[var(--background)] py-12">
         <Container>
           <EmptyState
-            title="Dinner not found"
-            description="This dinner may have been removed or doesn't exist."
+            title={errorMessage === 'This event is private' ? 'Private event' : 'Dinner not found'}
+            description={description}
             icon={<ChefHat />}
             size="lg"
             action={{
