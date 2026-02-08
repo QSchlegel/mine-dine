@@ -185,11 +185,13 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="relative min-h-screen bg-[var(--background)] py-8 sm:py-12 overflow-hidden">
-        {/* Animated background */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute top-[10%] left-[5%] w-[400px] h-[400px] bg-coral-500/10 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-[20%] right-[10%] w-[350px] h-[350px] bg-accent-500/10 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
-        </div>
+        {/* Static background on mobile, animated on desktop */}
+        {!reducedMotion && (
+          <div className="pointer-events-none absolute inset-0 hidden sm:block">
+            <div className="absolute top-[10%] left-[5%] w-[400px] h-[400px] bg-coral-500/10 rounded-full blur-[120px] animate-pulse" />
+            <div className="absolute bottom-[20%] right-[10%] w-[350px] h-[350px] bg-accent-500/10 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
+          </div>
+        )}
 
         <Container className="relative">
           <PageHeaderSkeleton size="lg" />

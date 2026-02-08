@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useRef, ReactNode } from 'react'
-import { motion, useMotionValue, useSpring } from 'framer-motion'
+import { useEffect, useRef, ReactNode, useState } from 'react'
+import { motion, useSpring } from 'framer-motion'
 import { useInteraction } from '@/hooks/useInteraction'
+import { shouldSkipHeavyEffects } from '@/lib/performance'
 import {
   UtensilsCrossed,
   ChefHat,
@@ -136,6 +137,19 @@ export interface InteractiveFloatingIconsProps {
 export default function InteractiveFloatingIcons({
   className = '',
 }: InteractiveFloatingIconsProps) {
+  const [shouldRender, setShouldRender] = useState(false)
+
+  // Check if we should render on client
+  useEffect(() => {
+    // Skip heavy effects on mobile/low-end devices
+    setShouldRender(!shouldSkipHeavyEffects())
+  }, [])
+
+  // Don't render anything on mobile/low-end devices
+  if (!shouldRender) {
+    return null
+  }
+
   return (
     <div className={`pointer-events-none ${className}`} aria-hidden="true">
       {/* UtensilsCrossed - top left, medium depth */}

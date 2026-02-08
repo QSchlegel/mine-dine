@@ -1,7 +1,9 @@
 import { Resend } from 'resend'
 
 const resendApiKey = process.env.RESEND_API_KEY
-const emailFrom = process.env.EMAIL_FROM ?? 'Mine Dine <onboarding@resend.dev>'
+// Resend expects "Name <email@domain.com>" with no literal quotes in the string; strip any that slipped in from env
+const rawFrom = process.env.EMAIL_FROM ?? 'Mine Dine <onboarding@resend.dev>'
+const emailFrom = rawFrom.startsWith('"') && rawFrom.endsWith('"') ? rawFrom.slice(1, -1) : rawFrom
 
 const resend = resendApiKey ? new Resend(resendApiKey) : null
 

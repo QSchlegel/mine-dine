@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useSession } from '@/lib/auth-client'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
 import {
   Home,
   Utensils,
@@ -55,6 +56,7 @@ export const BottomNav: React.FC = () => {
   const { data: session } = useSession()
   const [isVisible, setIsVisible] = useState(true)
   const lastScrollYRef = useRef(0)
+  const reducedMotion = useReducedMotion()
 
   const isAuthenticated = !!session?.user
 
@@ -100,6 +102,11 @@ export const BottomNav: React.FC = () => {
     return false
   }
 
+  // Use simpler transitions when reduced motion is preferred
+  const navTransition = reducedMotion
+    ? { duration: 0.15 }
+    : { type: 'spring' as const, stiffness: 200, damping: 25 }
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -107,7 +114,7 @@ export const BottomNav: React.FC = () => {
           initial={{ y: 100 }}
           animate={{ y: 0 }}
           exit={{ y: 100 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          transition={navTransition}
           className={cn(
             'fixed bottom-0 left-0 right-0 z-40',
             'md:hidden', // Only show on mobile
@@ -127,45 +134,33 @@ export const BottomNav: React.FC = () => {
                   href={item.href}
                   className="relative flex flex-col items-center justify-center flex-1 h-full"
                 >
-                  <motion.div
+                  <div
                     className={cn(
                       'flex flex-col items-center justify-center',
                       'rounded-xl px-3 py-1.5',
-                      'transition-colors duration-200'
+                      'transition-colors duration-150'
                     )}
-                    whileTap={{ scale: 0.9 }}
                   >
-                    {/* Active background indicator */}
+                    {/* Active background indicator - static on mobile for perf */}
                     {active && (
-                      <motion.div
-                        layoutId="bottom-nav-indicator"
-                        className="absolute inset-1 rounded-xl bg-coral-500/15"
-                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                      />
+                      <div className="absolute inset-1 rounded-xl bg-coral-500/15" />
                     )}
 
-                    {/* Icon */}
-                    <motion.div
-                      animate={{
-                        scale: active ? 1.1 : 1,
-                      }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                    >
-                      <Icon
-                        className={cn(
-                          'w-6 h-6 relative z-10 transition-colors duration-200',
-                          active
-                            ? 'text-coral-500'
-                            : 'text-[var(--foreground-secondary)]'
-                        )}
-                        fill={active && item.icon === Heart ? 'currentColor' : 'none'}
-                      />
-                    </motion.div>
+                    {/* Icon - no animation, just CSS transition */}
+                    <Icon
+                      className={cn(
+                        'w-6 h-6 relative z-10 transition-all duration-150',
+                        active
+                          ? 'text-coral-500 scale-110'
+                          : 'text-[var(--foreground-secondary)] scale-100'
+                      )}
+                      fill={active && item.icon === Heart ? 'currentColor' : 'none'}
+                    />
 
                     {/* Label */}
                     <span
                       className={cn(
-                        'text-[10px] font-medium mt-0.5 relative z-10 transition-colors duration-200',
+                        'text-[10px] font-medium mt-0.5 relative z-10 transition-colors duration-150',
                         active
                           ? 'text-coral-500'
                           : 'text-[var(--foreground-secondary)]'
@@ -173,7 +168,7 @@ export const BottomNav: React.FC = () => {
                     >
                       {item.label}
                     </span>
-                  </motion.div>
+                  </div>
                 </Link>
               )
             })}

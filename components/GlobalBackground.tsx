@@ -1,16 +1,22 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useInteraction } from '@/hooks/useInteraction'
-import P5ParticleBackground from '@/components/P5ParticleBackground'
-import GradientWavesBackground from '@/components/backgrounds/GradientWavesBackground'
-import GeometricGridBackground from '@/components/backgrounds/GeometricGridBackground'
-import MeshGradientBackground from '@/components/backgrounds/MeshGradientBackground'
-import RadialGradientBackground from '@/components/backgrounds/RadialGradientBackground'
-import WavePatternBackground from '@/components/backgrounds/WavePatternBackground'
-import FloatingFoodBackground from '@/components/backgrounds/FloatingFoodBackground'
+import { shouldSkipHeavyEffects, isMobileDevice } from '@/lib/performance'
 
-type AnimationType = 'particles' | 'waves' | 'geometric' | 'mesh' | 'radial' | 'wave-pattern' | 'floating-food'
+// Lazy load background components only when needed
+import dynamic from 'next/dynamic'
+
+const P5ParticleBackground = dynamic(() => import('@/components/P5ParticleBackground'), { ssr: false })
+const GradientWavesBackground = dynamic(() => import('@/components/backgrounds/GradientWavesBackground'), { ssr: false })
+const GeometricGridBackground = dynamic(() => import('@/components/backgrounds/GeometricGridBackground'), { ssr: false })
+const MeshGradientBackground = dynamic(() => import('@/components/backgrounds/MeshGradientBackground'), { ssr: false })
+const RadialGradientBackground = dynamic(() => import('@/components/backgrounds/RadialGradientBackground'), { ssr: false })
+const WavePatternBackground = dynamic(() => import('@/components/backgrounds/WavePatternBackground'), { ssr: false })
+const FloatingFoodBackground = dynamic(() => import('@/components/backgrounds/FloatingFoodBackground'), { ssr: false })
+
+type AnimationType = 'particles' | 'waves' | 'geometric' | 'mesh' | 'radial' | 'wave-pattern' | 'floating-food' | 'none'
 
 const ANIMATION_MAP: Record<string, AnimationType> = {
   '/': 'particles',
@@ -33,9 +39,21 @@ const ANIMATION_MAP: Record<string, AnimationType> = {
 export default function GlobalBackground() {
   const pathname = usePathname()
   const interaction = useInteraction()
+  const [skipAnimations, setSkipAnimations] = useState(true) // Default to skip until checked
+
+  // Check device capabilities on mount
+  useEffect(() => {
+    const shouldSkip = shouldSkipHeavyEffects() || isMobileDevice()
+    setSkipAnimations(shouldSkip)
+  }, [])
 
   // Determine animation type based on pathname
   const getAnimationType = (): AnimationType => {
+    // Skip all animations on mobile/low-end devices
+    if (skipAnimations) {
+      return 'none'
+    }
+
     // Check exact matches first
     if (ANIMATION_MAP[pathname]) {
       return ANIMATION_MAP[pathname]
@@ -57,6 +75,16 @@ export default function GlobalBackground() {
   }
 
   const animationType = getAnimationType()
+
+  // Render static gradient fallback on mobile
+  if (animationType === 'none') {
+    return (
+      <div
+        className="fixed inset-0 -z-10 pointer-events-none bg-[var(--background)]"
+        aria-hidden="true"
+      />
+    )
+  }
 
   return (
     <div className="fixed inset-0 -z-10 pointer-events-none">

@@ -837,6 +837,96 @@ p {
 }
 
 /* ========================================
+   Mobile Performance Optimizations
+   ======================================== */
+
+/* Disable expensive backdrop-blur on mobile devices */
+@media (max-width: 768px), (hover: none) {
+  .glass,
+  .glass-strong,
+  .glass-premium,
+  .backdrop-blur,
+  .backdrop-blur-sm,
+  .backdrop-blur-md,
+  .backdrop-blur-lg,
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl,
+  .backdrop-blur-3xl,
+  [class*="backdrop-blur"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .glass {
+    background: var(--glass-background);
+  }
+
+  .glass-strong {
+    background: var(--glass-background);
+  }
+
+  .glass-premium {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.08) 100%
+    );
+  }
+
+  .dark .glass-premium {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.03) 100%
+    );
+  }
+
+  /* Disable expensive drop-shadows on mobile */
+  .drop-shadow-lg,
+  .drop-shadow-xl,
+  .drop-shadow-2xl {
+    filter: none !important;
+  }
+
+  /* Simplify shadows */
+  .shadow-lg,
+  .shadow-xl,
+  .shadow-2xl {
+    box-shadow: var(--shadow-md) !important;
+  }
+
+  /* Disable glow effects */
+  .terminal-glow,
+  .terminal-glow-subtle,
+  .glow-text,
+  .glow-text-subtle {
+    text-shadow: none !important;
+  }
+
+  .neon-border,
+  .neon-border-coral {
+    box-shadow: none !important;
+  }
+
+  /* Disable blob animations */
+  .blob {
+    animation: none !important;
+    border-radius: 50% !important;
+  }
+
+  /* Disable floating animations */
+  .float-gentle {
+    animation: none !important;
+  }
+
+  /* Disable shimmer animations */
+  .shimmer,
+  .pill-shimmer::after {
+    animation: none !important;
+  }
+}
+
+/* ========================================
    Selection Styling
    ======================================== */
 

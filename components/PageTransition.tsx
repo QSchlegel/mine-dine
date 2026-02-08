@@ -2,7 +2,8 @@
 
 import { motion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
+import { shouldReduceAnimations, isMobileDevice } from '@/lib/performance'
 
 interface PageTransitionProps {
   children: React.ReactNode
@@ -10,15 +11,16 @@ interface PageTransitionProps {
 
 export function PageTransition({ children }: PageTransitionProps) {
   const pathname = usePathname()
+  const [skipAnimation, setSkipAnimation] = useState(true) // Default to skip until checked
 
-  // Respect reduced motion preference
-  const prefersReducedMotion = useMemo(() => {
-    if (typeof window === 'undefined') return false
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  // Check device capabilities on mount
+  useEffect(() => {
+    // Skip animations on mobile or if reduced motion is preferred
+    setSkipAnimation(shouldReduceAnimations() || isMobileDevice())
   }, [])
 
-  // Skip animation if reduced motion is preferred
-  if (prefersReducedMotion) {
+  // Skip animation on mobile or if reduced motion is preferred
+  if (skipAnimation) {
     return <>{children}</>
   }
 
@@ -29,8 +31,8 @@ export function PageTransition({ children }: PageTransitionProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{
-        duration: 0.25,
-        ease: [0.25, 0.1, 0.25, 1], // Custom easing for smooth feel
+        duration: 0.2,
+        ease: [0.25, 0.1, 0.25, 1],
       }}
     >
       {children}

@@ -134,9 +134,13 @@ export default function P5ParticleBackground({
         const sketch = (p: any) => {
           let colors = getColors()
           let particleCount = getParticleCount()
-          const connectionDistance = 120
+          // Reduce connection distance on mobile for better performance
+          const isMobile = window.innerWidth < 768
+          const connectionDistance = isMobile ? 60 : 120
           const repulsionRadius = 150
           const repulsionStrength = 0.02
+          // Skip connections entirely on mobile for O(n) instead of O(n²)
+          const drawConnections = !isMobile
 
           // Get interaction position combining mouse/touch and gyroscope
           const getInteractionPosition = () => {
@@ -304,11 +308,12 @@ export default function P5ParticleBackground({
               if (particle.y < 0) particle.y = p.height
               if (particle.y > p.height) particle.y = 0
 
-              // Draw particle with glow effect in dark mode
-              if (resolvedTheme === 'dark') {
+              // Draw particle - simplified on mobile (no glow layers)
+              p.noStroke()
+              if (resolvedTheme === 'dark' && !isMobile) {
+                // Desktop dark mode: Full glow effect
                 // Outer glow - neon teal
                 p.fill('rgba(77, 255, 230, 0.15)')
-                p.noStroke()
                 p.circle(particle.x, particle.y, particle.radius * 6)
 
                 // Middle glow
@@ -323,43 +328,44 @@ export default function P5ParticleBackground({
                 p.fill('rgba(77, 255, 230, 0.9)')
                 p.circle(particle.x, particle.y, particle.radius * 0.8)
               } else {
-                // Light mode - standard particle
+                // Mobile or light mode - single particle, no glow
                 p.fill(colors.particle)
-                p.noStroke()
                 p.circle(particle.x, particle.y, particle.radius * 2)
               }
             }
 
-            // Draw connections between nearby particles
-            p.strokeWeight(resolvedTheme === 'dark' ? 1.5 : 1)
+            // Draw connections between nearby particles - skip on mobile for performance
+            if (drawConnections) {
+              p.strokeWeight(resolvedTheme === 'dark' ? 1.5 : 1)
 
-            for (let i = 0; i < particles.length; i++) {
-              for (let j = i + 1; j < particles.length; j++) {
-                const dx = particles[i].x - particles[j].x
-                const dy = particles[i].y - particles[j].y
-                const distance = p.sqrt(dx * dx + dy * dy)
+              for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                  const dx = particles[i].x - particles[j].x
+                  const dy = particles[i].y - particles[j].y
+                  const distance = p.sqrt(dx * dx + dy * dy)
 
-                if (distance < connectionDistance) {
-                  const opacity = p.map(distance, 0, connectionDistance, resolvedTheme === 'dark' ? 0.4 : 0.3, 0)
+                  if (distance < connectionDistance) {
+                    const opacity = p.map(distance, 0, connectionDistance, resolvedTheme === 'dark' ? 0.4 : 0.3, 0)
 
-                  if (resolvedTheme === 'dark') {
-                    // Neon teal glowing connections
-                    const connectionColor = `rgba(77, 255, 230, ${opacity})`
-                    p.stroke(connectionColor)
-                  } else {
-                    const connectionColor = colors.connection.replace(
-                      /0\.\d+/,
-                      opacity.toString()
+                    if (resolvedTheme === 'dark') {
+                      // Neon teal glowing connections
+                      const connectionColor = `rgba(77, 255, 230, ${opacity})`
+                      p.stroke(connectionColor)
+                    } else {
+                      const connectionColor = colors.connection.replace(
+                        /0\.\d+/,
+                        opacity.toString()
+                      )
+                      p.stroke(connectionColor)
+                    }
+
+                    p.line(
+                      particles[i].x,
+                      particles[i].y,
+                      particles[j].x,
+                      particles[j].y
                     )
-                    p.stroke(connectionColor)
                   }
-
-                  p.line(
-                    particles[i].x,
-                    particles[i].y,
-                    particles[j].x,
-                    particles[j].y
-                  )
                 }
               }
             }
