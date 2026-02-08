@@ -83,23 +83,49 @@ export async function POST(request: NextRequest) {
     const imageUrl =
       typeof body?.imageUrl === 'string' && body.imageUrl.trim() ? body.imageUrl.trim() : null
 
-    const recipe = await prisma.recipe.create({
-      data: {
-        authorId: session.user.id,
-        title,
-        description: body?.description?.trim() || null,
-        imageUrl: imageUrl || undefined,
-        servings: Number.isFinite(Number(body?.servings)) ? Number(body.servings) : null,
-        prepTime: body?.prepTime || null,
-        cookTime: body?.cookTime || null,
-        ingredients,
-        steps,
-        tags: Array.isArray(body?.tags) ? body.tags : [],
-        isPublic: body?.isPublic !== false,
-        viewCount: 0,
-        useCount: 0,
-        experience: 0,
-      },
+    const dinnerId = typeof body?.dinnerId === 'string' && body.dinnerId.trim() ? body.dinnerId.trim() : null
+
+    const recipe = await prisma.$transaction(async (tx) => {
+      const created = await tx.recipe.create({
+        data: {
+          authorId: session.user.id,
+          title,
+          description: body?.description?.trim() || null,
+          imageUrl: imageUrl || undefined,
+          servings: Number.isFinite(Number(body?.servings)) ? Number(body.servings) : null,
+          prepTime: body?.prepTime || null,
+          cookTime: body?.cookTime || null,
+          ingredients,
+          steps,
+          tags: Array.isArray(body?.tags) ? body.tags : [],
+          isPublic: body?.isPublic !== false,
+          viewCount: 0,
+          useCount: 0,
+          experience: 0,
+          owners: {
+            create: [{ userId: session.user.id, role: 'OWNER' }],
+          },
+        },
+      })
+
+      // If created in the context of a dinner: attach usage + co-own with dinner host
+      if (dinnerId) {
+        const dinner = await tx.dinner.findUnique({ where: { id: dinnerId }, select: { id: true, hostId: true } })
+        if (dinner) {
+          await tx.recipeUsage.create({
+            data: { recipeId: created.id, dinnerId: dinner.id, usedById: session.user.id, count: 1 },
+          })
+          if (dinner.hostId !== session.user.id) {
+            await tx.recipeOwner.upsert({
+              where: { recipeId_userId: { recipeId: created.id, userId: dinner.hostId } },
+              create: { recipeId: created.id, userId: dinner.hostId, role: 'OWNER' },
+              update: { role: 'OWNER' },
+            })
+          }
+        }
+      }
+
+      return created
     })
 
     return NextResponse.json({ recipe }, { status: 201 })

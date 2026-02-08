@@ -1,16 +1,22 @@
 import Stripe from 'stripe'
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not set')
-}
+let _stripe: Stripe | null = null
 
-/**
- * Stripe client instance
- */
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-12-15.clover',
-  typescript: true,
-})
+function getStripe(): Stripe {
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) {
+    // IMPORTANT: do not throw at module-eval time; Next build/imports API routes.
+    // Throw only when the Stripe functionality is actually invoked.
+    throw new Error('STRIPE_SECRET_KEY is not set')
+  }
+  if (!_stripe) {
+    _stripe = new Stripe(key, {
+      apiVersion: '2025-12-15.clover',
+      typescript: true,
+    })
+  }
+  return _stripe
+}
 
 /**
  * Create a payment intent for a booking
@@ -23,7 +29,7 @@ export async function createPaymentIntent(
   metadata: Record<string, string> = {}
 ) {
   try {
-    const paymentIntent = await stripe.paymentIntents.create({
+    const paymentIntent = await getStripe().paymentIntents.create({
       amount: Math.round(amount * 100), // Convert EUR to cents
       currency: 'eur',
       metadata,
@@ -46,7 +52,7 @@ export async function createPaymentIntent(
  */
 export async function getPaymentIntent(paymentIntentId: string) {
   try {
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+    const paymentIntent = await getStripe().paymentIntents.retrieve(paymentIntentId)
     return paymentIntent
   } catch (error) {
     console.error('Error retrieving payment intent:', error)
@@ -59,9 +65,13 @@ export async function getPaymentIntent(paymentIntentId: string) {
  * @param paymentIntentId - The payment intent ID
  * @returns Promise resolving to the confirmed payment intent
  */
+export function constructStripeEvent(body: string, signature: string, webhookSecret: string) {
+  return getStripe().webhooks.constructEvent(body, signature, webhookSecret)
+}
+
 export async function confirmPaymentIntent(paymentIntentId: string) {
   try {
-    const paymentIntent = await stripe.paymentIntents.confirm(paymentIntentId)
+    const paymentIntent = await getStripe().paymentIntents.confirm(paymentIntentId)
     return paymentIntent
   } catch (error) {
     console.error('Error confirming payment intent:', error)

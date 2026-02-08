@@ -49,9 +49,20 @@ model User {
   recipes                   Recipe[]
   recipeComments            RecipeComment[]
   recipeLikes               RecipeLike[]
+
+  // Recipes: co-ownership + usage attribution
+  recipeOwnerships          RecipeOwner[]
+  recipeUsages              RecipeUsage[]         @relation("RecipeUsageUsedBy")
+
+  // Dinners: invites + collaborators
+  dinnerInvitationsSent     DinnerInvitation[]    @relation("DinnerInvitationsSent")
+  dinnerInvitationsReceived DinnerInvitation[]    @relation("DinnerInvitationsReceived")
+  dinnerCollaborations      DinnerCollaborator[]
+  createdDinnerInviteLinks  DinnerInviteLink[]    @relation("DinnerInviteLinkCreator")
+  dinnerCohostRequests      DinnerCohostRequest[]
+
+  // Audit
   adminActionLogs           AdminActionLog[]
-  dinnerInvitationsSent     DinnerInvitation[] @relation("DinnerInvitationsSent")
-  dinnerInvitationsReceived DinnerInvitation[] @relation("DinnerInvitationsReceived")
 
   @@index([utxosUserId])
   @@index([email])
@@ -140,31 +151,88 @@ model Dinner {
   reviews            Review[]
   invitations        DinnerInvitation[]
 
+  collaborators      DinnerCollaborator[]
+  inviteLinks        DinnerInviteLink[]
+  cohostRequests     DinnerCohostRequest[]
+
   @@index([hostId])
   @@index([status])
-  @@index([visibility])
   @@index([moderationStatus])
+  @@index([visibility])
   @@index([dateTime])
 }
 
 model DinnerInvitation {
-  id           String            @id @default(cuid())
+  id           String             @id @default(cuid())
   dinnerId     String
   email        String
   invitedById  String
   status       InvitationStatus   @default(PENDING)
-  token        String            @unique
+  token        String             @unique
   userId       String?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  dinner       Dinner            @relation(fields: [dinnerId], references: [id], onDelete: Cascade)
-  invitedBy    User              @relation("DinnerInvitationsSent", fields: [invitedById], references: [id], onDelete: Cascade)
-  user         User?             @relation("DinnerInvitationsReceived", fields: [userId], references: [id], onDelete: SetNull)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  dinner       Dinner             @relation(fields: [dinnerId], references: [id], onDelete: Cascade)
+  invitedBy    User               @relation("DinnerInvitationsSent", fields: [invitedById], references: [id], onDelete: Cascade)
+  user         User?              @relation("DinnerInvitationsReceived", fields: [userId], references: [id], onDelete: SetNull)
 
   @@unique([dinnerId, email])
   @@index([dinnerId])
   @@index([token])
   @@index([email])
+}
+
+model DinnerCollaborator {
+  id        String                 @id @default(cuid())
+  dinnerId  String
+  userId    String
+  role      DinnerCollaboratorRole @default(COHOST)
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  dinner    Dinner                 @relation(fields: [dinnerId], references: [id], onDelete: Cascade)
+  user      User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([dinnerId, userId])
+  @@index([dinnerId])
+  @@index([userId])
+  @@index([role])
+}
+
+model DinnerInviteLink {
+  id          String               @id @default(cuid())
+  dinnerId    String
+  scope       DinnerInviteLinkScope
+  tokenHash   String               @unique
+  createdById String
+  expiresAt   DateTime?
+  maxUses     Int?
+  uses        Int                  @default(0)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  dinner      Dinner               @relation(fields: [dinnerId], references: [id], onDelete: Cascade)
+  createdBy   User                 @relation("DinnerInviteLinkCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([dinnerId])
+  @@index([createdById])
+  @@index([scope])
+}
+
+model DinnerCohostRequest {
+  id          String   @id @default(cuid())
+  dinnerId    String
+  requesterId String
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  dinner      Dinner   @relation(fields: [dinnerId], references: [id], onDelete: Cascade)
+  requester   User     @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+
+  @@unique([dinnerId, requesterId])
+  @@index([dinnerId])
+  @@index([requesterId])
 }
 
 model DinnerTag {
@@ -432,6 +500,7 @@ model Recipe {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   author      User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  owners      RecipeOwner[]
   comments    RecipeComment[]
   likes       RecipeLike[]
   usages      RecipeUsage[]
@@ -445,15 +514,33 @@ model RecipeUsage {
   id        String   @id @default(cuid())
   recipeId  String
   dinnerId  String?
+  usedById  String?
   count     Int      @default(1)
   note      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   dinner    Dinner?  @relation(fields: [dinnerId], references: [id], onDelete: SetNull)
+  usedBy    User?    @relation("RecipeUsageUsedBy", fields: [usedById], references: [id], onDelete: SetNull)
 
   @@index([recipeId])
   @@index([dinnerId])
+  @@index([usedById])
+}
+
+model RecipeOwner {
+  id        String          @id @default(cuid())
+  recipeId  String
+  userId    String
+  role      RecipeOwnerRole @default(OWNER)
+  createdAt DateTime        @default(now())
+
+  recipe    Recipe          @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([recipeId, userId])
+  @@index([recipeId])
+  @@index([userId])
 }
 
 model RecipeComment {
@@ -532,6 +619,27 @@ enum DinnerStatus {
   COMPLETED
 }
 
+enum DinnerVisibility {
+  PUBLIC
+  UNLISTED
+  PRIVATE
+}
+
+enum DinnerCollaboratorRole {
+  OWNER
+  COHOST
+  STAFF
+}
+
+enum DinnerInviteLinkScope {
+  GUEST_VIEW
+  COHOST_REQUEST
+}
+
+enum RecipeOwnerRole {
+  OWNER
+}
+
 enum DinnerModerationStatus {
   PENDING
   APPROVED
@@ -578,7 +686,3 @@ enum GuestSentiment {
   DISLIKE
 }
 
-enum DinnerVisibility {
-  PUBLIC
-  PRIVATE
-}
