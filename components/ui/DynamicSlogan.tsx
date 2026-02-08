@@ -14,7 +14,7 @@ const SLOGANS = [
   { text: 'Underground dining revolution', emoji: '🌍' },
   { text: 'Real food, real people, zero BS', emoji: '🎯' },
   { text: 'Where chefs actually cook', emoji: '👨‍🍳' },
-  { text: 'Ditch the restaurant, join the movement', emoji: '🚀' },
+  { text: 'Ditch the ordinary, join the movement', emoji: '🚀' },
   { text: 'Authentic AF', emoji: '💯' },
 ]
 

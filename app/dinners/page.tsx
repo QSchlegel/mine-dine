@@ -264,7 +264,7 @@ export default function BrowseDinnersPage() {
             </h1>
           </div>
           <p className="text-lg text-[var(--foreground-secondary)] ml-14">
-            Find unique dining experiences hosted by passionate chefs
+            Find unique dining experiences hosted by passionate chefs and restaurants
           </p>
         </motion.div>
 

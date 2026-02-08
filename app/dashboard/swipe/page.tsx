@@ -281,7 +281,7 @@ function SwipePageContent() {
           </motion.div>
           <h2 className="text-xl sm:text-2xl font-sans font-bold text-[var(--foreground)] mb-2 sm:mb-3">All caught up!</h2>
           <p className="text-sm sm:text-base text-[var(--foreground-secondary)] mb-6 sm:mb-8">
-            You&apos;ve discovered all available hosts. Check back later for new chefs joining the platform!
+            You&apos;ve discovered all available hosts. Check back later for new chefs and restaurants joining the platform!
           </p>
           <Button onClick={() => window.location.reload()} size="lg" className="w-full sm:w-auto !rounded-xl sm:!rounded-2xl">
             Refresh

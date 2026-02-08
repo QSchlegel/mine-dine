@@ -126,8 +126,8 @@ export default function Home() {
                 transition={{ duration: 0.6, delay: 0.4 }}
                 className="mt-5 sm:mt-6 text-base sm:text-lg text-[var(--foreground-secondary)] max-w-xl mx-auto lg:mx-0 leading-relaxed"
               >
-                Intimate dinners hosted by passionate home chefs.
-                <span className="text-coral-600 dark:text-neon-coral font-medium"> No restaurants, no pretense—</span>
+                Intimate dinners hosted by passionate home chefs and restaurants.
+                <span className="text-coral-600 dark:text-neon-coral font-medium"> No pretense—</span>
                 just real food and real connections.
               </motion.p>
 
@@ -312,7 +312,7 @@ function HowItWorks() {
       number: '01',
       title: 'Discover',
       subtitle: 'Find your perfect host',
-      description: 'Swipe through passionate home chefs. Match based on cuisine preferences, dietary needs, and vibe.',
+      description: 'Swipe through passionate home chefs and restaurants. Match based on cuisine preferences, dietary needs, and vibe.',
       icon: <Heart className="h-6 w-6" />,
       color: 'coral',
     },
