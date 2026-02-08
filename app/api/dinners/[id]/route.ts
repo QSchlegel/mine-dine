@@ -80,10 +80,20 @@ export async function GET(
       }
     }
 
-    // Check access for private events
+    // Check access for private events (allow valid invite token without login)
     if (dinner.visibility === 'PRIVATE') {
       const user = await getCurrentUser()
-      const hasAccess = await canAccessEvent(id, user?.id ?? null)
+      let hasAccess = await canAccessEvent(id, user?.id ?? null)
+      if (!hasAccess) {
+        const inviteToken = req.nextUrl.searchParams.get('invite')
+        if (inviteToken) {
+          const validInvite = await prisma.dinnerInvitation.findFirst({
+            where: { dinnerId: id, token: inviteToken },
+            select: { id: true },
+          })
+          if (validInvite) hasAccess = true
+        }
+      }
       if (!hasAccess) {
         return NextResponse.json(
           { error: 'This event is private' },

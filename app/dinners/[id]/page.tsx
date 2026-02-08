@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
 import Image from 'next/image'
 import { MapPin, Users, Calendar, Clock, ChefHat } from 'lucide-react'
@@ -59,6 +59,7 @@ interface Dinner {
 export default function DinnerDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [dinner, setDinner] = useState<Dinner | null>(null)
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -66,7 +67,11 @@ export default function DinnerDetailPage() {
   useEffect(() => {
     if (params.id) {
       setErrorMessage(null)
-      fetch(`/api/dinners/${params.id}`)
+      const invite = searchParams.get('invite')
+      const url = invite
+        ? `/api/dinners/${params.id}?invite=${encodeURIComponent(invite)}`
+        : `/api/dinners/${params.id}`
+      fetch(url)
         .then(async (res) => {
           const data = await res.json()
           if (!res.ok) {
@@ -84,7 +89,7 @@ export default function DinnerDetailPage() {
           setLoading(false)
         })
     }
-  }, [params.id])
+  }, [params.id, searchParams])
 
   if (loading) {
     return (

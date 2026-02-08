@@ -245,7 +245,7 @@ export default function InvitationPage() {
                   )}
 
                   <Button
-                    href={`/dinners/${dinner.id}`}
+                    href={`/dinners/${dinner.id}?invite=${encodeURIComponent(token)}`}
                     variant="secondary"
                     className="w-full"
                   >
