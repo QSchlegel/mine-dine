@@ -92,13 +92,20 @@ export default function HostDinnersPage() {
                     <p>👥 {dinner._count.bookings} / {dinner.maxGuests} guests</p>
                     <p>💰 €{dinner.basePricePerPerson} per person</p>
                   </div>
-                  <div className="mt-4 flex gap-2">
+                  <div className="mt-4 flex flex-wrap gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => router.push(`/dashboard/host/dinners/${dinner.id}/edit`)}
                     >
                       Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/dashboard/host/dinners/${dinner.id}/invite`)}
+                    >
+                      Invite
                     </Button>
                     <Button
                       variant="outline"

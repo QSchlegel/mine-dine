@@ -55,6 +55,10 @@ NEXT_PUBLIC_UMAMI_URL=https://umami.example.com
 
 # OpenAI (for AI dinner planning)
 OPENAI_API_KEY=sk-...
+
+# Email (Resend) – for magic-link sign-in and event invitation emails
+RESEND_API_KEY=re_...
+EMAIL_FROM="Mine Dine <onboarding@yourdomain.com>"
 ```
 
 ### Storage Configuration

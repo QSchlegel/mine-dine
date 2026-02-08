@@ -50,6 +50,8 @@ model User {
   recipeComments            RecipeComment[]
   recipeLikes               RecipeLike[]
   adminActionLogs           AdminActionLog[]
+  dinnerInvitationsSent     DinnerInvitation[] @relation("DinnerInvitationsSent")
+  dinnerInvitationsReceived DinnerInvitation[] @relation("DinnerInvitationsReceived")
 
   @@index([utxosUserId])
   @@index([email])
@@ -135,11 +137,32 @@ model Dinner {
   guestReviews       GuestReview[]
   recipeUsages       RecipeUsage[]
   reviews            Review[]
+  invitations        DinnerInvitation[]
 
   @@index([hostId])
   @@index([status])
   @@index([moderationStatus])
   @@index([dateTime])
+}
+
+model DinnerInvitation {
+  id           String            @id @default(cuid())
+  dinnerId     String
+  email        String
+  invitedById  String
+  status       InvitationStatus   @default(PENDING)
+  token        String            @unique
+  userId       String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  dinner       Dinner            @relation(fields: [dinnerId], references: [id], onDelete: Cascade)
+  invitedBy    User              @relation("DinnerInvitationsSent", fields: [invitedById], references: [id], onDelete: Cascade)
+  user         User?             @relation("DinnerInvitationsReceived", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([dinnerId, email])
+  @@index([dinnerId])
+  @@index([token])
+  @@index([email])
 }
 
 model DinnerTag {
@@ -524,6 +547,12 @@ enum BookingStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
 }
 
 enum SwipeActionType {

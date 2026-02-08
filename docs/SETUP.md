@@ -63,6 +63,17 @@ NEXT_PUBLIC_UMAMI_URL="https://umami.example.com"
 
 Note: Umami is privacy-focused and open-source. You can self-host it or use a hosted instance.
 
+### Email (magic-link and event invitations)
+
+For sign-in codes and dinner invitation emails, set up [Resend](https://resend.com) and add:
+
+```env
+RESEND_API_KEY="re_..."
+EMAIL_FROM="Mine Dine <onboarding@resend.dev>"
+```
+
+Without these, magic-link codes are only logged in development and invitation emails are not sent.
+
 ### File Upload (Optional)
 
 **AWS S3:**

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendEmail } from '@/lib/email'
 
 // Ensure Node.js runtime (not edge) for Prisma binary engine
 export const runtime = 'nodejs'
@@ -58,17 +59,22 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // In a production environment, you would send the code via email here
-    // For now, we'll just log it (REMOVE IN PRODUCTION)
-    console.log(`[Magic Link] Code for ${normalizedEmail}: ${code}`)
-
-    // TODO: Integrate with email service (SendGrid, Resend, etc.)
-    // Example:
-    // await sendEmail({
-    //   to: normalizedEmail,
-    //   subject: 'Your Mine Dine sign-in code',
-    //   text: `Your verification code is: ${code}. It expires in 10 minutes.`,
-    // })
+    // Send code via email (no-op / log when RESEND_API_KEY is not set)
+    const emailResult = await sendEmail({
+      to: normalizedEmail,
+      subject: 'Your Mine Dine sign-in code',
+      text: `Your verification code is: ${code}. It expires in 10 minutes.`,
+    })
+    if (!emailResult.ok) {
+      console.error('[Magic Link] Email send failed:', emailResult.error)
+      return NextResponse.json(
+        { message: 'Failed to send verification code' },
+        { status: 500 }
+      )
+    }
+    if (!process.env.RESEND_API_KEY && process.env.NODE_ENV === 'development') {
+      console.log(`[Magic Link] Code for ${normalizedEmail}: ${code}`)
+    }
 
     return NextResponse.json({
       success: true,

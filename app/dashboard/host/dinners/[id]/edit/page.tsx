@@ -304,6 +304,12 @@ export default function EditDinnerPage({ params }: { params: Promise<{ id: strin
           <p className="text-foreground-secondary mt-1">
             Update your dinner details
           </p>
+          <Link
+            href={`/dashboard/host/dinners/${resolvedParams.id}/invite`}
+            className="inline-block mt-2 text-sm text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            Invite guests by email →
+          </Link>
         </div>
 
         {/* Warning for dinners with bookings */}

@@ -144,6 +144,15 @@ export default function HostGuestReviewPage() {
           <p className="text-[var(--foreground-secondary)] mt-1">
             {dinner.title} - {new Date(dinner.dateTime).toLocaleDateString()}
           </p>
+          <div className="mt-2 flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(`/dashboard/host/dinners/${params.id}/invite`)}
+            >
+              Invite guests
+            </Button>
+          </div>
         </div>
 
         {/* Error */}
