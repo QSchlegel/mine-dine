@@ -53,6 +53,15 @@ export default function ProfileCompletionWizard({
     callbacksRef.current = { onComplete, onClose }
   }, [onComplete, onClose])
 
+  // Keep latest selectedTags in a ref so handleComplete always sends current selection (avoids stale closure)
+  const selectedTagsRef = useRef(selectedTags)
+  useEffect(() => {
+    selectedTagsRef.current = selectedTags
+  }, [selectedTags])
+
+  // Track previous isOpen so we only reset when modal opens, not when initialData reference changes
+  const prevIsOpenRef = useRef(false)
+
   // Update completion progress when form data changes
   useEffect(() => {
     const currentProfile = {
@@ -72,12 +81,13 @@ export default function ProfileCompletionWizard({
     }
   }, [name, bio, selectedTags])
 
-  // Reset wizard when modal opens/closes
+  // Reset wizard only when modal opens (transition from closed to open), not when initialData changes while open
   useEffect(() => {
-    if (isOpen) {
+    const justOpened = isOpen && !prevIsOpenRef.current
+    prevIsOpenRef.current = isOpen
+    if (justOpened) {
       setName(initialData?.name || '')
       setBio(initialData?.bio || '')
-      // Ensure no duplicates when setting initial tags
       const initialTags = initialData?.selectedTags || []
       setSelectedTags([...new Set(initialTags)])
       setCurrentStep(1)
@@ -198,15 +208,16 @@ export default function ProfileCompletionWizard({
 
     setSaving(true)
     setError(null)
+
+    // Use ref so we always send the current selection (avoids stale state when clicking Complete)
+    const tagsToSave = [...new Set(selectedTagsRef.current)]
+    if (tagsToSave.length < 3) {
+      setError('Please select at least 3 tags')
+      setSaving(false)
+      return
+    }
     
     try {
-      // Remove any duplicate tag IDs before saving
-      const uniqueTagIds = [...new Set(selectedTags)]
-      if (uniqueTagIds.length !== selectedTags.length) {
-        console.warn('Duplicate tags detected, removing duplicates before save')
-        setSelectedTags(uniqueTagIds)
-      }
-      
       // Save all data: name, bio, and tags
       const [profileResponse, tagsResponse] = await Promise.all([
         fetch('/api/profiles', {
@@ -217,7 +228,7 @@ export default function ProfileCompletionWizard({
         fetch('/api/profiles/tags', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tagIds: uniqueTagIds }),
+          body: JSON.stringify({ tagIds: tagsToSave }),
         }),
       ])
 
@@ -241,14 +252,14 @@ export default function ProfileCompletionWizard({
       }
       
       // Verify all tags were saved
-      const missingTags = uniqueTagIds.filter(id => !savedTagIds.includes(id))
+      const missingTags = tagsToSave.filter(id => !savedTagIds.includes(id))
       if (missingTags.length > 0) {
         console.error('Some tags were not saved:', missingTags)
         throw new Error(`Failed to save ${missingTags.length} tag(s)`)
       }
       
-      if (savedTagCount !== uniqueTagIds.length) {
-        console.warn('Tag count mismatch. Expected:', uniqueTagIds.length, 'Got:', savedTagCount)
+      if (savedTagCount !== tagsToSave.length) {
+        console.warn('Tag count mismatch. Expected:', tagsToSave.length, 'Got:', savedTagCount)
       } else {
         console.log('All tags saved successfully:', savedTagCount, 'tags')
       }
