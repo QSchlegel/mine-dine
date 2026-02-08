@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
 import Image from 'next/image'
-import { MapPin, Users, Calendar, Clock, ChefHat } from 'lucide-react'
+import { MapPin, Users, Calendar, Clock, ChefHat, Share2 } from 'lucide-react'
 
 import {
   Container,
@@ -63,6 +63,38 @@ export default function DinnerDetailPage() {
   const [dinner, setDinner] = useState<Dinner | null>(null)
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [shareCopied, setShareCopied] = useState(false)
+
+  const getShareUrl = () => {
+    if (typeof window === 'undefined') return ''
+    const invite = searchParams.get('invite')
+    const path = invite
+      ? `/dinners/${params.id}?invite=${encodeURIComponent(invite)}`
+      : `/dinners/${params.id}`
+    return `${window.location.origin}${path}`
+  }
+
+  const handleShare = async () => {
+    if (!dinner) return
+    const url = getShareUrl()
+    const title = dinner.title
+    const text = `Join me for ${dinner.title} on Mine Dine`
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share({ title, text, url })
+        setShareCopied(true)
+      } else {
+        await navigator.clipboard.writeText(url)
+        setShareCopied(true)
+      }
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        await navigator.clipboard?.writeText(url).catch(() => {})
+        setShareCopied(true)
+      }
+    }
+    setTimeout(() => setShareCopied(false), 2000)
+  }
 
   useEffect(() => {
     if (params.id) {
@@ -155,12 +187,19 @@ export default function DinnerDetailPage() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-            {/* Countdown Badge */}
-            {!isPast && (
-              <div className="absolute top-4 right-4">
-                <CountdownBadge targetDate={dinnerDate} />
-              </div>
-            )}
+            {/* Countdown Badge & Share */}
+            <div className="absolute top-4 right-4 flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleShare}
+                leftIcon={<Share2 className="h-4 w-4" />}
+                className="!bg-white/90 hover:!bg-white !text-gray-800 backdrop-blur-sm"
+              >
+                {shareCopied ? 'Copied!' : 'Share'}
+              </Button>
+              {!isPast && <CountdownBadge targetDate={dinnerDate} />}
+            </div>
 
             {/* Title Overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -357,6 +396,16 @@ export default function DinnerDetailPage() {
                   disabled={isFull || isPast}
                 >
                   {isPast ? 'Event Ended' : isFull ? 'Fully Booked' : 'Book Now'}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  size="sm"
+                  onClick={handleShare}
+                  leftIcon={<Share2 className="h-4 w-4" />}
+                >
+                  {shareCopied ? 'Link copied!' : 'Share this dinner'}
                 </Button>
               </CardContent>
             </Card>
