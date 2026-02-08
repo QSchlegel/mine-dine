@@ -1,15 +1,14 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useCallback, useRef } from 'react'
+import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
-import { staggerContainer, staggerItem, fadeInUp } from '@/lib/animations'
 import InteractiveFloatingIcons from '@/components/InteractiveFloatingIcons'
 import DynamicSlogan from '@/components/ui/DynamicSlogan'
 import { useInteraction, requestGyroscopePermission } from '@/hooks/useInteraction'
 import {
-  ChevronDown,
+  ArrowRight,
   Calendar,
   Heart,
   Home as HomeIcon,
@@ -19,13 +18,24 @@ import {
   MessageCircle,
   Star,
   UtensilsCrossed,
+  Sparkles,
+  Users,
+  ChefHat,
 } from 'lucide-react'
 
 export default function Home() {
   const interaction = useInteraction()
   const [gyroRequested, setGyroRequested] = useState(false)
+  const heroRef = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  })
 
-  // Request gyroscope permission on first interaction (required for iOS)
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+  const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95])
+  const heroY = useTransform(scrollYProgress, [0, 0.5], [0, 50])
+
   const handleFirstInteraction = useCallback(async () => {
     if (!gyroRequested && interaction.isMobile && interaction.hasGyroscope) {
       const granted = await requestGyroscopePermission()
@@ -42,343 +52,574 @@ export default function Home() {
       onClick={handleFirstInteraction}
       onTouchStart={handleFirstInteraction}
     >
-      {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-[var(--background)]">
-        {/* Background layer - adapts to theme */}
-        <div className="absolute inset-0 bg-gradient-to-br from-pink-50/50 via-purple-50/30 to-cyan-50/50 dark:from-transparent dark:via-transparent dark:to-transparent" />
-        <div className="absolute inset-0 grid-pattern opacity-30 dark:opacity-0" />
-        <div className="absolute inset-0 dark:matrix-grid" />
+      {/* Hero Section - Editorial Style */}
+      <section
+        ref={heroRef}
+        className="relative min-h-[100vh] flex items-center justify-center overflow-hidden bg-[var(--background)]"
+      >
+        {/* Animated gradient mesh background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-coral-50 via-surface-50 to-accent-50 dark:from-void dark:via-space dark:to-nebula" />
 
-        {/* Gradient orbs - theme adaptive */}
-        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-pink-400/30 dark:bg-neon-coral/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-cyan-400/30 dark:bg-neon-teal/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-400/20 dark:bg-neon-amber/5 rounded-full blur-[150px]" />
+          {/* Organic blob shapes */}
+          <motion.div
+            className="absolute top-[10%] left-[5%] w-[500px] h-[500px] bg-gradient-to-br from-coral-300/40 to-coral-500/20 dark:from-neon-coral/15 dark:to-neon-coral/5 blob blur-3xl"
+            animate={{
+              x: [0, 30, 0],
+              y: [0, -20, 0],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+          <motion.div
+            className="absolute bottom-[10%] right-[5%] w-[600px] h-[600px] bg-gradient-to-br from-accent-300/30 to-accent-500/15 dark:from-neon-teal/12 dark:to-neon-teal/5 blob blur-3xl"
+            animate={{
+              x: [0, -40, 0],
+              y: [0, 30, 0],
+            }}
+            transition={{
+              duration: 25,
+              repeat: Infinity,
+              ease: 'easeInOut',
+              delay: 2,
+            }}
+          />
+          <motion.div
+            className="absolute top-[40%] right-[20%] w-[400px] h-[400px] bg-gradient-to-br from-amber-300/25 to-amber-500/10 dark:from-neon-amber/10 dark:to-neon-amber/3 blob blur-3xl"
+            animate={{
+              x: [0, 25, 0],
+              y: [0, 25, 0],
+            }}
+            transition={{
+              duration: 18,
+              repeat: Infinity,
+              ease: 'easeInOut',
+              delay: 5,
+            }}
+          />
+        </div>
 
-        {/* Neon accent line for dark mode */}
-        <div className="absolute top-0 left-0 right-0 h-px opacity-0 dark:opacity-100 bg-gradient-to-r from-transparent via-neon-teal/40 to-transparent" />
+        {/* Subtle grid overlay */}
+        <div className="absolute inset-0 grid-pattern opacity-[0.03] dark:opacity-[0.02]" />
 
-        {/* Interactive floating food icons with parallax */}
+        {/* Interactive floating food icons */}
         <InteractiveFloatingIcons />
 
         {/* Hero content */}
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            animate="show"
-            className="space-y-8"
-          >
-            {/* Badge */}
-            <motion.div variants={staggerItem}>
-              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-pink-100 to-purple-100 dark:from-neon-teal/10 dark:to-neon-coral/10 border border-pink-300/50 dark:border-neon-teal/30 text-pink-700 dark:text-neon-teal text-sm font-semibold shadow-sm dark:font-mono">
-                <span className="h-2 w-2 rounded-full bg-pink-500 dark:bg-neon-teal animate-pulse" />
-                <DynamicSlogan />
-              </span>
-            </motion.div>
-
-            {/* Title */}
-            <motion.h1
-              variants={staggerItem}
-              className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight leading-tight"
-            >
-              <span className="block text-[var(--foreground)]">Savor Every</span>
-              <span className="block mt-2 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 dark:from-neon-coral dark:via-neon-teal dark:to-neon-amber bg-clip-text text-transparent">
-                Bite, Share Every
-              </span>
-              <span className="block mt-2 text-[var(--foreground)]">Moment</span>
-            </motion.h1>
-
-            {/* Subtitle */}
-            <motion.p
-              variants={staggerItem}
-              className="max-w-2xl mx-auto text-lg sm:text-xl text-[var(--foreground-secondary)] leading-relaxed dark:font-light"
-            >
-              Experience authentic home-cooked meals from passionate chefs.
-              <span className="text-pink-600 dark:text-neon-coral font-medium"> No reservations needed, just real food and real connections.</span>
-            </motion.p>
-
-            {/* Main CTA Button */}
-            <motion.div
-              variants={staggerItem}
-              className="flex justify-center"
-            >
+        <motion.div
+          style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}
+          className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8"
+        >
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left column - Text content */}
+            <div className="text-center lg:text-left">
+              {/* Status pill */}
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
               >
-                {/* Animated glow ring behind button for dark mode */}
-                <div className="absolute -inset-1 opacity-0 dark:opacity-50 bg-gradient-to-r from-neon-coral via-neon-teal to-neon-amber rounded-xl blur-lg animate-cyber-pulse" />
+                <span className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full glass-premium pill-shimmer">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-coral-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-coral-500" />
+                  </span>
+                  <span className="text-sm font-medium text-[var(--foreground-secondary)]">
+                    <DynamicSlogan />
+                  </span>
+                </span>
+              </motion.div>
+
+              {/* Main headline - Editorial typography */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+                className="mt-8"
+              >
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-display font-bold tracking-tight leading-[0.95]">
+                  <span className="block text-[var(--foreground)]">Where</span>
+                  <span className="block mt-1 italic text-coral-500 dark:text-neon-coral">strangers</span>
+                  <span className="block mt-1 text-[var(--foreground)]">become</span>
+                  <span className="block mt-1 text-gradient-animated">dinner guests</span>
+                </h1>
+              </motion.div>
+
+              {/* Subheadline */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="mt-8 text-lg sm:text-xl text-[var(--foreground-secondary)] max-w-xl mx-auto lg:mx-0 leading-relaxed font-body"
+              >
+                Intimate dinners hosted by passionate home chefs.
+                <span className="text-coral-600 dark:text-neon-coral font-medium"> No restaurants, no pretense—</span>
+                just real food and real connections.
+              </motion.p>
+
+              {/* CTA buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                className="mt-10 flex flex-col sm:flex-row items-center gap-4 lg:justify-start justify-center"
+              >
                 <Button
                   size="lg"
-                  className="!text-xl sm:!text-2xl !px-10 sm:!px-14 !py-6 sm:!py-8 !h-auto !font-bold !shadow-2xl hover:!shadow-glow-coral dark:!bg-neon-coral dark:!text-void dark:hover:!bg-neon-coral-bright dark:!shadow-neon-coral-lg dark:hover:!shadow-[0_0_40px_theme(colors.neon.coral/0.6),0_0_80px_theme(colors.neon.coral/0.4)] relative z-10 dark:!border-neon-coral/50"
+                  className="group !text-lg !px-8 !py-6 !h-auto !font-semibold !rounded-2xl"
                   href="/dinners"
                 >
-                  <span className="dark:font-mono dark:tracking-wider">Ready to Dine!</span>
+                  Find Your Table
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="!text-lg !px-8 !py-6 !h-auto !font-semibold !rounded-2xl"
+                  href="/dashboard/host/apply"
+                >
+                  Become a Host
                 </Button>
               </motion.div>
-            </motion.div>
 
-            {/* Secondary CTA Buttons */}
-            <motion.div
-              variants={staggerItem}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
-            >
-              <Button variant="outline" size="lg" className="w-full sm:w-auto dark:!border-neon-teal/50 dark:!text-neon-teal dark:hover:!bg-neon-teal/10 dark:hover:!border-neon-teal dark:hover:!shadow-neon-teal dark:!font-mono" href="/dinners">
-                Browse Dinners
-              </Button>
-              <Button variant="outline" size="lg" className="w-full sm:w-auto dark:!border-neon-amber/50 dark:!text-neon-amber dark:hover:!bg-neon-amber/10 dark:hover:!border-neon-amber dark:hover:!shadow-neon-amber dark:!font-mono" href="/host/apply">
-                Become a Host
-              </Button>
-            </motion.div>
+              {/* Social proof */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.7 }}
+                className="mt-12 flex items-center gap-6 justify-center lg:justify-start"
+              >
+                <div className="flex -space-x-3">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div
+                      key={i}
+                      className="w-10 h-10 rounded-full border-2 border-[var(--background)] bg-gradient-to-br from-coral-400 to-coral-600 flex items-center justify-center text-white text-xs font-bold"
+                      style={{ zIndex: 6 - i }}
+                    >
+                      {['🍝', '🍣', '🥘', '🍜', '🥗'][i - 1]}
+                    </div>
+                  ))}
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-[var(--foreground)]">10,000+ happy diners</p>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Star key={i} className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                    ))}
+                    <span className="text-xs text-[var(--foreground-secondary)] ml-1">4.9/5</span>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
 
-            {/* Stats - Terminal data display in dark mode */}
+            {/* Right column - Featured visual */}
             <motion.div
-              variants={staggerItem}
-              className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 pt-12"
+              initial={{ opacity: 0, scale: 0.9, x: 50 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="relative hidden lg:block"
             >
-              <Stat value="500+" label="Delicious Meals" icon="🍲" />
-              <Stat value="150+" label="Passionate Chefs" icon="👨‍🍳" />
-              <Stat value="10k+" label="Satisfied Diners" icon="😋" />
+              <div className="relative">
+                {/* Main card */}
+                <div className="relative glass-premium rounded-3xl p-6 card-lift">
+                  <div className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-coral-100 to-coral-200 dark:from-coral-900/30 dark:to-coral-800/20 overflow-hidden">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-8xl mb-4">🍽️</div>
+                        <p className="text-lg font-display font-semibold text-coral-700 dark:text-coral-300">Tonight's Feature</p>
+                        <p className="text-sm text-coral-600/70 dark:text-coral-400/70 mt-1">Homemade Pasta Night</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Host info */}
+                  <div className="mt-4 flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center text-white font-bold">
+                      MC
+                    </div>
+                    <div>
+                      <p className="font-semibold text-[var(--foreground)]">Chef Marco</p>
+                      <p className="text-sm text-[var(--foreground-secondary)]">Italian Cuisine • Milan</p>
+                    </div>
+                    <div className="ml-auto flex items-center gap-1 bg-amber-100 dark:bg-amber-900/30 px-2 py-1 rounded-full">
+                      <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      <span className="text-sm font-medium text-amber-700 dark:text-amber-400">4.9</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating notification cards */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.8 }}
+                  className="absolute -top-6 -right-6 glass-premium rounded-2xl p-4 shadow-xl float-gentle"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                      <Heart className="w-5 h-5 text-green-600 dark:text-green-400 fill-green-600 dark:fill-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-[var(--foreground)]">It's a Match!</p>
+                      <p className="text-xs text-[var(--foreground-secondary)]">Sarah liked you back</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 1 }}
+                  className="absolute -bottom-4 -left-8 glass-premium rounded-2xl p-4 shadow-xl float-gentle stagger-2"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-coral-100 dark:bg-coral-900/30 flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-coral-600 dark:text-coral-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-[var(--foreground)]">Booking Confirmed</p>
+                      <p className="text-xs text-[var(--foreground-secondary)]">Tomorrow at 7 PM</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
             </motion.div>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
 
         {/* Scroll indicator */}
         <motion.div
           className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ delay: 1.5 }}
         >
           <motion.div
-            className="flex flex-col items-center gap-2 text-[var(--foreground-muted)]"
+            className="flex flex-col items-center gap-2"
             animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <span className="text-xs uppercase tracking-wider dark:font-mono dark:tracking-[0.2em]">Scroll</span>
-            <ChevronDown className="h-5 w-5" />
+            <span className="text-xs uppercase tracking-[0.2em] text-[var(--foreground-muted)] font-heading">
+              Discover
+            </span>
+            <div className="w-6 h-10 rounded-full border-2 border-[var(--foreground-muted)]/30 flex justify-center pt-2">
+              <motion.div
+                className="w-1.5 h-1.5 rounded-full bg-coral-500"
+                animate={{ y: [0, 12, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              />
+            </div>
           </motion.div>
         </motion.div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[var(--background-secondary)] relative overflow-hidden">
-        {/* Subtle grid for dark mode */}
-        <div className="absolute inset-0 opacity-0 dark:opacity-50 dark:matrix-grid-dense" />
-
-        <div className="max-w-6xl mx-auto relative">
-          <motion.div
-            variants={fadeInUp}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl sm:text-4xl font-bold text-[var(--foreground)] dark:font-mono dark:tracking-wide">
-              From Kitchen to Table
-            </h2>
-            <p className="mt-4 text-lg text-[var(--foreground-secondary)] dark:font-light">
-              Three simple steps to your next unforgettable meal
-            </p>
-          </motion.div>
-
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="grid md:grid-cols-3 gap-8"
-          >
-            <StepCard
-              number="01"
-              title="Explore Menus"
-              description="Browse mouth-watering dishes from passionate home chefs. From Italian pasta to Asian fusion, find your perfect meal."
-              icon={<UtensilsCrossed className="h-6 w-6" />}
-            />
-            <StepCard
-              number="02"
-              title="Reserve Your Seat"
-              description="Book your spot at the table, customize your meal with add-ons, and secure your place with easy payment."
-              icon={<Calendar className="h-6 w-6" />}
-            />
-            <StepCard
-              number="03"
-              title="Feast & Connect"
-              description="Arrive hungry, leave happy. Enjoy authentic home-cooked meals and meaningful conversations with your host and fellow diners."
-              icon={<Heart className="h-6 w-6" />}
-            />
-          </motion.div>
-        </div>
-      </section>
+      {/* How It Works - Modern Editorial */}
+      <HowItWorks />
 
       {/* Features Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        {/* Ambient glow orbs for dark mode */}
-        <div className="absolute top-1/2 left-0 w-64 h-64 opacity-0 dark:opacity-100 bg-neon-teal/5 rounded-full blur-[100px]" />
-        <div className="absolute bottom-0 right-1/4 w-48 h-48 opacity-0 dark:opacity-100 bg-neon-coral/5 rounded-full blur-[80px]" />
+      <FeaturesSection />
 
-        <div className="max-w-6xl mx-auto relative">
-          <motion.div
-            variants={fadeInUp}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl sm:text-4xl font-bold text-[var(--foreground)] dark:font-mono dark:tracking-wide">
-              Why Food Lovers Choose Us
-            </h2>
-            <p className="mt-4 text-lg text-[var(--foreground-secondary)] dark:font-light">
-              Real food, real people, real experiences
-            </p>
-          </motion.div>
+      {/* Social Proof / Stats */}
+      <StatsSection />
 
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            <FeatureCard
-              title="Home-Cooked Perfection"
-              description="Taste the difference of meals made with love in cozy home kitchens, not commercial kitchens."
-              icon={<HomeIcon className="h-5 w-5" />}
-            />
-            <FeatureCard
-              title="Chef-Vetted Hosts"
-              description="Every host is carefully selected and reviewed to ensure exceptional culinary skills and hospitality."
-              icon={<ShieldCheck className="h-5 w-5" />}
-            />
-            <FeatureCard
-              title="Honest Pricing"
-              description="See exactly what you're paying for - from ingredients to the chef's time. No hidden fees, just transparent costs."
-              icon={<Eye className="h-5 w-5" />}
-            />
-            <FeatureCard
-              title="Secure & Simple"
-              description="Book and pay with confidence through our secure platform. Your payment is protected every step of the way."
-              icon={<Lock className="h-5 w-5" />}
-            />
-            <FeatureCard
-              title="Personal Touch"
-              description="Chat directly with hosts about dietary restrictions, allergies, or special requests. They're here to make it perfect for you."
-              icon={<MessageCircle className="h-5 w-5" />}
-            />
-            <FeatureCard
-              title="Real Reviews"
-              description="Read authentic reviews from diners who've sat at the same table. Know what to expect before you book."
-              icon={<Star className="h-5 w-5" />}
-            />
-          </motion.div>
-        </div>
-      </section>
+      {/* Final CTA */}
+      <CTASection />
+    </div>
+  )
+}
 
-      {/* CTA Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[var(--background-secondary)] relative overflow-hidden">
-        {/* Background accents */}
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-transparent dark:from-void dark:via-space dark:to-void" />
-        <div className="absolute inset-0 opacity-0 dark:opacity-30 dark:matrix-grid" />
-        <div className="absolute top-0 left-1/4 w-64 h-64 bg-pink-500/10 dark:bg-neon-coral/10 rounded-full blur-[80px]" />
-        <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-accent-500/10 dark:bg-neon-teal/10 rounded-full blur-[80px]" />
+// How It Works Section
+function HowItWorks() {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: '-100px' })
 
-        {/* Horizontal neon line accent for dark mode */}
-        <div className="absolute top-0 left-0 right-0 h-px opacity-0 dark:opacity-100 bg-gradient-to-r from-transparent via-neon-teal/40 to-transparent" />
+  const steps = [
+    {
+      number: '01',
+      title: 'Discover',
+      subtitle: 'Find your perfect host',
+      description: 'Swipe through passionate home chefs. Match based on cuisine preferences, dietary needs, and vibe.',
+      icon: <Heart className="h-6 w-6" />,
+      color: 'coral',
+    },
+    {
+      number: '02',
+      title: 'Book',
+      subtitle: 'Reserve your seat',
+      description: 'Pick a dinner, choose your add-ons, and secure your spot. Simple, transparent pricing.',
+      icon: <Calendar className="h-6 w-6" />,
+      color: 'accent',
+    },
+    {
+      number: '03',
+      title: 'Dine',
+      subtitle: 'Feast & connect',
+      description: 'Show up hungry, leave happy. Enjoy home-cooked meals and make lasting connections.',
+      icon: <UtensilsCrossed className="h-6 w-6" />,
+      color: 'amber',
+    },
+  ]
 
+  return (
+    <section ref={ref} className="py-32 px-4 sm:px-6 lg:px-8 bg-[var(--background-secondary)] relative overflow-hidden">
+      {/* Background accent */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--border-strong)] to-transparent" />
+
+      <div className="max-w-6xl mx-auto">
         <motion.div
-          variants={fadeInUp}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true }}
-          className="relative max-w-4xl mx-auto text-center"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-20"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold text-[var(--foreground)] dark:font-mono dark:tracking-wide">
-            Hungry for Something Real?
+          <span className="inline-block px-4 py-1.5 rounded-full text-sm font-medium bg-coral-100 dark:bg-coral-900/30 text-coral-700 dark:text-coral-300 mb-6">
+            Simple Process
+          </span>
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-[var(--foreground)] tracking-tight">
+            From kitchen to table
           </h2>
-          <p className="mt-4 text-lg text-[var(--foreground-secondary)] dark:font-light">
-            Join thousands of food lovers discovering authentic home-cooked meals.
-            Or share your passion for cooking and become a host.
+          <p className="mt-6 text-xl text-[var(--foreground-secondary)] max-w-2xl mx-auto">
+            Three simple steps to your next unforgettable dining experience
           </p>
-
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" href="/dinners" className="dark:!bg-neon-coral dark:!text-void dark:hover:!bg-neon-coral-bright dark:!shadow-neon-coral dark:hover:!shadow-neon-coral-lg dark:!font-mono">
-              Find a Dinner
-            </Button>
-            <Button variant="secondary" size="lg" href="/host/apply" className="dark:!bg-neon-amber/20 dark:!text-neon-amber dark:!border-neon-amber/50 dark:hover:!bg-neon-amber/30 dark:hover:!shadow-neon-amber dark:!font-mono">
-              Apply to Host
-            </Button>
-          </div>
         </motion.div>
-      </section>
-    </div>
-  )
-}
 
-// Stat component
-function Stat({ value, label, icon }: { value: string; label: string; icon?: string }) {
-  return (
-    <div className="text-center group">
-      <div className="flex items-center justify-center gap-2">
-        {icon && <span className="text-2xl sm:text-3xl dark:grayscale dark:opacity-70 group-hover:dark:grayscale-0 group-hover:dark:opacity-100 transition-all">{icon}</span>}
-        <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 dark:from-neon-coral dark:to-neon-teal bg-clip-text text-transparent dark:font-mono dark:tracking-wide">{value}</div>
-      </div>
-      <div className="text-sm text-[var(--foreground-muted)] mt-1 dark:font-mono dark:tracking-wider dark:uppercase dark:text-xs">{label}</div>
-    </div>
-  )
-}
+        <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+          {steps.map((step, idx) => (
+            <motion.div
+              key={step.number}
+              initial={{ opacity: 0, y: 40 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: idx * 0.15 }}
+            >
+              <Card
+                hover="glow"
+                className="relative p-8 h-full border-0 bg-[var(--background-elevated)] shadow-refined-lg card-lift group"
+              >
+                {/* Step number watermark */}
+                <span className="absolute top-6 right-6 text-7xl font-display font-bold text-[var(--border)] group-hover:text-coral-500/10 transition-colors">
+                  {step.number}
+                </span>
 
-// Step card component
-function StepCard({
-  number,
-  title,
-  description,
-  icon,
-}: {
-  number: string
-  title: string
-  description: string
-  icon: React.ReactNode
-}) {
-  return (
-    <motion.div variants={staggerItem}>
-      <Card hover="glow" className="relative p-6 h-full dark:!bg-space/80 dark:!border-neon-teal/20 dark:hover:!border-neon-teal/40 dark:hover:!shadow-neon-teal">
-        <div className="absolute top-4 right-4 text-5xl font-bold text-pink-500/10 dark:text-neon-teal/20 dark:font-mono">
-          {number}
+                <CardContent className="p-0 relative">
+                  {/* Icon */}
+                  <div className={`
+                    h-14 w-14 rounded-2xl flex items-center justify-center mb-6
+                    ${step.color === 'coral' ? 'bg-coral-100 dark:bg-coral-900/30 text-coral-600 dark:text-coral-400' : ''}
+                    ${step.color === 'accent' ? 'bg-accent-100 dark:bg-accent-900/30 text-accent-600 dark:text-accent-400' : ''}
+                    ${step.color === 'amber' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' : ''}
+                  `}>
+                    {step.icon}
+                  </div>
+
+                  <h3 className="text-2xl font-display font-bold text-[var(--foreground)] mb-2">
+                    {step.title}
+                  </h3>
+                  <p className="text-coral-600 dark:text-coral-400 font-medium text-sm mb-4">
+                    {step.subtitle}
+                  </p>
+                  <p className="text-[var(--foreground-secondary)] leading-relaxed">
+                    {step.description}
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
         </div>
-        <CardContent className="p-0 space-y-4">
-          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-pink-500/10 to-purple-500/10 dark:from-neon-coral/10 dark:to-neon-teal/10 dark:border dark:border-neon-teal/30 flex items-center justify-center text-pink-600 dark:text-neon-teal">
-            {icon}
-          </div>
-          <h3 className="text-xl font-semibold text-[var(--foreground)] dark:font-mono dark:tracking-wide">{title}</h3>
-          <p className="text-[var(--foreground-secondary)] leading-relaxed dark:font-light">{description}</p>
-        </CardContent>
-      </Card>
-    </motion.div>
+      </div>
+    </section>
   )
 }
 
-// Feature card component
-function FeatureCard({
-  title,
-  description,
-  icon,
-}: {
-  title: string
-  description: string
-  icon: React.ReactNode
-}) {
+// Features Section
+function FeaturesSection() {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: '-100px' })
+
+  const features = [
+    {
+      title: 'Home-Cooked Magic',
+      description: 'Taste the difference of meals made with love—not in commercial kitchens, but in cozy homes.',
+      icon: <HomeIcon className="h-5 w-5" />,
+    },
+    {
+      title: 'Vetted Hosts',
+      description: 'Every chef is carefully reviewed for culinary skills and hospitality excellence.',
+      icon: <ShieldCheck className="h-5 w-5" />,
+    },
+    {
+      title: 'Honest Pricing',
+      description: 'See exactly what you pay for. No hidden fees, just transparent, fair costs.',
+      icon: <Eye className="h-5 w-5" />,
+    },
+    {
+      title: 'Secure Payments',
+      description: 'Book with confidence. Your payment is protected every step of the way.',
+      icon: <Lock className="h-5 w-5" />,
+    },
+    {
+      title: 'Direct Chat',
+      description: 'Message hosts about dietary needs, allergies, or special requests directly.',
+      icon: <MessageCircle className="h-5 w-5" />,
+    },
+    {
+      title: 'Real Reviews',
+      description: 'Authentic feedback from diners who have sat at the same table before you.',
+      icon: <Star className="h-5 w-5" />,
+    },
+  ]
+
   return (
-    <motion.div variants={staggerItem}>
-      <Card hover="subtle" className="p-6 h-full dark:!bg-space/60 dark:!border-neon-teal/15 dark:hover:!border-neon-teal/30 dark:hover:!shadow-[0_0_20px_theme(colors.neon.teal/0.1)]">
-        <CardContent className="p-0 space-y-3">
-          <div className="h-10 w-10 rounded-lg bg-accent-500/10 dark:bg-neon-teal/10 dark:border dark:border-neon-teal/20 flex items-center justify-center text-accent-500 dark:text-neon-teal">
-            {icon}
-          </div>
-          <h3 className="text-lg font-semibold text-[var(--foreground)] dark:font-mono">{title}</h3>
-          <p className="text-sm text-[var(--foreground-secondary)] dark:font-light">{description}</p>
-        </CardContent>
-      </Card>
-    </motion.div>
+    <section ref={ref} className="py-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Gradient orbs */}
+      <div className="absolute top-1/2 left-0 w-64 h-64 bg-coral-500/10 dark:bg-neon-coral/5 rounded-full blur-[100px]" />
+      <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-accent-500/10 dark:bg-neon-teal/5 rounded-full blur-[80px]" />
+
+      <div className="max-w-6xl mx-auto relative">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-20"
+        >
+          <span className="inline-block px-4 py-1.5 rounded-full text-sm font-medium bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 mb-6">
+            Why Choose Us
+          </span>
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-[var(--foreground)] tracking-tight">
+            Built for food lovers
+          </h2>
+          <p className="mt-6 text-xl text-[var(--foreground-secondary)] max-w-2xl mx-auto">
+            Everything you need for authentic dining experiences
+          </p>
+        </motion.div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((feature, idx) => (
+            <motion.div
+              key={feature.title}
+              initial={{ opacity: 0, y: 30 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: idx * 0.08 }}
+            >
+              <div className="group p-6 rounded-2xl border border-[var(--border)] hover:border-coral-500/30 bg-[var(--background-elevated)] hover:shadow-lg transition-all duration-300 h-full">
+                <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-coral-500/10 to-accent-500/10 flex items-center justify-center text-coral-600 dark:text-coral-400 group-hover:scale-110 transition-transform mb-4">
+                  {feature.icon}
+                </div>
+                <h3 className="text-lg font-heading font-semibold text-[var(--foreground)] mb-2">
+                  {feature.title}
+                </h3>
+                <p className="text-sm text-[var(--foreground-secondary)] leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// Stats Section
+function StatsSection() {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: '-100px' })
+
+  const stats = [
+    { value: '10k+', label: 'Happy Diners', icon: <Users className="h-6 w-6" /> },
+    { value: '500+', label: 'Dinners Hosted', icon: <UtensilsCrossed className="h-6 w-6" /> },
+    { value: '150+', label: 'Passionate Hosts', icon: <ChefHat className="h-6 w-6" /> },
+    { value: '4.9', label: 'Average Rating', icon: <Star className="h-6 w-6" /> },
+  ]
+
+  return (
+    <section ref={ref} className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-coral-500 via-coral-600 to-coral-700 dark:from-coral-900 dark:via-coral-800 dark:to-coral-900 relative overflow-hidden">
+      {/* Pattern overlay */}
+      <div className="absolute inset-0 grid-pattern opacity-10" />
+
+      <div className="max-w-6xl mx-auto relative">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          {stats.map((stat, idx) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 30 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}
+              className="text-center"
+            >
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm text-white mb-4">
+                {stat.icon}
+              </div>
+              <div className="text-4xl sm:text-5xl font-display font-bold text-white mb-2">
+                {stat.value}
+              </div>
+              <div className="text-coral-100 font-medium">
+                {stat.label}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// CTA Section
+function CTASection() {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: '-100px' })
+
+  return (
+    <section ref={ref} className="py-32 px-4 sm:px-6 lg:px-8 bg-[var(--background-secondary)] relative overflow-hidden">
+      {/* Background elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-coral-500/10 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-accent-500/10 rounded-full blur-[100px]" />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.6 }}
+        className="relative max-w-4xl mx-auto text-center"
+      >
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-coral-100 dark:bg-coral-900/30 text-coral-700 dark:text-coral-300 text-sm font-medium mb-8">
+          <Sparkles className="h-4 w-4" />
+          Ready to dine differently?
+        </div>
+
+        <h2 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-[var(--foreground)] tracking-tight">
+          Your next great meal
+          <br />
+          <span className="italic text-coral-500 dark:text-neon-coral">is waiting</span>
+        </h2>
+
+        <p className="mt-8 text-xl text-[var(--foreground-secondary)] max-w-2xl mx-auto">
+          Join thousands discovering authentic home-cooked meals.
+          Or share your passion and become a host.
+        </p>
+
+        <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Button
+            size="lg"
+            className="group !text-lg !px-10 !py-7 !h-auto !font-semibold !rounded-2xl"
+            href="/dinners"
+          >
+            Explore Dinners
+            <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+          </Button>
+          <Button
+            variant="secondary"
+            size="lg"
+            className="!text-lg !px-10 !py-7 !h-auto !font-semibold !rounded-2xl"
+            href="/dashboard/host/apply"
+          >
+            Apply to Host
+          </Button>
+        </div>
+      </motion.div>
+    </section>
   )
 }

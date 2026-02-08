@@ -48,9 +48,7 @@ const authNavLinks: NavLink[] = [
 const mobileAuthLinks: NavLink[] = [
   { href: '/dashboard/messages', label: 'Messages', icon: <MessageSquare className="h-4 w-4" /> },
   { href: '/dashboard/host/apply', label: 'Become a Host', icon: <ChefHat className="h-4 w-4" /> },
-  { href: '/dashboard/meal-planner', label: 'Meal Calendar', icon: <Calendar className="h-4 w-4" /> },
   { href: '/minebot', label: 'Dine Bot', icon: <Sparkles className="h-4 w-4" /> },
-  { href: '/recipes', label: 'Recipes', icon: <BookOpen className="h-4 w-4" /> },
 ]
 
 export const Navigation: React.FC = () => {

@@ -1,14 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent, CardImage } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
-import { format } from 'date-fns'
-import { MapPin, Calendar, Users, Utensils, Search, Sparkles, ChefHat } from 'lucide-react'
+import { Container } from '@/components/ui/Container'
+import { SearchInput } from '@/components/ui/Input'
+import { format, startOfWeek, endOfWeek, addWeeks, isSaturday, isSunday, isWithinInterval } from 'date-fns'
+import { MapPin, Calendar, Users, Utensils, Sparkles, ChefHat } from 'lucide-react'
 import { useSession } from '@/lib/auth-client'
 
 interface Dinner {
@@ -147,6 +149,43 @@ function EmptyState() {
   )
 }
 
+function getDateRange(filter: FilterOption): { start: Date; end: Date } | null {
+  if (filter === 'All') return null
+
+  const now = new Date()
+  const weekStart = startOfWeek(now, { weekStartsOn: 1 }) // Monday
+  const weekEnd = endOfWeek(now, { weekStartsOn: 1 }) // Sunday
+
+  switch (filter) {
+    case 'This Week':
+      return { start: now, end: weekEnd }
+    case 'This Weekend': {
+      // Find next Saturday (or today if already Saturday/Sunday)
+      const daysUntilSaturday = (6 - now.getDay() + 7) % 7
+      const saturday = new Date(now)
+      saturday.setDate(now.getDate() + (daysUntilSaturday === 0 && !isSaturday(now) ? 7 : daysUntilSaturday))
+      saturday.setHours(0, 0, 0, 0)
+
+      const sunday = new Date(saturday)
+      sunday.setDate(saturday.getDate() + (isSunday(now) ? 0 : 1))
+      sunday.setHours(23, 59, 59, 999)
+
+      // If it's already the weekend, show from now
+      if (isSaturday(now) || isSunday(now)) {
+        return { start: now, end: sunday }
+      }
+      return { start: saturday, end: sunday }
+    }
+    case 'Next Week': {
+      const nextWeekStart = addWeeks(weekStart, 1)
+      const nextWeekEnd = addWeeks(weekEnd, 1)
+      return { start: nextWeekStart, end: nextWeekEnd }
+    }
+    default:
+      return null
+  }
+}
+
 export default function BrowseDinnersPage() {
   const router = useRouter()
   const [dinners, setDinners] = useState<Dinner[]>([])
@@ -167,18 +206,31 @@ export default function BrowseDinnersPage() {
       })
   }, [])
 
-  const filteredDinners = dinners.filter((dinner) => {
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      return (
-        dinner.title.toLowerCase().includes(query) ||
-        dinner.description.toLowerCase().includes(query) ||
-        dinner.location.toLowerCase().includes(query) ||
-        dinner.host.name?.toLowerCase().includes(query)
-      )
-    }
-    return true
-  })
+  const filteredDinners = useMemo(() => {
+    return dinners.filter((dinner) => {
+      // Text search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase()
+        const matchesSearch =
+          dinner.title.toLowerCase().includes(query) ||
+          dinner.description.toLowerCase().includes(query) ||
+          dinner.location.toLowerCase().includes(query) ||
+          dinner.host.name?.toLowerCase().includes(query)
+        if (!matchesSearch) return false
+      }
+
+      // Date filter
+      const dateRange = getDateRange(activeFilter)
+      if (dateRange) {
+        const dinnerDate = new Date(dinner.dateTime)
+        if (!isWithinInterval(dinnerDate, { start: dateRange.start, end: dateRange.end })) {
+          return false
+        }
+      }
+
+      return true
+    })
+  }, [dinners, searchQuery, activeFilter])
 
   const getAvailabilityStatus = (dinner: Dinner) => {
     const spotsLeft = dinner.maxGuests - dinner._count.bookings
@@ -188,14 +240,14 @@ export default function BrowseDinnersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)]/80 backdrop-blur-sm py-16 px-6 sm:px-8 lg:px-12">
+    <div className="min-h-screen bg-[var(--background)]/80 backdrop-blur-sm py-16">
       {/* Decorative background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-1/2 -right-1/4 w-[800px] h-[800px] rounded-full bg-gradient-to-br from-pink-500/5 to-transparent blur-3xl" />
         <div className="absolute -bottom-1/4 -left-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-cyan-500/5 to-transparent blur-3xl" />
       </div>
 
-      <div className="relative max-w-6xl mx-auto">
+      <Container className="relative">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -224,14 +276,11 @@ export default function BrowseDinnersPage() {
           className="mb-12 space-y-6"
         >
           {/* Search Bar */}
-          <div className="relative max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--foreground-muted)]" />
-            <input
-              type="text"
+          <div className="max-w-md">
+            <SearchInput
               placeholder="Search dinners, hosts, or locations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-base pl-12 pr-4"
             />
           </div>
 
@@ -371,7 +420,7 @@ export default function BrowseDinnersPage() {
             Showing {filteredDinners.length} {filteredDinners.length === 1 ? 'dinner' : 'dinners'}
           </motion.p>
         )}
-      </div>
+      </Container>
     </div>
   )
 }

@@ -5,20 +5,15 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
 const footerLinks = {
-  platform: [
+  explore: [
     { href: '/dinners', label: 'Browse Dinners' },
     { href: '/swipe', label: 'Discover Hosts' },
-    { href: '/host/apply', label: 'Become a Host' },
-  ],
-  company: [
-    { href: '/about', label: 'About Us' },
-    { href: '/how-it-works', label: 'How It Works' },
-    { href: '/contact', label: 'Contact' },
+    { href: '/recipes', label: 'Recipes' },
+    { href: '/dashboard/host/apply', label: 'Become a Host' },
   ],
   legal: [
-    { href: '/privacy', label: 'Privacy Policy' },
-    { href: '/terms', label: 'Terms of Service' },
-    { href: '/cookies', label: 'Cookie Policy' },
+    { label: 'Privacy Policy', disabled: true },
+    { label: 'Terms of Service', disabled: true },
   ],
 }
 
@@ -35,38 +30,24 @@ export const Footer: React.FC<FooterProps> = ({ className }) => {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-2 md:col-span-2">
             <Link href="/" className="inline-block">
               <span className="text-xl font-bold bg-gradient-to-r from-coral-500 to-coral-400 bg-clip-text text-transparent">
                 Mine Dine
               </span>
             </Link>
-            <p className="mt-3 text-sm text-[var(--foreground-secondary)]">
-              Connecting food lovers with extraordinary dining experiences.
+            <p className="mt-3 text-sm text-[var(--foreground-secondary)] max-w-xs">
+              Connecting food lovers with extraordinary home-cooked dining experiences. Real food, real people, real connections.
             </p>
           </div>
 
-          {/* Platform links */}
+          {/* Explore links */}
           <div>
             <h3 className="text-sm font-semibold text-[var(--foreground)] mb-3">
-              Platform
+              Explore
             </h3>
             <ul className="space-y-2">
-              {footerLinks.platform.map((link) => (
-                <li key={link.href}>
-                  <FooterLink href={link.href}>{link.label}</FooterLink>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Company links */}
-          <div>
-            <h3 className="text-sm font-semibold text-[var(--foreground)] mb-3">
-              Company
-            </h3>
-            <ul className="space-y-2">
-              {footerLinks.company.map((link) => (
+              {footerLinks.explore.map((link) => (
                 <li key={link.href}>
                   <FooterLink href={link.href}>{link.label}</FooterLink>
                 </li>
@@ -81,8 +62,13 @@ export const Footer: React.FC<FooterProps> = ({ className }) => {
             </h3>
             <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
-                <li key={link.href}>
-                  <FooterLink href={link.href}>{link.label}</FooterLink>
+                <li key={link.label}>
+                  <span
+                    className="text-sm text-[var(--foreground-muted)] cursor-default"
+                    title="Coming soon"
+                  >
+                    {link.label}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -98,13 +84,13 @@ export const Footer: React.FC<FooterProps> = ({ className }) => {
 
             {/* Social links */}
             <div className="flex items-center gap-4">
-              <SocialLink href="https://twitter.com" aria-label="Twitter">
+              <SocialLink href="#" aria-label="Twitter">
                 <TwitterIcon />
               </SocialLink>
-              <SocialLink href="https://instagram.com" aria-label="Instagram">
+              <SocialLink href="#" aria-label="Instagram">
                 <InstagramIcon />
               </SocialLink>
-              <SocialLink href="https://linkedin.com" aria-label="LinkedIn">
+              <SocialLink href="#" aria-label="LinkedIn">
                 <LinkedInIcon />
               </SocialLink>
             </div>

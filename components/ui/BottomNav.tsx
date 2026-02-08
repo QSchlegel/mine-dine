@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -54,14 +54,14 @@ export const BottomNav: React.FC = () => {
   const pathname = usePathname()
   const { data: session } = useSession()
   const [isVisible, setIsVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
+  const lastScrollYRef = useRef(0)
 
   const isAuthenticated = !!session?.user
 
   // Hide on scroll down, show on scroll up
   const handleScroll = useCallback(() => {
     const currentScrollY = window.scrollY
-    const scrollingDown = currentScrollY > lastScrollY
+    const scrollingDown = currentScrollY > lastScrollYRef.current
     const scrolledPastThreshold = currentScrollY > 100
 
     if (scrollingDown && scrolledPastThreshold) {
@@ -70,8 +70,8 @@ export const BottomNav: React.FC = () => {
       setIsVisible(true)
     }
 
-    setLastScrollY(currentScrollY)
-  }, [lastScrollY])
+    lastScrollYRef.current = currentScrollY
+  }, [])
 
   useEffect(() => {
     // Throttle scroll handler

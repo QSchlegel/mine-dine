@@ -235,40 +235,58 @@ function SwipePageContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="max-w-md w-full">
-          <CardContent className="py-12 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-              <X className="w-8 h-8 text-red-500" />
-            </div>
-            <h2 className="text-xl font-bold text-foreground mb-2">Something went wrong</h2>
-            <p className="text-foreground-secondary mb-6">{error}</p>
-            <Button onClick={() => window.location.reload()}>
-              Try Again
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/3 left-1/3 w-48 h-48 bg-red-500/10 rounded-full blur-[80px]" />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative glass-premium rounded-3xl p-10 max-w-md w-full text-center"
+        >
+          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+            <X className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-display font-bold text-[var(--foreground)] mb-3">Something went wrong</h2>
+          <p className="text-[var(--foreground-secondary)] mb-8">{error}</p>
+          <Button onClick={() => window.location.reload()} size="lg" className="!rounded-2xl">
+            Try Again
+          </Button>
+        </motion.div>
       </div>
     )
   }
 
   if (currentIndex >= hosts.length) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="max-w-md w-full">
-          <CardContent className="py-12 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary-100 dark:bg-primary-900/20 flex items-center justify-center">
-              <ChefHat className="w-8 h-8 text-primary-500" />
-            </div>
-            <h2 className="text-xl font-bold text-foreground mb-2">All caught up!</h2>
-            <p className="text-foreground-secondary mb-6">
-              You&apos;ve seen all available hosts. Check back later for new chefs!
-            </p>
-            <Button onClick={() => window.location.reload()}>
-              Refresh
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4 relative overflow-hidden">
+        {/* Background decorations */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-coral-500/10 rounded-full blur-[100px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-accent-500/10 rounded-full blur-[100px]" />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative glass-premium rounded-3xl p-10 max-w-md w-full text-center"
+        >
+          <motion.div
+            className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-coral-100 to-coral-200 dark:from-coral-900/30 dark:to-coral-800/20 flex items-center justify-center"
+            animate={{ rotate: [0, 5, -5, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <span className="text-4xl">🎉</span>
+          </motion.div>
+          <h2 className="text-2xl font-display font-bold text-[var(--foreground)] mb-3">All caught up!</h2>
+          <p className="text-[var(--foreground-secondary)] mb-8">
+            You&apos;ve discovered all available hosts. Check back later for new chefs joining the platform!
+          </p>
+          <Button onClick={() => window.location.reload()} size="lg" className="!rounded-2xl">
+            Refresh
+          </Button>
+        </motion.div>
       </div>
     )
   }
@@ -294,7 +312,7 @@ function SwipePageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-[var(--background)] relative overflow-hidden">
       <HelpButton pageId="swipe" />
       <OnboardingTour
         tourType="guest"
@@ -302,8 +320,23 @@ function SwipePageContent() {
         onClose={() => setShowTour(false)}
         onComplete={handleTourComplete}
       />
+
+      {/* Animated background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div
+          className="absolute top-[10%] left-[10%] w-[400px] h-[400px] bg-gradient-to-br from-coral-400/20 to-coral-600/5 rounded-full blur-[100px]"
+          animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
+          transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute bottom-[20%] right-[10%] w-[350px] h-[350px] bg-gradient-to-br from-accent-400/15 to-accent-600/5 rounded-full blur-[80px]"
+          animate={{ x: [0, -20, 0], y: [0, 25, 0] }}
+          transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
+        />
+      </div>
+
       {/* 3D Network Graph Background */}
-      <div className="absolute inset-0 opacity-30 pointer-events-none">
+      <div className="absolute inset-0 opacity-20 pointer-events-none">
         <DiscoveryVisualization
           hosts={hosts.map(h => ({
             id: h.id,
@@ -318,18 +351,27 @@ function SwipePageContent() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-lg mx-auto">
           {/* Header */}
-          <div className="mb-6 text-center">
-            <h1 className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">
-              <Utensils className="w-6 h-6 text-primary-500" />
-              Discover Hosts
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 text-center"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-premium mb-4">
+              <Heart className="w-4 h-4 text-coral-500" />
+              <span className="text-sm font-medium text-[var(--foreground-secondary)]">
+                {hosts.length - currentIndex} hosts to discover
+              </span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-display font-bold text-[var(--foreground)] tracking-tight">
+              Find Your Host
             </h1>
-            <p className="text-sm text-foreground-secondary mt-1">
-              Swipe right to like, left to pass • Use arrow keys
+            <p className="text-sm text-[var(--foreground-muted)] mt-2">
+              Swipe right to like, left to pass
             </p>
-          </div>
+          </motion.div>
 
           {/* Card Stack */}
           <div className="relative h-[550px]" style={{ perspective: '1000px' }}>
@@ -390,18 +432,18 @@ function SwipePageContent() {
               >
                 {/* LIKE stamp */}
                 <motion.div
-                  className="absolute top-8 left-8 z-20 rotate-[-20deg] border-4 border-green-500 text-green-500 font-black text-3xl px-4 py-2 rounded-lg pointer-events-none"
+                  className="absolute top-8 left-8 z-20 rotate-[-15deg] px-5 py-2.5 rounded-2xl pointer-events-none bg-green-500/90 backdrop-blur-sm shadow-lg"
                   style={{ opacity: likeOpacity }}
                 >
-                  LIKE
+                  <span className="font-display font-bold text-2xl text-white tracking-wide">LIKE</span>
                 </motion.div>
 
                 {/* NOPE stamp */}
                 <motion.div
-                  className="absolute top-8 right-8 z-20 rotate-[20deg] border-4 border-red-500 text-red-500 font-black text-3xl px-4 py-2 rounded-lg pointer-events-none"
+                  className="absolute top-8 right-8 z-20 rotate-[15deg] px-5 py-2.5 rounded-2xl pointer-events-none bg-red-500/90 backdrop-blur-sm shadow-lg"
                   style={{ opacity: nopeOpacity }}
                 >
-                  NOPE
+                  <span className="font-display font-bold text-2xl text-white tracking-wide">NOPE</span>
                 </motion.div>
 
                 <motion.div
@@ -580,39 +622,60 @@ function SwipePageContent() {
           </div>
 
           {/* Action buttons */}
-          <div className="flex justify-center gap-8 mt-6" data-tour="swipe">
+          <div className="flex justify-center items-center gap-6 mt-8" data-tour="swipe">
+            {/* Pass button */}
             <motion.button
-              whileHover={{ scale: 1.15, boxShadow: '0 0 30px rgba(239, 68, 68, 0.4)' }}
+              whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => handleSwipe('PASS')}
               disabled={swiping}
-              className="w-18 h-18 p-5 rounded-full bg-gradient-to-br from-red-500/20 to-red-600/20 hover:from-red-500/30 hover:to-red-600/30 border-2 border-red-500/30 flex items-center justify-center transition-all disabled:opacity-50 shadow-lg"
+              className="group relative w-16 h-16 rounded-full flex items-center justify-center transition-all disabled:opacity-50"
             >
-              <X className="w-9 h-9 text-red-500" />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/20 group-hover:from-red-200 group-hover:to-red-300 dark:group-hover:from-red-800/40 dark:group-hover:to-red-700/30 transition-all" />
+              <div className="absolute inset-0 rounded-full border-2 border-red-300 dark:border-red-600/50 group-hover:border-red-400 dark:group-hover:border-red-500/70 transition-colors" />
+              <X className="relative w-7 h-7 text-red-500 dark:text-red-400" />
             </motion.button>
+
+            {/* Like button - larger and more prominent */}
             <motion.button
-              whileHover={{ scale: 1.15, boxShadow: '0 0 30px rgba(34, 197, 94, 0.4)' }}
+              whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => handleSwipe('LIKE')}
               disabled={swiping}
-              className="w-18 h-18 p-5 rounded-full bg-gradient-to-br from-green-500/20 to-green-600/20 hover:from-green-500/30 hover:to-green-600/30 border-2 border-green-500/30 flex items-center justify-center transition-all disabled:opacity-50 shadow-lg"
+              className="group relative w-20 h-20 rounded-full flex items-center justify-center transition-all disabled:opacity-50"
             >
-              <Heart className="w-9 h-9 text-green-500" />
+              <motion.div
+                className="absolute inset-0 rounded-full bg-gradient-to-br from-green-400 to-green-500 dark:from-green-500 dark:to-green-600 shadow-lg group-hover:shadow-xl group-hover:shadow-green-500/30"
+                animate={swiping ? {} : { scale: [1, 1.05, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              <Heart className="relative w-9 h-9 text-white fill-white" />
             </motion.button>
           </div>
 
           {/* Progress indicator */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-foreground-secondary">
-              {currentIndex + 1} of {hosts.length}
-            </p>
-            <div className="mt-2 h-1 bg-border rounded-full overflow-hidden max-w-xs mx-auto">
-              <div
-                className="h-full bg-primary-500 transition-all duration-300"
-                style={{ width: `${((currentIndex + 1) / hosts.length) * 100}%` }}
-              />
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="mt-8"
+          >
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <span className="text-sm font-medium text-[var(--foreground)]">{currentIndex + 1}</span>
+              <div className="flex-1 max-w-[200px] h-1.5 bg-[var(--border)] rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-coral-400 to-coral-500 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${((currentIndex + 1) / hosts.length) * 100}%` }}
+                  transition={{ duration: 0.3 }}
+                />
+              </div>
+              <span className="text-sm text-[var(--foreground-muted)]">{hosts.length}</span>
             </div>
-          </div>
+            <p className="text-xs text-center text-[var(--foreground-muted)]">
+              Use ← → arrow keys to swipe
+            </p>
+          </motion.div>
         </div>
       </div>
 

@@ -9,6 +9,7 @@ import { BottomNav } from "@/components/ui/BottomNav";
 import { ToastProvider } from "@/components/ui/Toast";
 import { ProactiveAssistant } from "@/components/assistant/ProactiveAssistant";
 import GlobalBackground from "@/components/GlobalBackground";
+import { ScrollToTop } from "@/components/ui/ScrollToTop";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -84,11 +85,12 @@ export default function RootLayout({
         <UmamiScript />
         <ThemeProvider>
           <GlobalBackground />
-          <ToastProvider position="bottom-right">
+          <ToastProvider position="top-center">
             <Navigation />
             <main className="flex-1 pt-20 pb-24 md:pb-0">{children}</main>
             <BottomNav />
             <Footer className="hidden md:block" />
+            <ScrollToTop />
             <ProactiveAssistant />
           </ToastProvider>
         </ThemeProvider>

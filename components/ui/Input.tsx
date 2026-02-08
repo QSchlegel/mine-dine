@@ -83,7 +83,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               'transition-all duration-300 ease-out',
               'focus:outline-none',
               variants[variant],
-              isFocused && !error && 'border-pink-500 shadow-[var(--glow-primary)] -translate-y-0.5',
+              isFocused && !error && 'border-pink-500 shadow-[var(--glow-primary)]',
               error && 'border-danger-500 shadow-[0_0_20px_rgba(229,72,77,0.25)]',
               disabled && 'cursor-not-allowed opacity-50',
               leftIcon && 'pl-11',
