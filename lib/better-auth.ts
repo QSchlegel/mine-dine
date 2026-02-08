@@ -68,15 +68,34 @@ export const auth = betterAuth({
       // Fix role after user creation from any sign-up endpoint
       if (ctx.path.startsWith('/sign-up') && ctx.context.newSession?.user) {
         const userId = ctx.context.newSession.user.id
-        
-        // Check current role and fix if needed
+
         const user = await prisma.user.findUnique({
           where: { id: userId },
-          select: { role: true },
+          select: { email: true, role: true },
         })
 
+        if (!user) return
+
+        const firstAdminEmail = process.env.FIRST_ADMIN_EMAIL?.toLowerCase().trim()
+        const normalizedUserEmail = user.email?.toLowerCase().trim()
+
+        // First-admin elevation: if FIRST_ADMIN_EMAIL matches and no admin exists yet, set role to ADMIN
+        if (firstAdminEmail && normalizedUserEmail === firstAdminEmail) {
+          const existingAdmin = await prisma.user.findFirst({
+            where: { role: 'ADMIN' },
+            select: { id: true },
+          })
+          if (!existingAdmin) {
+            await prisma.user.update({
+              where: { id: userId },
+              data: { role: 'ADMIN' },
+            })
+            return
+          }
+        }
+
         // If role is lowercase or invalid, update to uppercase USER
-        if (user && user.role !== 'USER' && user.role !== 'HOST' && user.role !== 'ADMIN' && user.role !== 'MODERATOR') {
+        if (user.role !== 'USER' && user.role !== 'HOST' && user.role !== 'ADMIN' && user.role !== 'MODERATOR') {
           await prisma.user.update({
             where: { id: userId },
             data: { role: 'USER' },

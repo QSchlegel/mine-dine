@@ -13,6 +13,7 @@
     "lint": "next lint",
     "postinstall": "prisma generate",
     "db:seed": "npx tsx prisma/seed.ts",
+    "db:promote-first-admin": "npx tsx scripts/promote-first-admin.ts",
     "generate:recipes": "tsx scripts/generate-classic-recipes.ts",
     "db:reset": "npx prisma migrate reset --force",
     "db:studio": "npx prisma studio",

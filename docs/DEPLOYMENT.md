@@ -26,7 +26,19 @@ Run migrations on production database:
 npx prisma migrate deploy
 ```
 
-### 4. Deploy to Vercel (Recommended)
+### 4. First admin (one-time)
+
+Set `FIRST_ADMIN_EMAIL` in production to the email of the account that should become the first admin. New sign-ups (email/password, passkey, or magic-link) with that email will be elevated to ADMIN when no admin exists yet.
+
+If the first admin account was **already created** before this behaviour was deployed (e.g. they signed up with email/password and were created as USER), run this once with production env (e.g. in Railway shell or with env vars set):
+
+```bash
+npm run db:promote-first-admin
+```
+
+This promotes the user whose email equals `FIRST_ADMIN_EMAIL` to ADMIN. Ensure `FIRST_ADMIN_EMAIL` and `DATABASE_URL` are set in the environment where you run it.
+
+### 5. Deploy to Vercel (Recommended)
 
 1. Connect your repository to Vercel
 2. Configure environment variables
@@ -37,14 +49,14 @@ Vercel will automatically:
 - Run migrations
 - Deploy to production
 
-### 5. Configure Stripe Webhooks
+### 6. Configure Stripe Webhooks
 
 1. Go to Stripe Dashboard → Webhooks
 2. Add endpoint: `https://yourdomain.com/api/payments/webhook`
 3. Select events: `payment_intent.succeeded`, `payment_intent.payment_failed`
 4. Copy webhook secret to environment variables
 
-### 6. Configure Umami Analytics
+### 7. Configure Umami Analytics
 
 1. Set up your Umami instance (self-hosted or hosted)
 2. Create a website in Umami dashboard
