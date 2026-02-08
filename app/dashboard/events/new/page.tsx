@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -13,14 +13,21 @@ import {
   Loader2,
   PartyPopper,
   DollarSign,
+  Upload,
+  Sparkles,
+  X,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
+
 export default function CreateEventPage() {
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -33,6 +40,12 @@ export default function CreateEventPage() {
   const [imageUrl, setImageUrl] = useState('')
   const [enableCostSplit, setEnableCostSplit] = useState(false)
   const [pricePerPerson, setPricePerPerson] = useState(0)
+
+  // Image upload / generation
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [generatingImage, setGeneratingImage] = useState(false)
+  const [imageError, setImageError] = useState<string | null>(null)
+  const [dragActive, setDragActive] = useState(false)
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
@@ -47,6 +60,81 @@ export default function CreateEventPage() {
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
+  }
+
+  const uploadFile = async (file: File) => {
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      setImageError('Only JPG, PNG, WEBP, or GIF are allowed.')
+      return
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      setImageError('File is too large. Maximum size is 10MB.')
+      return
+    }
+    setUploadingImage(true)
+    setImageError(null)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', 'dinner')
+      const res = await fetch('/api/uploads', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Upload failed')
+      setImageUrl(data.signedUrl || data.url)
+    } catch (err) {
+      setImageError(err instanceof Error ? err.message : 'Upload failed')
+    } finally {
+      setUploadingImage(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) uploadFile(file)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setDragActive(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) uploadFile(file)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setDragActive(true)
+  }
+
+  const handleDragLeave = () => setDragActive(false)
+
+  const handleGenerateImage = async () => {
+    if (!title.trim()) {
+      setImageError('Enter an event title first to generate an image.')
+      return
+    }
+    setGeneratingImage(true)
+    setImageError(null)
+    try {
+      const res = await fetch('/api/events/generate-cover-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: title.trim(), description: description.trim() || undefined }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Generation failed')
+      if (data.imageUrl) setImageUrl(data.imageUrl)
+    } catch (err) {
+      setImageError(err instanceof Error ? err.message : 'Failed to generate image')
+    } finally {
+      setGeneratingImage(false)
+    }
+  }
+
+  const clearImage = () => {
+    setImageUrl('')
+    setImageError(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const handleSubmit = async () => {
@@ -258,32 +346,106 @@ export default function CreateEventPage() {
                 Cover Image (Optional)
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div>
-                <Input
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://example.com/image.jpg"
-                  error={errors.imageUrl}
-                />
-                <p className="text-xs text-[var(--foreground-muted)] mt-1">
-                  Add a photo to make your event more inviting
-                </p>
-              </div>
+            <CardContent className="space-y-4">
+              {/* Drop zone + actions */}
+              {!imageUrl ? (
+                <>
+                  <div
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`
+                      border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors
+                      ${dragActive ? 'border-coral-500 bg-coral-500/10' : 'border-[var(--border)] hover:border-coral-500/50 hover:bg-[var(--background-elevated)]'}
+                      ${uploadingImage ? 'pointer-events-none opacity-70' : ''}
+                    `}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept={ACCEPTED_IMAGE_TYPES.join(',')}
+                      className="hidden"
+                      onChange={handleFileInputChange}
+                    />
+                    {uploadingImage ? (
+                      <Loader2 className="w-10 h-10 mx-auto text-coral-500 animate-spin mb-2" />
+                    ) : (
+                      <Upload className="w-10 h-10 mx-auto text-[var(--foreground-muted)] mb-2" />
+                    )}
+                    <p className="text-sm font-medium text-[var(--foreground)]">
+                      {uploadingImage ? 'Uploading…' : 'Drop an image here or click to upload'}
+                    </p>
+                    <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                      JPG, PNG, WEBP, GIF · max 10MB
+                    </p>
+                  </div>
 
-              {imageUrl && (
-                <div className="mt-4">
-                  <p className="text-sm font-medium text-[var(--foreground)] mb-2">Preview</p>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={imageUrl}
-                    alt="Preview"
-                    className="w-full max-w-md h-48 object-cover rounded-lg"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none'
-                    }}
-                  />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleGenerateImage}
+                      disabled={generatingImage || !title.trim()}
+                    >
+                      {generatingImage ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-4 h-4 mr-2" />
+                      )}
+                      {generatingImage ? 'Generating…' : 'Generate with AI'}
+                    </Button>
+                    {!title.trim() && (
+                      <span className="text-xs text-[var(--foreground-muted)]">
+                        Add a title above to generate an image
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
+                      Or paste image URL
+                    </label>
+                    <Input
+                      value={imageUrl}
+                      onChange={(e) => {
+                        setImageUrl(e.target.value)
+                        setImageError(null)
+                      }}
+                      placeholder="https://example.com/image.jpg"
+                      error={errors.imageUrl}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="relative">
+                  <div className="rounded-lg overflow-hidden bg-[var(--background-elevated)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imageUrl}
+                      alt="Cover preview"
+                      className="w-full max-w-md h-48 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    onClick={clearImage}
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    Remove image
+                  </Button>
                 </div>
+              )}
+
+              {imageError && (
+                <p className="text-sm text-red-600 dark:text-red-400">{imageError}</p>
               )}
             </CardContent>
           </Card>
