@@ -33,6 +33,7 @@ interface Event {
   title: string
   dateTime: string
   location: string
+  visibility?: 'PUBLIC' | 'UNLISTED' | 'PRIVATE'
 }
 
 export default function EventInvitePage() {
@@ -48,6 +49,8 @@ export default function EventInvitePage() {
   const [sending, setSending] = useState(false)
   const [resendingId, setResendingId] = useState<string | null>(null)
   const [copiedLink, setCopiedLink] = useState(false)
+  const [shareToken, setShareToken] = useState<string | null>(null)
+  const [shareLoading, setShareLoading] = useState(false)
 
   const fetchEvent = async () => {
     if (!eventId) return
@@ -71,6 +74,13 @@ export default function EventInvitePage() {
     }
     Promise.all([fetchEvent(), fetchInvitations()]).finally(() => setLoading(false))
   }, [eventId])
+
+  // If the dinner is private/unlisted, precreate a share token so the UI shows the right link by default.
+  useEffect(() => {
+    if (!eventId || !event?.visibility || event.visibility === 'PUBLIC') return
+    ensureShareToken(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId, event?.visibility])
 
   const handleSendInvites = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -121,9 +131,63 @@ export default function EventInvitePage() {
     }
   }
 
+  const getCachedShareToken = () => {
+    try {
+      return localStorage.getItem(`mine-dine:inviteToken:${eventId}`)
+    } catch {
+      return null
+    }
+  }
+
+  const setCachedShareToken = (token: string) => {
+    try {
+      localStorage.setItem(`mine-dine:inviteToken:${eventId}`, token)
+    } catch {
+      // ignore
+    }
+  }
+
+  const ensureShareToken = async (forceNew = false) => {
+    if (!eventId) return null
+    if (!forceNew) {
+      const cached = getCachedShareToken()
+      if (cached) {
+        setShareToken(cached)
+        return cached
+      }
+    }
+
+    setShareLoading(true)
+    try {
+      const res = await fetch(`/api/dinners/${eventId}/invite-links`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scope: 'GUEST_VIEW' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.error ?? 'Failed to create invite link')
+      const token = data?.token as string
+      if (!token) throw new Error('Invite token missing')
+      setShareToken(token)
+      setCachedShareToken(token)
+      return token
+    } finally {
+      setShareLoading(false)
+    }
+  }
+
   const copyEventLink = async () => {
     const baseUrl = window.location.origin
-    const link = `${baseUrl}/dinners/${eventId}`
+
+    // Default behavior: for PRIVATE/UNLISTED dinners, always share the tokenized invite link.
+    // For PUBLIC dinners, the canonical URL is fine.
+    let link = `${baseUrl}/dinners/${eventId}`
+
+    if (event?.visibility && event.visibility !== 'PUBLIC') {
+      const token = await ensureShareToken(false)
+      if (token) link = `${baseUrl}/dinners/invite/${token}`
+    }
+
     await navigator.clipboard.writeText(link)
     setCopiedLink(true)
     setTimeout(() => setCopiedLink(false), 2000)
@@ -239,16 +303,35 @@ export default function EventInvitePage() {
             <div className="flex gap-3">
               <Input
                 readOnly
-                value={`${typeof window !== 'undefined' ? window.location.origin : ''}/dinners/${eventId}`}
+                value={(() => {
+                  const base = typeof window !== 'undefined' ? window.location.origin : ''
+                  if (event?.visibility && event.visibility !== 'PUBLIC') {
+                    return shareToken ? `${base}/dinners/invite/${shareToken}` : `${base}/dinners/${eventId}`
+                  }
+                  return `${base}/dinners/${eventId}`
+                })()}
                 className="flex-1 bg-[var(--background-secondary)]"
               />
               <Button
                 variant="outline"
                 onClick={copyEventLink}
+                disabled={shareLoading}
                 leftIcon={copiedLink ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               >
-                {copiedLink ? 'Copied!' : 'Copy'}
+                {copiedLink ? 'Copied!' : shareLoading ? 'Preparing…' : 'Copy'}
               </Button>
+              {event?.visibility && event.visibility !== 'PUBLIC' && (
+                <Button
+                  variant="secondary"
+                  onClick={async () => {
+                    await ensureShareToken(true)
+                  }}
+                  disabled={shareLoading}
+                  leftIcon={<RefreshCw className={`h-4 w-4 ${shareLoading ? 'animate-spin' : ''}`} />}
+                >
+                  Regenerate
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

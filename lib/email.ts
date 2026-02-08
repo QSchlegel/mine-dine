@@ -1,11 +1,18 @@
-import { Resend } from 'resend'
-
 const resendApiKey = process.env.RESEND_API_KEY
 // Resend expects "Name <email@domain.com>" with no literal quotes in the string; strip any that slipped in from env
 const rawFrom = process.env.EMAIL_FROM ?? 'Mine Dine <onboarding@resend.dev>'
 const emailFrom = rawFrom.startsWith('"') && rawFrom.endsWith('"') ? rawFrom.slice(1, -1) : rawFrom
 
-const resend = resendApiKey ? new Resend(resendApiKey) : null
+// Lazy-load Resend so builds don't fail when the dependency isn't installed (and/or key isn't set).
+let _resend: any = null
+async function getResend() {
+  if (!resendApiKey) return null
+  if (_resend) return _resend
+  const mod: any = await import('resend')
+  const Resend = mod.Resend
+  _resend = new Resend(resendApiKey)
+  return _resend
+}
 
 export interface SendEmailOptions {
   to: string
@@ -18,6 +25,7 @@ export interface SendEmailOptions {
  * Send an email via Resend. No-ops (and logs in dev) when RESEND_API_KEY is not set.
  */
 export async function sendEmail({ to, subject, html, text }: SendEmailOptions): Promise<{ ok: boolean; error?: string }> {
+  const resend = await getResend()
   if (!resend) {
     if (process.env.NODE_ENV === 'development') {
       console.log(`[Email] (no RESEND_API_KEY) would send to ${to}: ${subject}`)
@@ -36,7 +44,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailOptions): 
       html: htmlBody,
       text: textBody,
     }
-    const { error } = await resend.emails.send(payload as Parameters<typeof resend.emails.send>[0])
+    const { error } = await resend.emails.send(payload)
     if (error) {
       console.error('[Email] Resend error:', error)
       return { ok: false, error: error.message }
