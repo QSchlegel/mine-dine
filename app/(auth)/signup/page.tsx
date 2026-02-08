@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useCallback, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AuthLayout } from '@/components/auth/AuthLayout'
@@ -25,9 +25,11 @@ import {
 
 type AuthStep = 'email' | 'method' | 'password' | 'magic-link-sent' | 'creating-account' | 'registering-passkey'
 
-export default function SignupPage() {
+function SignupContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { fireSuccess, fireEmoji } = useConfetti()
+  const invitationToken = searchParams.get('invitationToken')
   const [step, setStep] = useState<AuthStep>('email')
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
@@ -36,6 +38,16 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [magicLinkCode, setMagicLinkCode] = useState('')
+
+  // Prefill email when coming from invitation link
+  useEffect(() => {
+    const prefilled = searchParams.get('email')
+    if (prefilled && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(prefilled)) {
+      setEmail(prefilled)
+    }
+  }, [searchParams])
+
+  const getRedirectAfterSignup = () => (invitationToken ? `/invitations/${encodeURIComponent(invitationToken)}` : '/dashboard')
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -107,7 +119,7 @@ export default function SignupPage() {
       // Small delay to let confetti play
       await new Promise(resolve => setTimeout(resolve, 800))
 
-      router.push('/dashboard')
+      router.push(getRedirectAfterSignup())
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to register passkey')
@@ -115,7 +127,7 @@ export default function SignupPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [email, name, router, fireSuccess, fireEmoji])
+  }, [email, name, router, fireSuccess, fireEmoji, invitationToken])
 
   const handleMagicLinkRequest = useCallback(async () => {
     setError(null)
@@ -160,14 +172,14 @@ export default function SignupPage() {
         throw new Error(data.message || 'Invalid code')
       }
 
-      router.push('/dashboard')
+      router.push(invitationToken ? `/invitations/${encodeURIComponent(invitationToken)}` : '/dashboard')
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Verification failed')
     } finally {
       setIsLoading(false)
     }
-  }, [email, magicLinkCode, router])
+  }, [email, magicLinkCode, router, invitationToken])
 
   const handlePasswordSignup = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
@@ -206,14 +218,14 @@ export default function SignupPage() {
         throw new Error(signInResult.error.message || 'Sign in failed after registration')
       }
 
-      router.push('/dashboard')
+      router.push(getRedirectAfterSignup())
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign up failed')
     } finally {
       setIsLoading(false)
     }
-  }, [email, password, confirmPassword, name, router])
+  }, [email, password, confirmPassword, name, router, invitationToken])
 
   const goBack = () => {
     setError(null)
@@ -650,5 +662,21 @@ export default function SignupPage() {
         )}
       </AnimatePresence>
     </AuthLayout>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense
+      fallback={
+        <AuthLayout title="Create your account" subtitle="Join Mine Dine and discover amazing dining experiences">
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-[var(--foreground-muted)]" />
+          </div>
+        </AuthLayout>
+      }
+    >
+      <SignupContent />
+    </Suspense>
   )
 }

@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
+import { useParams } from 'next/navigation'
 import { format } from 'date-fns'
-import { Calendar, MapPin, User, Check, X, ChevronDown, Download, ExternalLink } from 'lucide-react'
+import { Calendar, MapPin, User, Check, X, ChevronDown, Download, ExternalLink, UserPlus } from 'lucide-react'
 import { Container, Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
+import { useSession } from '@/lib/auth-client'
 
 interface DinnerSummary {
   id: string
@@ -31,14 +32,15 @@ interface InvitationData {
 
 export default function InvitationPage() {
   const params = useParams()
-  const router = useRouter()
   const token = params?.token as string
+  const { data: session } = useSession()
   const [data, setData] = useState<{ invitation: InvitationData } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [responding, setResponding] = useState(false)
   const [responded, setResponded] = useState<string | null>(null)
   const [showCalendarMenu, setShowCalendarMenu] = useState(false)
+  const claimAttempted = useRef(false)
 
   useEffect(() => {
     if (!token) {
@@ -58,6 +60,17 @@ export default function InvitationPage() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [token])
+
+  // When user is signed in and invitation email matches, link invitation to their account
+  useEffect(() => {
+    if (!token || !data?.invitation || !session?.user?.email || claimAttempted.current) return
+    const inv = data.invitation
+    const userEmail = session.user.email?.toLowerCase().trim()
+    const invitedEmail = inv.email?.toLowerCase().trim()
+    if (!userEmail || userEmail !== invitedEmail) return
+    claimAttempted.current = true
+    fetch(`/api/invitations/${token}/claim`, { method: 'POST', credentials: 'include' }).catch(() => {})
+  }, [token, data, session?.user?.email])
 
   const handleRespond = async (status: 'ACCEPTED' | 'DECLINED') => {
     if (!token || responding) return
@@ -238,6 +251,17 @@ export default function InvitationPage() {
                   >
                     View Event Details
                   </Button>
+
+                  {!session?.user && (
+                    <Button
+                      href={`/signup?invitationToken=${encodeURIComponent(token)}&email=${encodeURIComponent(inv.email)}`}
+                      className="w-full"
+                      variant="outline"
+                      leftIcon={<UserPlus className="h-4 w-4" />}
+                    >
+                      Sign up to save this event to your account
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="pt-4 space-y-3">
@@ -260,6 +284,17 @@ export default function InvitationPage() {
                   >
                     Can't make it
                   </Button>
+
+                  {!session?.user && (
+                    <Button
+                      href={`/signup?invitationToken=${encodeURIComponent(token)}&email=${encodeURIComponent(inv.email)}`}
+                      variant="outline"
+                      className="w-full"
+                      leftIcon={<UserPlus className="h-4 w-4" />}
+                    >
+                      Sign up to save this event to your account
+                    </Button>
+                  )}
                 </div>
               )}
             </CardContent>
