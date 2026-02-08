@@ -2,7 +2,17 @@ const path = require('path')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // No modularizeImports: @/components/ui has multiple exports per file (e.g. StatCard.tsx exports StatCard + StatGrid);
+  // lucide-react direct paths (dist/esm/icons/...) don't match all icon names across versions (e.g. fingerprint vs fingerprint-pattern).
   images: {
+    // Device sizes for responsive images - optimized for common mobile breakpoints
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    // Image sizes for next/image with sizes prop
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Enable modern image formats for smaller file sizes
+    formats: ['image/avif', 'image/webp'],
+    // Minimize image processing memory usage
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
     remotePatterns: [
       {
         protocol: 'https',
@@ -36,6 +46,15 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '*.ipfs.dweb.link',
+      },
+      // Common image CDNs
+      {
+        protocol: 'https',
+        hostname: '*.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.imgix.net',
       },
     ],
   },

@@ -1,13 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { Utensils, Calendar, MessageSquare, User, Heart, ChefHat, Sparkles, ArrowRight, TrendingUp, Clock, PartyPopper } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { ProfileCompletionResult } from '@/lib/profile'
-import ProfileCompletionWizard from '@/components/profile/ProfileCompletionWizard'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
 import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
-import OnboardingFlowDialog from '@/components/onboarding/OnboardingFlowDialog'
+
+// Lazy load heavy dialog components - they're not needed on initial render
+const ProfileCompletionWizard = dynamic(
+  () => import('@/components/profile/ProfileCompletionWizard'),
+  { ssr: false }
+)
+const OnboardingFlowDialog = dynamic(
+  () => import('@/components/onboarding/OnboardingFlowDialog'),
+  { ssr: false }
+)
 
 // Import reusable UI components
 import {
@@ -29,6 +39,7 @@ import {
 
 export default function DashboardPage() {
   const router = useRouter()
+  const reducedMotion = useReducedMotion()
   const [loading, setLoading] = useState(true)
   const [userName, setUserName] = useState<string | null>(null)
   const [stats, setStats] = useState({
@@ -205,49 +216,51 @@ export default function DashboardPage() {
 
   return (
     <div className="relative min-h-screen bg-[var(--background)] py-8 sm:py-12 overflow-hidden">
-      {/* Animated background blobs - smaller on mobile */}
-      <div className="pointer-events-none absolute inset-0">
-        <motion.div
-          className="absolute top-[5%] left-[5%] w-[280px] sm:w-[400px] lg:w-[500px] h-[280px] sm:h-[400px] lg:h-[500px] bg-gradient-to-br from-coral-400/15 to-coral-600/5 rounded-full blur-[80px] sm:blur-[100px] lg:blur-[120px]"
-          animate={{
-            x: [0, 30, 0],
-            y: [0, -20, 0],
-            scale: [1, 1.05, 1],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-        <motion.div
-          className="absolute bottom-[10%] right-[5%] w-[250px] sm:w-[350px] lg:w-[450px] h-[250px] sm:h-[350px] lg:h-[450px] bg-gradient-to-br from-accent-400/12 to-accent-600/5 rounded-full blur-[70px] sm:blur-[85px] lg:blur-[100px]"
-          animate={{
-            x: [0, -25, 0],
-            y: [0, 25, 0],
-            scale: [1, 1.08, 1],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: 3,
-          }}
-        />
-        <motion.div
-          className="absolute top-[40%] right-[20%] w-[200px] sm:w-[250px] lg:w-[300px] h-[200px] sm:h-[250px] lg:h-[300px] bg-gradient-to-br from-amber-400/10 to-amber-600/5 rounded-full blur-[60px] sm:blur-[70px] lg:blur-[80px] hidden sm:block"
-          animate={{
-            x: [0, 20, 0],
-            y: [0, -15, 0],
-          }}
-          transition={{
-            duration: 18,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: 6,
-          }}
-        />
-      </div>
+      {/* Animated background blobs - skip on reduced motion / mobile for performance */}
+      {!reducedMotion && (
+        <div className="pointer-events-none absolute inset-0 hidden sm:block">
+          <motion.div
+            className="absolute top-[5%] left-[5%] w-[400px] lg:w-[500px] h-[400px] lg:h-[500px] bg-gradient-to-br from-coral-400/15 to-coral-600/5 rounded-full blur-[100px] lg:blur-[120px]"
+            animate={{
+              x: [0, 30, 0],
+              y: [0, -20, 0],
+              scale: [1, 1.05, 1],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+          <motion.div
+            className="absolute bottom-[10%] right-[5%] w-[350px] lg:w-[450px] h-[350px] lg:h-[450px] bg-gradient-to-br from-accent-400/12 to-accent-600/5 rounded-full blur-[85px] lg:blur-[100px]"
+            animate={{
+              x: [0, -25, 0],
+              y: [0, 25, 0],
+              scale: [1, 1.08, 1],
+            }}
+            transition={{
+              duration: 25,
+              repeat: Infinity,
+              ease: 'easeInOut',
+              delay: 3,
+            }}
+          />
+          <motion.div
+            className="absolute top-[40%] right-[20%] w-[250px] lg:w-[300px] h-[250px] lg:h-[300px] bg-gradient-to-br from-amber-400/10 to-amber-600/5 rounded-full blur-[70px] lg:blur-[80px]"
+            animate={{
+              x: [0, 20, 0],
+              y: [0, -15, 0],
+            }}
+            transition={{
+              duration: 18,
+              repeat: Infinity,
+              ease: 'easeInOut',
+              delay: 6,
+            }}
+          />
+        </div>
+      )}
 
       <Container className="relative">
         {/* Welcome Header */}
@@ -475,13 +488,7 @@ export default function DashboardPage() {
         </AnimatePresence>
 
         {/* Featured Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="mb-8 sm:mb-12"
-        >
+        <div className="mb-8 sm:mb-12">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl font-sans font-bold text-[var(--foreground)]">
               Get Started
@@ -490,14 +497,13 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Primary action - Discover */}
-            <motion.div
-              whileHover={{ y: -4, scale: 1.01 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-coral-500 to-coral-600 dark:from-coral-600 dark:to-coral-700 p-5 sm:p-6 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-coral-500/20 transition-shadow"
+            <div
+              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-coral-500 to-coral-600 dark:from-coral-600 dark:to-coral-700 p-5 sm:p-6 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-coral-500/20 transition-all hover:-translate-y-1"
               onClick={() => router.push('/dashboard/swipe')}
             >
-              <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-white/10 rounded-full blur-2xl transform translate-x-8 -translate-y-8 group-hover:scale-150 transition-transform duration-500" />
-
+              {!reducedMotion && (
+                <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-white/10 rounded-full blur-2xl transform translate-x-8 -translate-y-8 group-hover:scale-150 transition-transform duration-500" />
+              )}
               <div className="relative">
                 <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
                   <Heart className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
@@ -509,17 +515,16 @@ export default function DashboardPage() {
                   <ArrowRight className="ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Secondary action - Browse */}
-            <motion.div
-              whileHover={{ y: -4, scale: 1.01 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-accent-500 to-accent-600 dark:from-accent-600 dark:to-accent-700 p-5 sm:p-6 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-accent-500/20 transition-shadow"
+            <div
+              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-accent-500 to-accent-600 dark:from-accent-600 dark:to-accent-700 p-5 sm:p-6 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-accent-500/20 transition-all hover:-translate-y-1"
               onClick={() => router.push('/dinners')}
             >
-              <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-white/10 rounded-full blur-2xl transform translate-x-8 -translate-y-8 group-hover:scale-150 transition-transform duration-500" />
-
+              {!reducedMotion && (
+                <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-white/10 rounded-full blur-2xl transform translate-x-8 -translate-y-8 group-hover:scale-150 transition-transform duration-500" />
+              )}
               <div className="relative">
                 <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
                   <Utensils className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
@@ -531,17 +536,16 @@ export default function DashboardPage() {
                   <ArrowRight className="ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Tertiary action - Profile */}
-            <motion.div
-              whileHover={{ y: -4, scale: 1.01 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-[var(--border)] bg-[var(--background-elevated)] p-5 sm:p-6 cursor-pointer hover:border-coral-300 dark:hover:border-coral-700 hover:shadow-lg transition-all sm:col-span-2 lg:col-span-1"
+            <div
+              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-[var(--border)] bg-[var(--background-elevated)] p-5 sm:p-6 cursor-pointer hover:border-coral-300 dark:hover:border-coral-700 hover:shadow-lg transition-all hover:-translate-y-1 sm:col-span-2 lg:col-span-1"
               onClick={handleOpenWizard}
             >
-              <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-coral-500/5 rounded-full blur-2xl transform translate-x-8 -translate-y-8 group-hover:scale-150 transition-transform duration-500" />
-
+              {!reducedMotion && (
+                <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-coral-500/5 rounded-full blur-2xl transform translate-x-8 -translate-y-8 group-hover:scale-150 transition-transform duration-500" />
+              )}
               <div className="relative">
                 <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-coral-100 to-accent-100 dark:from-coral-900/30 dark:to-accent-900/30 flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
                   <User className="h-6 w-6 sm:h-7 sm:w-7 text-coral-600 dark:text-coral-400" />
@@ -553,9 +557,9 @@ export default function DashboardPage() {
                   <ArrowRight className="ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Quick Actions */}
         <motion.div

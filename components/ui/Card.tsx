@@ -1,6 +1,7 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
+import Image from 'next/image'
 import { motion, HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { cardHover, cardHoverSubtle } from '@/lib/animations'
@@ -155,21 +156,29 @@ export const CardFooter = React.forwardRef<HTMLDivElement, CardFooterProps>(
 
 CardFooter.displayName = 'CardFooter'
 
-// Card Image (for dinner cards, etc.)
+// Card Image (for dinner cards, etc.) - Now uses Next.js Image for optimization
 export interface CardImageProps extends React.HTMLAttributes<HTMLDivElement> {
   src?: string
   alt?: string
   overlay?: boolean
   aspectRatio?: 'video' | 'square' | 'portrait'
+  priority?: boolean
+  sizes?: string
 }
 
 export const CardImage = React.forwardRef<HTMLDivElement, CardImageProps>(
-  ({ className, src, alt, overlay = true, aspectRatio = 'video', children, ...props }, ref) => {
+  ({ className, src, alt, overlay = true, aspectRatio = 'video', priority = false, sizes, children, ...props }, ref) => {
+    const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState(false)
+
     const aspectRatios = {
       video: 'aspect-video',
       square: 'aspect-square',
       portrait: 'aspect-[3/4]',
     }
+
+    // Default responsive sizes
+    const defaultSizes = sizes || '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'
 
     return (
       <div
@@ -181,13 +190,30 @@ export const CardImage = React.forwardRef<HTMLDivElement, CardImageProps>(
         )}
         {...props}
       >
-        {src && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+        {src && !error ? (
+          <Image
             src={src}
             alt={alt || ''}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            fill
+            sizes={defaultSizes}
+            priority={priority}
+            quality={75}
+            className={cn(
+              'object-cover transition-all duration-300 group-hover:scale-105',
+              isLoading ? 'opacity-0' : 'opacity-100'
+            )}
+            onLoad={() => setIsLoading(false)}
+            onError={() => setError(true)}
+            unoptimized={src.startsWith('http') && !src.includes('minedine')}
           />
+        ) : null}
+        {isLoading && src && !error && (
+          <div className="absolute inset-0 bg-[var(--background-secondary)] animate-pulse" />
+        )}
+        {error && (
+          <div className="absolute inset-0 bg-[var(--background-secondary)] flex items-center justify-center">
+            <span className="text-[var(--foreground-muted)] text-sm">Image unavailable</span>
+          </div>
         )}
         {overlay && (
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />

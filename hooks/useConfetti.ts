@@ -2,41 +2,54 @@
 
 import confetti from 'canvas-confetti'
 import { useCallback, useMemo } from 'react'
+import { shouldReduceAnimations, isMobileDevice } from '@/lib/performance'
 
 // Brand colors from tailwind config
 const BRAND_COLORS = ['#EC4899', '#06B6D4', '#FFD700'] // coral, cyan, gold
 
 export function useConfetti() {
-  // Check for reduced motion preference
+  // Check for reduced motion preference and device capabilities
   const prefersReducedMotion = useMemo(() => {
     if (typeof window === 'undefined') return false
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    return shouldReduceAnimations()
   }, [])
+
+  // Reduce particle count on mobile for performance
+  const isMobile = useMemo(() => {
+    if (typeof window === 'undefined') return false
+    return isMobileDevice()
+  }, [])
+
+  // Get particle count based on device - reduce by 50% on mobile
+  const getParticleCount = useCallback((baseCount: number) => {
+    return isMobile ? Math.floor(baseCount * 0.5) : baseCount
+  }, [isMobile])
 
   // Basic confetti burst
   const fireConfetti = useCallback((options?: confetti.Options) => {
     if (prefersReducedMotion) return
 
     confetti({
-      particleCount: 100,
+      particleCount: getParticleCount(100),
       spread: 70,
       origin: { y: 0.6 },
       colors: BRAND_COLORS,
       ...options,
     })
-  }, [prefersReducedMotion])
+  }, [prefersReducedMotion, getParticleCount])
 
   // Match celebration - dual sided burst
   const fireMatchCelebration = useCallback(() => {
     if (prefersReducedMotion) return
 
-    const duration = 3000
+    const duration = isMobile ? 1500 : 3000 // Shorter on mobile
     const end = Date.now() + duration
+    const particleCount = isMobile ? 2 : 4
 
     const frame = () => {
       // Left side burst
       confetti({
-        particleCount: 4,
+        particleCount,
         angle: 60,
         spread: 55,
         origin: { x: 0, y: 0.6 },
@@ -45,7 +58,7 @@ export function useConfetti() {
 
       // Right side burst
       confetti({
-        particleCount: 4,
+        particleCount,
         angle: 120,
         spread: 55,
         origin: { x: 1, y: 0.6 },
@@ -58,13 +71,13 @@ export function useConfetti() {
     }
 
     frame()
-  }, [prefersReducedMotion])
+  }, [prefersReducedMotion, isMobile])
 
   // Booking celebration - school pride style
   const fireBookingCelebration = useCallback(() => {
     if (prefersReducedMotion) return
 
-    const count = 200
+    const count = getParticleCount(200)
     const defaults = { origin: { y: 0.7 }, colors: BRAND_COLORS }
 
     function fire(particleRatio: number, opts: Partial<confetti.Options>) {
@@ -80,7 +93,7 @@ export function useConfetti() {
     fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 })
     fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 })
     fire(0.1, { spread: 120, startVelocity: 45 })
-  }, [prefersReducedMotion])
+  }, [prefersReducedMotion, getParticleCount])
 
   // Emoji burst
   const fireEmoji = useCallback((emoji: string = '🎉') => {
