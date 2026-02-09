@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
-import { Plus, Calendar, Users, Clock, MapPin, Check, X, Mail } from 'lucide-react'
+import { Plus, Calendar, Users, Clock, MapPin, Check, X, Mail, Edit } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
@@ -230,6 +230,17 @@ export default function EventsDashboardPage() {
                         leftIcon={<Mail className="h-3 w-3" />}
                       >
                         Invite
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          router.push(`/dashboard/events/${event.id}/edit`)
+                        }}
+                        leftIcon={<Edit className="h-3 w-3" />}
+                      >
+                        Modify
                       </Button>
                       <Button
                         variant="outline"

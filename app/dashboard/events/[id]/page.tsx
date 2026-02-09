@@ -18,7 +18,6 @@ import {
   CalendarClock,
   Loader2,
   Copy,
-  ExternalLink,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -226,16 +225,26 @@ export default function EventDetailPage() {
               </p>
             </div>
 
-            {isUpcoming && !isCancelled && (
+            {!isCancelled && (
               <div className="flex flex-wrap gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowReschedule(true)}
-                  leftIcon={<CalendarClock className="h-4 w-4" />}
+                  onClick={() => router.push(`/dashboard/events/${eventId}/edit`)}
+                  leftIcon={<Edit className="h-4 w-4" />}
                 >
-                  Reschedule
+                  Modify
                 </Button>
+                {isUpcoming && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowReschedule(true)}
+                    leftIcon={<CalendarClock className="h-4 w-4" />}
+                  >
+                    Reschedule
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -505,6 +514,16 @@ export default function EventDetailPage() {
                 <CardTitle className="text-lg">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
+                {!isCancelled && (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => router.push(`/dashboard/events/${eventId}/edit`)}
+                    leftIcon={<Edit className="h-4 w-4" />}
+                  >
+                    Modify Event
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   className="w-full justify-start"

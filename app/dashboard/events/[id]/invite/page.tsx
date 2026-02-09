@@ -14,6 +14,8 @@ import {
   Clock,
   X,
   Link as LinkIcon,
+  UserPlus,
+  UserCheck,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -36,6 +38,26 @@ interface Event {
   visibility?: 'PUBLIC' | 'UNLISTED' | 'PRIVATE'
 }
 
+interface CohostRequest {
+  id: string
+  status: string
+  createdAt: string
+  requester: {
+    id: string
+    name: string | null
+    email: string | null
+  }
+}
+
+interface CohostEntry {
+  id: string
+  user: {
+    id: string
+    name: string | null
+    email: string | null
+  }
+}
+
 export default function EventInvitePage() {
   const params = useParams()
   const router = useRouter()
@@ -43,14 +65,21 @@ export default function EventInvitePage() {
 
   const [event, setEvent] = useState<Event | null>(null)
   const [invitations, setInvitations] = useState<Invitation[]>([])
+  const [cohostRequests, setCohostRequests] = useState<CohostRequest[]>([])
+  const [cohosts, setCohosts] = useState<CohostEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [cohostError, setCohostError] = useState<string | null>(null)
   const [emailInput, setEmailInput] = useState('')
   const [sending, setSending] = useState(false)
   const [resendingId, setResendingId] = useState<string | null>(null)
+  const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null)
   const [copiedLink, setCopiedLink] = useState(false)
+  const [copiedCohostLink, setCopiedCohostLink] = useState(false)
   const [shareToken, setShareToken] = useState<string | null>(null)
+  const [cohostToken, setCohostToken] = useState<string | null>(null)
   const [shareLoading, setShareLoading] = useState(false)
+  const [cohostLoading, setCohostLoading] = useState(false)
 
   const fetchEvent = async () => {
     if (!eventId) return
@@ -67,18 +96,32 @@ export default function EventInvitePage() {
     else setError(data.error ?? 'Failed to load invitations')
   }
 
+  const fetchCohostData = async () => {
+    if (!eventId) return
+    const res = await fetch(`/api/dinners/${eventId}/cohost-requests`, { cache: 'no-store' })
+    const data = await res.json()
+
+    if (!res.ok) {
+      setCohostError(data.error ?? 'Failed to load co-host requests')
+      return
+    }
+
+    setCohostRequests(data.requests ?? [])
+    setCohosts(data.cohosts ?? [])
+  }
+
   useEffect(() => {
     if (!eventId) {
       setLoading(false)
       return
     }
-    Promise.all([fetchEvent(), fetchInvitations()]).finally(() => setLoading(false))
+    Promise.all([fetchEvent(), fetchInvitations(), fetchCohostData()]).finally(() => setLoading(false))
   }, [eventId])
 
   // If the dinner is private/unlisted, precreate a share token so the UI shows the right link by default.
   useEffect(() => {
     if (!eventId || !event?.visibility || event.visibility === 'PUBLIC') return
-    ensureShareToken(false)
+    ensureShareToken(false).catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId, event?.visibility])
 
@@ -131,17 +174,35 @@ export default function EventInvitePage() {
     }
   }
 
-  const getCachedShareToken = () => {
+  const handleApproveCohostRequest = async (requestId: string) => {
+    setApprovingRequestId(requestId)
+    setCohostError(null)
+
     try {
-      return localStorage.getItem(`mine-dine:inviteToken:${eventId}`)
+      const res = await fetch(`/api/dinners/${eventId}/cohost-requests/${requestId}/approve`, {
+        method: 'POST',
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Failed to approve request')
+      await fetchCohostData()
+    } catch (err) {
+      setCohostError(err instanceof Error ? err.message : 'Failed to approve request')
+    } finally {
+      setApprovingRequestId(null)
+    }
+  }
+
+  const getCachedToken = (key: string) => {
+    try {
+      return localStorage.getItem(key)
     } catch {
       return null
     }
   }
 
-  const setCachedShareToken = (token: string) => {
+  const setCachedToken = (key: string, token: string) => {
     try {
-      localStorage.setItem(`mine-dine:inviteToken:${eventId}`, token)
+      localStorage.setItem(key, token)
     } catch {
       // ignore
     }
@@ -149,8 +210,10 @@ export default function EventInvitePage() {
 
   const ensureShareToken = async (forceNew = false) => {
     if (!eventId) return null
+    const cacheKey = `mine-dine:inviteToken:${eventId}`
+
     if (!forceNew) {
-      const cached = getCachedShareToken()
+      const cached = getCachedToken(cacheKey)
       if (cached) {
         setShareToken(cached)
         return cached
@@ -169,28 +232,82 @@ export default function EventInvitePage() {
       const token = data?.token as string
       if (!token) throw new Error('Invite token missing')
       setShareToken(token)
-      setCachedShareToken(token)
+      setCachedToken(cacheKey, token)
       return token
     } finally {
       setShareLoading(false)
     }
   }
 
-  const copyEventLink = async () => {
-    const baseUrl = window.location.origin
+  const ensureCohostToken = async (forceNew = false) => {
+    if (!eventId) return null
+    const cacheKey = `mine-dine:cohostToken:${eventId}`
 
-    // Default behavior: for PRIVATE/UNLISTED dinners, always share the tokenized invite link.
-    // For PUBLIC dinners, the canonical URL is fine.
-    let link = `${baseUrl}/dinners/${eventId}`
-
-    if (event?.visibility && event.visibility !== 'PUBLIC') {
-      const token = await ensureShareToken(false)
-      if (token) link = `${baseUrl}/dinners/invite/${token}`
+    if (!forceNew) {
+      const cached = getCachedToken(cacheKey)
+      if (cached) {
+        setCohostToken(cached)
+        return cached
+      }
     }
 
-    await navigator.clipboard.writeText(link)
-    setCopiedLink(true)
-    setTimeout(() => setCopiedLink(false), 2000)
+    setCohostLoading(true)
+    setCohostError(null)
+    try {
+      const res = await fetch(`/api/dinners/${eventId}/invite-links`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scope: 'COHOST_REQUEST' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.error ?? 'Failed to create co-host link')
+      const token = data?.token as string
+      if (!token) throw new Error('Co-host invite token missing')
+      setCohostToken(token)
+      setCachedToken(cacheKey, token)
+      return token
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create co-host link'
+      setCohostError(message)
+      throw err
+    } finally {
+      setCohostLoading(false)
+    }
+  }
+
+  const copyEventLink = async () => {
+    try {
+      const baseUrl = window.location.origin
+
+      // Default behavior: for PRIVATE/UNLISTED dinners, always share the tokenized invite link.
+      // For PUBLIC dinners, the canonical URL is fine.
+      let link = `${baseUrl}/dinners/${eventId}`
+
+      if (event?.visibility && event.visibility !== 'PUBLIC') {
+        const token = await ensureShareToken(false)
+        if (token) link = `${baseUrl}/dinners/invite/${token}`
+      }
+
+      await navigator.clipboard.writeText(link)
+      setCopiedLink(true)
+      setTimeout(() => setCopiedLink(false), 2000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to copy link')
+    }
+  }
+
+  const copyCohostLink = async () => {
+    try {
+      const token = cohostToken ?? (await ensureCohostToken(false))
+      if (!token) return
+
+      const link = `${window.location.origin}/dinners/invite/${token}`
+      await navigator.clipboard.writeText(link)
+      setCopiedCohostLink(true)
+      setTimeout(() => setCopiedCohostLink(false), 2000)
+    } catch {
+      // handled in ensureCohostToken
+    }
   }
 
   if (loading) {
@@ -215,6 +332,8 @@ export default function EventInvitePage() {
   const accepted = invitations.filter((i) => i.status === 'ACCEPTED')
   const pending = invitations.filter((i) => i.status === 'PENDING')
   const declined = invitations.filter((i) => i.status === 'DECLINED')
+  const pendingCohostRequests = cohostRequests.filter((request) => request.status === 'PENDING')
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
 
   return (
     <div className="min-h-screen bg-[var(--background)] py-8 px-4 sm:px-6 lg:px-8">
@@ -304,11 +423,10 @@ export default function EventInvitePage() {
               <Input
                 readOnly
                 value={(() => {
-                  const base = typeof window !== 'undefined' ? window.location.origin : ''
                   if (event?.visibility && event.visibility !== 'PUBLIC') {
-                    return shareToken ? `${base}/dinners/invite/${shareToken}` : `${base}/dinners/${eventId}`
+                    return shareToken ? `${baseUrl}/dinners/invite/${shareToken}` : `${baseUrl}/dinners/${eventId}`
                   }
-                  return `${base}/dinners/${eventId}`
+                  return `${baseUrl}/dinners/${eventId}`
                 })()}
                 className="flex-1 bg-[var(--background-secondary)]"
               />
@@ -331,6 +449,115 @@ export default function EventInvitePage() {
                 >
                   Regenerate
                 </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Co-host access */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5" />
+              Co-host Access (Preview)
+            </CardTitle>
+            <CardDescription>
+              Generate a co-host link for trusted people. They can request access and you can approve them below.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Input
+                readOnly
+                value={cohostToken ? `${baseUrl}/dinners/invite/${cohostToken}` : ''}
+                placeholder="Generate a co-host request link"
+                className="flex-1 bg-[var(--background-secondary)]"
+              />
+              <Button
+                variant="outline"
+                onClick={copyCohostLink}
+                disabled={cohostLoading || !cohostToken}
+                leftIcon={copiedCohostLink ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              >
+                {copiedCohostLink ? 'Copied!' : 'Copy'}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={async () => {
+                  await ensureCohostToken(true)
+                }}
+                disabled={cohostLoading}
+                leftIcon={<RefreshCw className={`h-4 w-4 ${cohostLoading ? 'animate-spin' : ''}`} />}
+              >
+                {cohostToken ? 'Regenerate' : 'Generate'}
+              </Button>
+            </div>
+
+            {cohostError && (
+              <p className="text-sm text-red-500">{cohostError}</p>
+            )}
+
+            {cohosts.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-[var(--foreground)]">Approved Co-hosts</p>
+                <ul className="space-y-2">
+                  {cohosts.map((cohost) => (
+                    <li
+                      key={cohost.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-[var(--background-secondary)]"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-[var(--foreground)]">
+                          {cohost.user.name || cohost.user.email || 'Unnamed user'}
+                        </p>
+                        {cohost.user.email && (
+                          <p className="text-xs text-[var(--foreground-muted)]">{cohost.user.email}</p>
+                        )}
+                      </div>
+                      <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                        <UserCheck className="h-3 w-3" />
+                        Active
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-[var(--foreground)]">Pending Co-host Requests</p>
+              {pendingCohostRequests.length === 0 ? (
+                <p className="text-sm text-[var(--foreground-muted)]">No pending requests yet.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {pendingCohostRequests.map((request) => (
+                    <li
+                      key={request.id}
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 rounded-lg bg-[var(--background-secondary)]"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-[var(--foreground)]">
+                          {request.requester.name || request.requester.email || 'Unnamed user'}
+                        </p>
+                        <p className="text-xs text-[var(--foreground-muted)]">
+                          {request.requester.email || 'No email available'}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => handleApproveCohostRequest(request.id)}
+                        disabled={approvingRequestId === request.id}
+                        leftIcon={
+                          approvingRequestId === request.id
+                            ? <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                            : <Check className="h-3.5 w-3.5" />
+                        }
+                      >
+                        {approvingRequestId === request.id ? 'Approving...' : 'Approve'}
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
           </CardContent>
@@ -422,6 +649,9 @@ export default function EventInvitePage() {
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => router.push(`/dashboard/events/${eventId}`)}>
             Back to Event
+          </Button>
+          <Button variant="outline" onClick={() => router.push(`/dashboard/events/${eventId}/edit`)}>
+            Modify Event
           </Button>
         </div>
       </div>

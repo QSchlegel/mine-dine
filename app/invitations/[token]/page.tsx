@@ -124,6 +124,33 @@ export default function InvitationPage() {
   const alreadyResponded = inv.status !== 'PENDING' || responded
   const hasAccepted = responded === 'ACCEPTED' || inv.status === 'ACCEPTED'
   const isPrivateEvent = dinner.visibility === 'PRIVATE'
+  const invitationTokenParam = encodeURIComponent(token)
+  const invitationEmailParam = encodeURIComponent(inv.email)
+  const quickSignupHref = `/signup?quick=magic&invitationToken=${invitationTokenParam}&email=${invitationEmailParam}`
+  const signupHref = `/signup?invitationToken=${invitationTokenParam}&email=${invitationEmailParam}`
+  const loginHref = `/login?redirect=${encodeURIComponent(`/invitations/${token}`)}`
+
+  const renderSignupActions = () => {
+    if (session?.user) return null
+
+    return (
+      <div className="space-y-2">
+        <Button
+          href={quickSignupHref}
+          className="w-full"
+          leftIcon={<UserPlus className="h-4 w-4" />}
+        >
+          Quick Sign Up
+        </Button>
+        <Button href={signupHref} variant="outline" className="w-full">
+          More Sign Up Options
+        </Button>
+        <Button href={loginHref} variant="ghost" className="w-full">
+          Already have an account? Log in
+        </Button>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[var(--background)] py-12">
@@ -252,16 +279,7 @@ export default function InvitationPage() {
                     View Event Details
                   </Button>
 
-                  {!session?.user && (
-                    <Button
-                      href={`/signup?invitationToken=${encodeURIComponent(token)}&email=${encodeURIComponent(inv.email)}`}
-                      className="w-full"
-                      variant="outline"
-                      leftIcon={<UserPlus className="h-4 w-4" />}
-                    >
-                      Sign up to save this event to your account
-                    </Button>
-                  )}
+                  {renderSignupActions()}
                 </div>
               ) : (
                 <div className="pt-4 space-y-3">
@@ -285,16 +303,7 @@ export default function InvitationPage() {
                     Can't make it
                   </Button>
 
-                  {!session?.user && (
-                    <Button
-                      href={`/signup?invitationToken=${encodeURIComponent(token)}&email=${encodeURIComponent(inv.email)}`}
-                      variant="outline"
-                      className="w-full"
-                      leftIcon={<UserPlus className="h-4 w-4" />}
-                    >
-                      Sign up to save this event to your account
-                    </Button>
-                  )}
+                  {renderSignupActions()}
                 </div>
               )}
             </CardContent>

@@ -62,7 +62,10 @@ export async function GET(
   const headersList = await headers()
   const session = await auth.api.getSession({ headers: headersList })
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json(
+      { error: 'Unauthorized', scope: link.scope, dinner: link.dinner },
+      { status: 401 }
+    )
   }
 
   const requesterId = session.user.id
@@ -80,5 +83,9 @@ export async function GET(
     select: { id: true, status: true, createdAt: true },
   })
 
-  return NextResponse.json({ scope: link.scope, request })
+  return NextResponse.json({
+    scope: link.scope,
+    dinner: link.dinner,
+    request,
+  })
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, Suspense } from 'react'
+import { useState, useCallback, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -30,6 +30,9 @@ function SignupContent() {
   const searchParams = useSearchParams()
   const { fireSuccess, fireEmoji } = useConfetti()
   const invitationToken = searchParams.get('invitationToken')
+  const quickMode = searchParams.get('quick')
+  const redirect = searchParams.get('redirect')
+  const quickSignupTriggered = useRef(false)
   const [step, setStep] = useState<AuthStep>('email')
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
@@ -47,7 +50,16 @@ function SignupContent() {
     }
   }, [searchParams])
 
-  const getRedirectAfterSignup = () => (invitationToken ? `/invitations/${encodeURIComponent(invitationToken)}` : '/dashboard')
+  const getSafeRedirect = () => {
+    if (!redirect) return null
+    if (!redirect.startsWith('/') || redirect.startsWith('//')) return null
+    return redirect
+  }
+
+  const getRedirectAfterSignup = () => {
+    if (invitationToken) return `/invitations/${encodeURIComponent(invitationToken)}`
+    return getSafeRedirect() ?? '/dashboard'
+  }
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -127,7 +139,7 @@ function SignupContent() {
     } finally {
       setIsLoading(false)
     }
-  }, [email, name, router, fireSuccess, fireEmoji, invitationToken])
+  }, [email, name, router, fireSuccess, fireEmoji, invitationToken, redirect])
 
   const handleMagicLinkRequest = useCallback(async () => {
     setError(null)
@@ -154,6 +166,14 @@ function SignupContent() {
     }
   }, [email, name])
 
+  useEffect(() => {
+    if (quickMode !== 'magic' || quickSignupTriggered.current) return
+    if (!validateEmail(email)) return
+
+    quickSignupTriggered.current = true
+    handleMagicLinkRequest()
+  }, [quickMode, email, handleMagicLinkRequest])
+
   const handleMagicLinkVerify = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -172,14 +192,14 @@ function SignupContent() {
         throw new Error(data.message || 'Invalid code')
       }
 
-      router.push(invitationToken ? `/invitations/${encodeURIComponent(invitationToken)}` : '/dashboard')
+      router.push(getRedirectAfterSignup())
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Verification failed')
     } finally {
       setIsLoading(false)
     }
-  }, [email, magicLinkCode, router, invitationToken])
+  }, [email, magicLinkCode, router, invitationToken, redirect])
 
   const handlePasswordSignup = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
@@ -225,7 +245,7 @@ function SignupContent() {
     } finally {
       setIsLoading(false)
     }
-  }, [email, password, confirmPassword, name, router, invitationToken])
+  }, [email, password, confirmPassword, name, router, invitationToken, redirect])
 
   const goBack = () => {
     setError(null)

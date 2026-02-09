@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useCallback, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AuthLayout } from '@/components/auth/AuthLayout'
@@ -23,8 +23,9 @@ import {
 
 type AuthStep = 'email' | 'method' | 'password' | 'magic-link-sent'
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [step, setStep] = useState<AuthStep>('email')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,6 +33,13 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [magicLinkCode, setMagicLinkCode] = useState('')
   const [isCheckingPasskeys, setIsCheckingPasskeys] = useState(true)
+  const redirect = searchParams.get('redirect')
+
+  const getSafeRedirect = () => {
+    if (!redirect) return '/dashboard'
+    if (!redirect.startsWith('/') || redirect.startsWith('//')) return '/dashboard'
+    return redirect
+  }
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -51,7 +59,7 @@ export default function LoginPage() {
 
         if (!result.error) {
           if (!isActive) return
-          router.push('/dashboard')
+          router.push(getSafeRedirect())
           router.refresh()
           return
         }
@@ -69,7 +77,7 @@ export default function LoginPage() {
       isActive = false
       window.clearTimeout(timer)
     }
-  }, [router])
+  }, [router, redirect])
 
   const handleEmailContinue = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,14 +107,14 @@ export default function LoginPage() {
         throw new Error(result.error.message || 'Passkey authentication failed')
       }
 
-      router.push('/dashboard')
+      router.push(getSafeRedirect())
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to authenticate with passkey')
     } finally {
       setIsLoading(false)
     }
-  }, [router])
+  }, [router, redirect])
 
   const handleMagicLinkRequest = useCallback(async () => {
     setError(null)
@@ -151,14 +159,14 @@ export default function LoginPage() {
         throw new Error(data.message || 'Invalid code')
       }
 
-      router.push('/dashboard')
+      router.push(getSafeRedirect())
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Verification failed')
     } finally {
       setIsLoading(false)
     }
-  }, [email, magicLinkCode, router])
+  }, [email, magicLinkCode, router, redirect])
 
   const handlePasswordLogin = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
@@ -184,14 +192,14 @@ export default function LoginPage() {
         throw new Error(data.message || data.error || 'Login failed')
       }
 
-      router.push('/dashboard')
+      router.push(getSafeRedirect())
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {
       setIsLoading(false)
     }
-  }, [email, password, router])
+  }, [email, password, router, redirect])
 
   const goBack = () => {
     setError(null)
@@ -255,7 +263,10 @@ export default function LoginPage() {
 
             <p className="text-center text-sm text-[var(--foreground-secondary)] mt-6">
               Don&apos;t have an account?{' '}
-              <Link href="/signup" className="font-medium text-coral-500 hover:text-coral-400 transition-colors">
+              <Link
+                href={redirect ? `/signup?redirect=${encodeURIComponent(getSafeRedirect())}` : '/signup'}
+                className="font-medium text-coral-500 hover:text-coral-400 transition-colors"
+              >
                 Sign up
               </Link>
             </p>
@@ -498,5 +509,21 @@ export default function LoginPage() {
         </AnimatePresence>
       )}
     </AuthLayout>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <AuthLayout title="Welcome back" subtitle="Sign in to continue to Mine Dine">
+          <div className="flex justify-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-coral-500 border-t-transparent" />
+          </div>
+        </AuthLayout>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   )
 }
