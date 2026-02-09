@@ -1,5 +1,5 @@
 const PROXY_PATH = '/api/image-proxy?url='
-const FALLBACK_IPFS_GATEWAY = 'https://dweb.link'
+const FALLBACK_IPFS_GATEWAY = 'https://ipfs.io'
 
 interface IpfsParts {
   cid: string

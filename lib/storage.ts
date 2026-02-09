@@ -3,6 +3,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import {
   isIpfsConfigured,
   isIpfsUrl,
+  normalizeIpfsGatewayUrl,
   uploadBufferToIPFS,
   uploadFileToIPFS,
 } from '@/lib/ipfs'
@@ -301,7 +302,7 @@ export function normalizeToPublicUrl(url: string): string | null {
  */
 export async function getDisplayImageUrl(url: string | null | undefined): Promise<string | null> {
   if (!url) return null
-  if (isIpfsUrl(url)) return url
+  if (isIpfsUrl(url)) return normalizeIpfsGatewayUrl(url)
 
   const key = extractKeyFromUrl(url)
   if (!key) return url

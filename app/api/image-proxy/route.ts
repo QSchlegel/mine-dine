@@ -27,13 +27,7 @@ function isAllowedUrl(url: string): boolean {
   }
 }
 
-const IPFS_FALLBACK_GATEWAYS = [
-  'https://gateway.pinata.cloud',
-  'https://cloudflare-ipfs.com',
-  'https://ipfs.io',
-  'https://w3s.link',
-  'https://dweb.link',
-]
+const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io'
 
 function extractIpfsParts(url: URL): { cid: string; suffix: string; search: string } | null {
   // Path-based gateways: /ipfs/<cid>/<optional-path>
@@ -67,16 +61,7 @@ function getCandidateUrls(url: string): string[] {
     const parsed = new URL(url)
     const ipfs = extractIpfsParts(parsed)
     if (!ipfs) return [url]
-
-    const candidates = [
-      url,
-      ...IPFS_FALLBACK_GATEWAYS.map(
-        (gateway) => `${gateway}/ipfs/${ipfs.cid}${ipfs.suffix}${ipfs.search}`
-      ),
-      `https://${ipfs.cid}.ipfs.dweb.link${ipfs.suffix}${ipfs.search}`,
-    ]
-
-    return [...new Set(candidates)]
+    return [`${IPFS_PUBLIC_GATEWAY}/ipfs/${ipfs.cid}${ipfs.suffix}${ipfs.search}`]
   } catch {
     return [url]
   }

@@ -5,12 +5,21 @@ export interface PinResult {
   url: string
 }
 
-const DEFAULT_GATEWAY_BASE = 'https://dweb.link'
+const DEFAULT_GATEWAY_BASE = 'https://ipfs.io'
 
 function getGatewayBase(): string {
   const configuredBase = process.env.IPFS_GATEWAY_BASE?.trim()
   if (!configuredBase) return DEFAULT_GATEWAY_BASE
-  return configuredBase.replace(/\/+$/, '')
+  const normalizedBase = configuredBase.replace(/\/+$/, '')
+  try {
+    const parsed = new URL(normalizedBase)
+    if (parsed.protocol === 'https:' && parsed.hostname === 'ipfs.io') {
+      return normalizedBase
+    }
+  } catch {
+    // Ignore invalid gateway config and fall back to ipfs.io
+  }
+  return DEFAULT_GATEWAY_BASE
 }
 
 function getPinataJwt(): string | null {
@@ -125,6 +134,69 @@ export function isIpfsUrl(url: string | null | undefined): boolean {
   } catch {
     return false
   }
+}
+
+function isKnownIpfsGatewayHost(host: string): boolean {
+  return (
+    host === 'gateway.pinata.cloud' ||
+    host.endsWith('.pinata.cloud') ||
+    host === 'ipfs.io' ||
+    host === 'cloudflare-ipfs.com' ||
+    host === 'w3s.link' ||
+    host === 'dweb.link' ||
+    host.endsWith('.ipfs.dweb.link') ||
+    host.endsWith('.ipfs.w3s.link')
+  )
+}
+
+function extractIpfsParts(src: string): { cid: string; suffix: string; search: string } | null {
+  if (src.startsWith('ipfs://')) {
+    const remainder = src.slice('ipfs://'.length)
+    const [base, ...rest] = remainder.split('/')
+    if (!base) return null
+    const suffix = rest.length ? `/${rest.join('/')}` : ''
+    return { cid: base, suffix, search: '' }
+  }
+
+  try {
+    const parsed = new URL(src)
+    const host = parsed.hostname.toLowerCase()
+    const knownGatewayHost = isKnownIpfsGatewayHost(host)
+
+    const pathMatch = parsed.pathname.match(/^\/ipfs\/([^/]+)(\/.*)?$/)
+    if (pathMatch && knownGatewayHost) {
+      return {
+        cid: pathMatch[1],
+        suffix: pathMatch[2] || '',
+        search: parsed.search || '',
+      }
+    }
+
+    const parts = host.split('.')
+    const ipfsIndex = parts.indexOf('ipfs')
+    if (ipfsIndex > 0) {
+      const cid = parts[ipfsIndex - 1]
+      if (!cid) return null
+      return {
+        cid,
+        suffix: parsed.pathname === '/' ? '' : parsed.pathname,
+        search: parsed.search || '',
+      }
+    }
+  } catch {
+    return null
+  }
+
+  return null
+}
+
+/**
+ * Canonicalize any IPFS URL to the public ipfs.io gateway.
+ */
+export function normalizeIpfsGatewayUrl(url: string): string {
+  const ipfs = extractIpfsParts(url)
+  if (!ipfs) return url
+  return `${DEFAULT_GATEWAY_BASE}/ipfs/${ipfs.cid}${ipfs.suffix}${ipfs.search}`
 }
 
 /**

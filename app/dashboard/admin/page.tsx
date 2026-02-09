@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 
 import { getCurrentUser, hasRole } from '@/lib/auth'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 import { prisma } from '@/lib/prisma'
 
 // Mark as dynamic because we read the current user via headers()
@@ -306,7 +307,13 @@ function AvatarCircle({ name, src }: AvatarCircleProps) {
   const fallback = name?.[0] || '?'
 
   if (src) {
-    return <img src={src} alt={name || 'User'} className="h-10 w-10 rounded-full object-cover" />
+    return (
+      <img
+        src={getProxiedImageUrl(src) ?? src}
+        alt={name || 'User'}
+        className="h-10 w-10 rounded-full object-cover"
+      />
+    )
   }
 
   return (

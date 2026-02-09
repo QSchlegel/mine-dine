@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser, hasRole } from '@/lib/auth'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { Shield, Users, Calendar, DollarSign, CheckCircle, XCircle, Clock, Bot } from 'lucide-react'
@@ -188,7 +189,7 @@ export default async function ModeratorDashboardPage() {
                     <div className="flex items-center gap-3">
                       {app.user.profileImageUrl ? (
                         <img
-                          src={app.user.profileImageUrl}
+                          src={getProxiedImageUrl(app.user.profileImageUrl) ?? app.user.profileImageUrl}
                           alt={app.user.name || 'User'}
                           className="h-10 w-10 rounded-full"
                         />
@@ -241,7 +242,7 @@ export default async function ModeratorDashboardPage() {
                     <div className="flex items-center gap-3">
                       {dinner.host.profileImageUrl ? (
                         <img
-                          src={dinner.host.profileImageUrl}
+                          src={getProxiedImageUrl(dinner.host.profileImageUrl) ?? dinner.host.profileImageUrl}
                           alt={dinner.host.name || 'Host'}
                           className="h-10 w-10 rounded-full"
                         />

@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import type { RecipePlan } from '@/lib/ai/recipe-planner'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 
 interface PlanPreviewProps {
   plan: RecipePlan
@@ -37,7 +38,7 @@ export function PlanPreview({
               </div>
             ) : dishImageUrl ? (
               <img
-                src={dishImageUrl}
+                src={getProxiedImageUrl(dishImageUrl) ?? dishImageUrl}
                 alt={`${plan.title} plated`}
                 className="w-full h-full object-cover"
               />

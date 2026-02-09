@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 import { Button } from './Button'
 import { UserMenu } from './UserMenu'
 import { signOut } from '@/lib/auth-client'
@@ -194,7 +195,7 @@ export const Navigation: React.FC = () => {
                   <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--background-secondary)]">
                     {user.image ? (
                       <img
-                        src={user.image}
+                        src={getProxiedImageUrl(user.image) ?? user.image}
                         alt={user.name || 'User'}
                         className="h-12 w-12 rounded-full object-cover"
                       />
