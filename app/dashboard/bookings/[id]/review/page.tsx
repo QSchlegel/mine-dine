@@ -11,6 +11,7 @@ import { TipStarsPurchase } from '@/components/reviews/TipStarsPurchase'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { motion, AnimatePresence } from 'framer-motion'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -229,7 +230,7 @@ export default function ReviewBookingPage() {
             <div className="flex items-center gap-4">
               {booking.dinner.imageUrl && (
                 <img
-                  src={booking.dinner.imageUrl}
+                  src={getProxiedImageUrl(booking.dinner.imageUrl) ?? booking.dinner.imageUrl}
                   alt={booking.dinner.title}
                   className="w-16 h-16 rounded-lg object-cover"
                 />

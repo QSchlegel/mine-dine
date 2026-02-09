@@ -2,9 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { buttonPress } from '@/lib/animations'
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'glass'
@@ -13,6 +11,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   leftIcon?: React.ReactNode
   rightIcon?: React.ReactNode
   href?: string
+  motion?: 'none' | 'micro'
 }
 
 const baseStyles = cn(
@@ -20,8 +19,7 @@ const baseStyles = cn(
   'transition-all duration-300 ease-out',
   'focus:outline-none focus:ring-2 focus:ring-offset-2',
   'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
-  'shadow-sm hover:shadow-md active:shadow-sm',
-  'transform hover:-translate-y-0.5 active:translate-y-0'
+  'shadow-sm hover:shadow-md active:shadow-sm'
 )
 
 const variantStyles = {
@@ -79,6 +77,8 @@ const sizeStyles = {
   lg: 'h-12 px-6 text-base',
 }
 
+const microMotionStyles = 'transform hover:-translate-y-0.5 active:translate-y-0'
+
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
@@ -91,6 +91,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       children,
       disabled,
       href,
+      motion = 'none',
       ...props
     },
     ref
@@ -99,6 +100,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       baseStyles,
       variantStyles[variant],
       sizeStyles[size],
+      motion === 'micro' && microMotionStyles,
       className
     )
 
@@ -111,57 +113,29 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       </>
     )
 
-    // If href is provided, render as Link
     if (href) {
+      const isDisabled = Boolean(disabled || isLoading)
       return (
-        <Link href={href} className={classes}>
+        <Link
+          href={href}
+          className={cn(classes, isDisabled && 'pointer-events-none opacity-50')}
+          aria-disabled={isDisabled}
+          tabIndex={isDisabled ? -1 : undefined}
+        >
           {content}
         </Link>
       )
     }
 
-    // Otherwise render as motion button
-    // Extract only the props we need to avoid type conflicts with framer-motion
-    const { 
-      onClick, 
-      type, 
-      form, 
-      name, 
-      value, 
-      'aria-label': ariaLabel,
-      // Exclude all HTML event handlers that conflict with framer-motion
-      onDrag, 
-      onDragEnd, 
-      onDragEnter, 
-      onDragExit, 
-      onDragLeave, 
-      onDragOver, 
-      onDragStart,
-      onAnimationStart,
-      onAnimationEnd,
-      onAnimationIteration,
-      ...restProps 
-    } = props
-
     return (
-      <motion.button
+      <button
         className={classes}
         ref={ref}
         disabled={disabled || isLoading}
-        onClick={onClick}
-        type={type}
-        form={form}
-        name={name}
-        value={value}
-        aria-label={ariaLabel}
-        variants={buttonPress}
-        initial="rest"
-        whileHover={!disabled && !isLoading ? 'hover' : undefined}
-        whileTap={!disabled && !isLoading ? 'tap' : undefined}
-        {...(restProps as any)}
+        {...props}
       >
         {content}
-      </motion.button>
+      </button>
     )
   }
 )
@@ -193,7 +167,6 @@ function LoadingSpinner() {
   )
 }
 
-// Icon Button variant
 export interface IconButtonProps extends Omit<ButtonProps, 'leftIcon' | 'rightIcon'> {
   icon: React.ReactNode
   'aria-label': string

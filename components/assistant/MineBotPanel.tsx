@@ -29,7 +29,7 @@ interface MineBotPanelProps {
   inputId?: string
 }
 
-const DEFAULT_INPUT_PLACEHOLDER = 'Ask Dine Bot to refine, rename, or improve...'
+const DEFAULT_INPUT_PLACEHOLDER = 'Ask for a specific tweak or next step...'
 
 export function MineBotPanel({
   mode = 'general',
@@ -79,11 +79,11 @@ export function MineBotPanel({
       if (response.ok && data?.reply?.message) {
         pushAssistantMessage(data.reply.message, data.reply.action)
       } else {
-        pushAssistantMessage('I can help you shape the plan. What should we refine?')
+        pushAssistantMessage('Share the exact change you want, and I will suggest the next step.')
       }
     } catch (error) {
       console.error('Failed to fetch Dine Bot reply:', error)
-      pushAssistantMessage('I can help you shape the plan. What should we refine?')
+      pushAssistantMessage('Share the exact change you want, and I will suggest the next step.')
     } finally {
       setIsSending(false)
     }
@@ -113,7 +113,7 @@ export function MineBotPanel({
       >
         {messages.length === 0 ? (
           <p className="text-sm text-[var(--foreground-muted)]">
-            Tell me what you want to build and I’ll help shape it.
+            Ask for a concrete tweak, rewrite, or next step.
           </p>
         ) : (
           messages.map((message, index) => (

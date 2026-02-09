@@ -9,7 +9,7 @@ import { AuthAlert } from '@/components/auth/AuthAlert'
 import { Input } from '@/components/ui/Input'
 import { PasswordInput } from '@/components/auth/PasswordInput'
 import { Button } from '@/components/ui/Button'
-import { authClient } from '@/lib/auth-client'
+import { authClientPasskey } from '@/lib/auth-client-passkey'
 import { useConfetti } from '@/hooks/useConfetti'
 import {
   Mail,
@@ -115,7 +115,7 @@ function SignupContent() {
 
       // Step 3: Now that we have a session, add the passkey
       // passkey.addPasskey() will require creating a NEW passkey (not selecting existing ones)
-      const passkeyResult = await authClient.passkey.addPasskey({
+      const passkeyResult = await authClientPasskey.passkey.addPasskey({
         name: name || email,
       })
 
@@ -232,7 +232,7 @@ function SignupContent() {
       }
 
       // Immediately create an authenticated session so the user lands in the app logged in
-      const signInResult = await authClient.signIn.email({ email, password })
+      const signInResult = await authClientPasskey.signIn.email({ email, password })
 
       if (signInResult.error) {
         throw new Error(signInResult.error.message || 'Sign in failed after registration')

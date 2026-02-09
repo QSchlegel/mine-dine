@@ -3,9 +3,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { useSession } from '@/lib/auth-client'
+import { useSessionState } from '@/components/auth/SessionStateProvider'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import {
   Home,
@@ -53,7 +52,7 @@ const navItems: NavItem[] = [
 
 export const BottomNav: React.FC = () => {
   const pathname = usePathname()
-  const { data: session } = useSession()
+  const { data: session } = useSessionState()
   const [isVisible, setIsVisible] = useState(true)
   const lastScrollYRef = useRef(0)
   const reducedMotion = useReducedMotion()
@@ -102,80 +101,70 @@ export const BottomNav: React.FC = () => {
     return false
   }
 
-  // Use simpler transitions when reduced motion is preferred
-  const navTransition = reducedMotion
-    ? { duration: 0.15 }
-    : { type: 'spring' as const, stiffness: 200, damping: 25 }
-
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.nav
-          initial={{ y: 100 }}
-          animate={{ y: 0 }}
-          exit={{ y: 100 }}
-          transition={navTransition}
-          className={cn(
-            'fixed bottom-0 left-0 right-0 z-40',
-            'md:hidden', // Only show on mobile
-            'glass-strong',
-            'border-t border-[var(--border)]',
-            'pb-[env(safe-area-inset-bottom)]' // Safe area for notched phones
-          )}
-        >
-          <div className="flex items-center justify-around h-16 px-2">
-            {navItems.map((item) => {
-              const active = isActive(item)
-              const Icon = item.icon
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="relative flex flex-col items-center justify-center flex-1 h-full"
-                >
-                  <div
-                    className={cn(
-                      'flex flex-col items-center justify-center',
-                      'rounded-xl px-3 py-1.5',
-                      'transition-colors duration-150'
-                    )}
-                  >
-                    {/* Active background indicator - static on mobile for perf */}
-                    {active && (
-                      <div className="absolute inset-1 rounded-xl bg-coral-500/15" />
-                    )}
-
-                    {/* Icon - no animation, just CSS transition */}
-                    <Icon
-                      className={cn(
-                        'w-6 h-6 relative z-10 transition-all duration-150',
-                        active
-                          ? 'text-coral-500 scale-110'
-                          : 'text-[var(--foreground-secondary)] scale-100'
-                      )}
-                      fill={active && item.icon === Heart ? 'currentColor' : 'none'}
-                    />
-
-                    {/* Label */}
-                    <span
-                      className={cn(
-                        'text-[10px] font-medium mt-0.5 relative z-10 transition-colors duration-150',
-                        active
-                          ? 'text-coral-500'
-                          : 'text-[var(--foreground-secondary)]'
-                      )}
-                    >
-                      {item.label}
-                    </span>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        </motion.nav>
+    <nav
+      className={cn(
+        'fixed bottom-0 left-0 right-0 z-40',
+        'md:hidden', // Only show on mobile
+        'glass-strong',
+        'border-t border-[var(--border)]',
+        'pb-[env(safe-area-inset-bottom)]', // Safe area for notched phones
+        'transition-transform',
+        reducedMotion ? 'duration-0' : 'duration-200 ease-out',
+        isVisible ? 'translate-y-0' : 'translate-y-full pointer-events-none'
       )}
-    </AnimatePresence>
+    >
+      <div className="flex items-center justify-around h-16 px-2">
+        {navItems.map((item) => {
+          const active = isActive(item)
+          const Icon = item.icon
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="relative flex flex-col items-center justify-center flex-1 h-full"
+            >
+              <div
+                className={cn(
+                  'flex flex-col items-center justify-center',
+                  'rounded-xl px-3 py-1.5',
+                  'transition-colors duration-150'
+                )}
+              >
+                {/* Active background indicator - static on mobile for perf */}
+                {active && (
+                  <div className="absolute inset-1 rounded-xl bg-coral-500/15" />
+                )}
+
+                {/* Icon - no animation, just CSS transition */}
+                <Icon
+                  className={cn(
+                    'w-6 h-6 relative z-10 transition-all duration-150',
+                    active
+                      ? 'text-coral-500 scale-110'
+                      : 'text-[var(--foreground-secondary)] scale-100'
+                  )}
+                  fill={active && item.icon === Heart ? 'currentColor' : 'none'}
+                />
+
+                {/* Label */}
+                <span
+                  className={cn(
+                    'text-[10px] font-medium mt-0.5 relative z-10 transition-colors duration-150',
+                    active
+                      ? 'text-coral-500'
+                      : 'text-[var(--foreground-secondary)]'
+                  )}
+                >
+                  {item.label}
+                </span>
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+    </nav>
   )
 }
 

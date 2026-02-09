@@ -1,0 +1,17 @@
+{
+  "rootRuntimeKBMax": 400,
+  "routeEntryKBMax": {
+    "/dashboard/swipe/page": 220,
+    "/dashboard/host/page": 180
+  },
+  "forbiddenRuntimeSignatures": {
+    "/dashboard/swipe/page": [
+      "react-joyride",
+      "p5.js"
+    ],
+    "/dashboard/host/page": [
+      "react-joyride",
+      "p5.js"
+    ]
+  }
+}

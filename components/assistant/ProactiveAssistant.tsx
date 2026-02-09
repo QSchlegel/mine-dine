@@ -6,8 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
 import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/utils'
-import { useHesitationMonitor } from '@/hooks/useHesitationMonitor'
-import { useSession } from '@/lib/auth-client'
+import { useSessionState } from '@/components/auth/SessionStateProvider'
 import { Bot } from 'lucide-react'
 
 interface AssistantAction {
@@ -23,95 +22,28 @@ interface AssistantMessage {
   action?: AssistantAction | null
 }
 
-const STORAGE_KEY = 'mindine_assistant_last_prompt'
-const COOLDOWN_MS = 8 * 60 * 1000
-
-const CHAT_CAPTIONS = [
-  "What's for dinner?",
-  'Plan a recipe',
-  'Ask Dine Bot',
-  'Get cooking',
-  'Recipe ideas',
-]
+const FLOATING_ASSISTANT_PATH_PREFIXES = ['/dashboard', '/dinners', '/recipes', '/swipe']
 
 export function ProactiveAssistant() {
   const pathname = usePathname()
-  const { data: session, isPending } = useSession()
+  const { data: session, isPending } = useSessionState()
   const [isOpen, setIsOpen] = useState(false)
-  const [captionIndex, setCaptionIndex] = useState(0)
   const [messages, setMessages] = useState<AssistantMessage[]>([])
   const [input, setInput] = useState('')
   const [isSending, setIsSending] = useState(false)
-  const [isFetching, setIsFetching] = useState(false)
-  const hasPromptedRef = useRef(false)
   const assistantRef = useRef<HTMLDivElement | null>(null)
   const isAuthRoute = pathname?.startsWith('/login') || pathname?.startsWith('/signup')
   const isMineBotStudioRoute = pathname?.startsWith('/minebot/plan-recipe') || pathname?.startsWith('/minebot/plan-dinner')
-
-  const canPromptNow = () => {
-    if (typeof window === 'undefined') return false
-    const last = Number(window.localStorage.getItem(STORAGE_KEY) || 0)
-    return Date.now() - last > COOLDOWN_MS
-  }
-
-  const logPrompt = () => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(STORAGE_KEY, String(Date.now()))
-  }
+  const isKeyRoute = FLOATING_ASSISTANT_PATH_PREFIXES.some((prefix) => pathname?.startsWith(prefix))
 
   const pushAssistantMessage = (content: string, action?: AssistantAction | null) => {
     setMessages((prev) => [...prev, { role: 'assistant', content, action: action ?? null }])
   }
 
-  const handleHesitation = async (details: { idleSeconds: number }) => {
-    if (!canPromptNow() || hasPromptedRef.current || isFetching) return
-    hasPromptedRef.current = true
-    setIsFetching(true)
-
-    try {
-      const response = await fetch('/api/assistant/proactive', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          path: pathname,
-          idleSeconds: details.idleSeconds,
-        }),
-      })
-      const data = await response.json()
-      if (response.ok && data?.suggestion?.message) {
-        pushAssistantMessage(data.suggestion.message, data.suggestion.action)
-        setIsOpen(true)
-        logPrompt()
-      } else {
-        pushAssistantMessage('Need a hand? I can help you find the right next step.')
-      }
-    } catch (error) {
-      console.error('Failed to fetch proactive assistant:', error)
-      pushAssistantMessage('Need a hand? I can help you find the right next step.')
-    } finally {
-      setIsFetching(false)
-    }
-  }
-
-  useHesitationMonitor({
-    idleMs: 28000,
-    cooldownMs: COOLDOWN_MS,
-    onHesitation: handleHesitation,
-  })
-
   useEffect(() => {
     if (!isOpen || !assistantRef.current) return
     assistantRef.current.scrollTop = assistantRef.current.scrollHeight
   }, [isOpen, messages])
-
-  useEffect(() => {
-    if (isOpen) return
-    const id = setInterval(
-      () => setCaptionIndex((i) => (i + 1) % CHAT_CAPTIONS.length),
-      2500
-    )
-    return () => clearInterval(id)
-  }, [isOpen])
 
   const handleSend = async () => {
     const trimmed = input.trim()
@@ -133,17 +65,17 @@ export function ProactiveAssistant() {
       if (response.ok && data?.reply?.message) {
         pushAssistantMessage(data.reply.message, data.reply.action)
       } else {
-        pushAssistantMessage('I can help you navigate the app. Want to browse dinners or messages?')
+        pushAssistantMessage('Tell me where you want to go, and I will suggest the fastest path.')
       }
     } catch (error) {
       console.error('Failed to fetch assistant reply:', error)
-      pushAssistantMessage('I can help you navigate the app. Want to browse dinners or messages?')
+      pushAssistantMessage('Tell me where you want to go, and I will suggest the fastest path.')
     } finally {
       setIsSending(false)
     }
   }
 
-  if (isAuthRoute || isMineBotStudioRoute || isPending || !session?.user) {
+  if (isAuthRoute || isMineBotStudioRoute || !isKeyRoute || isPending || !session?.user) {
     return null
   }
 
@@ -158,11 +90,11 @@ export function ProactiveAssistant() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-pink-500/15 text-pink-500">
-                  <Bot className="h-4 w-4 dinebot-wiggle" />
+                  <Bot className="h-4 w-4" />
                 </span>
                 <p className="text-sm font-semibold text-[var(--foreground)]">Dine Bot</p>
               </div>
-              <p className="text-xs text-[var(--foreground-muted)]">Here to help</p>
+              <p className="text-xs text-[var(--foreground-muted)]">Navigation help</p>
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -176,7 +108,7 @@ export function ProactiveAssistant() {
           <div ref={assistantRef} className="max-h-[420px] overflow-y-auto px-4 py-3 space-y-3">
             {messages.length === 0 ? (
               <p className="text-sm text-[var(--foreground-muted)]">
-                Tell me what you need and I’ll point you in the right direction.
+                Ask where to go next: messages, dinners, recipes, or host tools.
               </p>
             ) : (
               messages.map((message, index) => (
@@ -225,7 +157,7 @@ export function ProactiveAssistant() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 rows={3}
-                placeholder="Ask a quick question..."
+                placeholder="Ask where to go next..."
                 className="flex-1 min-h-[90px]"
               />
               <Button
@@ -251,9 +183,9 @@ export function ProactiveAssistant() {
       >
         <span className="inline-flex items-center gap-2">
           <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/20">
-            <Bot className="h-4 w-4 dinebot-wiggle" />
+            <Bot className="h-4 w-4" />
           </span>
-          {isOpen ? 'Hide Dine Bot' : CHAT_CAPTIONS[captionIndex]}
+          {isOpen ? 'Hide Dine Bot' : 'Dine Bot'}
         </span>
       </Button>
     </div>

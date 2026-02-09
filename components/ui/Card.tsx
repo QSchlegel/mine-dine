@@ -2,18 +2,27 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import { motion, HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { cardHover, cardHoverSubtle } from '@/lib/animations'
 import { getProxiedImageUrl } from '@/lib/image-proxy'
 
-export interface CardProps extends Omit<HTMLMotionProps<'div'>, 'ref'> {
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'glass' | 'elevated' | 'outline'
   hover?: 'none' | 'lift' | 'glow' | 'subtle'
+  motion?: 'none' | 'micro'
 }
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = 'default', hover = 'subtle', children, ...props }, ref) => {
+  (
+    {
+      className,
+      variant = 'default',
+      hover = 'subtle',
+      motion = 'none',
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const variants = {
       default: cn(
         'rounded-2xl border transition-all duration-300 ease-out',
@@ -42,41 +51,29 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       ),
     }
 
-    const hoverEffects = {
-      none: {},
-      lift: cardHover,
-      glow: {
-        rest: {
-          boxShadow: '0 0 0 rgba(232, 93, 117, 0)',
-          transform: 'translateY(0)',
-        },
-        hover: {
-          boxShadow: '0 0 32px rgba(232, 93, 117, 0.22), 0 0 12px rgba(232, 93, 117, 0.14)',
-          borderColor: 'rgba(232, 93, 117, 0.45)',
-          transform: 'translateY(-3px)',
-        },
-      },
-      subtle: cardHoverSubtle,
+    const hoverClasses = {
+      none: '',
+      lift: 'hover:-translate-y-1',
+      glow: 'hover:shadow-[0_0_32px_rgba(232,93,117,0.22),0_0_12px_rgba(232,93,117,0.14)] hover:border-[rgba(232,93,117,0.45)]',
+      subtle: 'hover:-translate-y-0.5',
     }
 
+    const motionClass = motion === 'micro' ? 'transform-gpu' : ''
+
     return (
-      <motion.div
+      <div
         ref={ref}
-        className={cn(variants[variant], className)}
-        variants={hoverEffects[hover]}
-        initial="rest"
-        whileHover="hover"
+        className={cn(variants[variant], hoverClasses[hover], motionClass, className)}
         {...props}
       >
         {children}
-      </motion.div>
+      </div>
     )
   }
 )
 
 Card.displayName = 'Card'
 
-// Card Header
 export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
@@ -91,7 +88,6 @@ export const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
 
 CardHeader.displayName = 'CardHeader'
 
-// Card Title
 export interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
 }
@@ -112,7 +108,6 @@ export const CardTitle = React.forwardRef<HTMLHeadingElement, CardTitleProps>(
 
 CardTitle.displayName = 'CardTitle'
 
-// Card Description
 export interface CardDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {}
 
 export const CardDescription = React.forwardRef<HTMLParagraphElement, CardDescriptionProps>(
@@ -127,7 +122,6 @@ export const CardDescription = React.forwardRef<HTMLParagraphElement, CardDescri
 
 CardDescription.displayName = 'CardDescription'
 
-// Card Content
 export interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export const CardContent = React.forwardRef<HTMLDivElement, CardContentProps>(
@@ -138,7 +132,6 @@ export const CardContent = React.forwardRef<HTMLDivElement, CardContentProps>(
 
 CardContent.displayName = 'CardContent'
 
-// Card Footer
 export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export const CardFooter = React.forwardRef<HTMLDivElement, CardFooterProps>(
@@ -157,7 +150,6 @@ export const CardFooter = React.forwardRef<HTMLDivElement, CardFooterProps>(
 
 CardFooter.displayName = 'CardFooter'
 
-// Card Image (for dinner cards, etc.) - Now uses Next.js Image for optimization
 export interface CardImageProps extends React.HTMLAttributes<HTMLDivElement> {
   src?: string
   alt?: string
@@ -168,7 +160,20 @@ export interface CardImageProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const CardImage = React.forwardRef<HTMLDivElement, CardImageProps>(
-  ({ className, src, alt, overlay = true, aspectRatio = 'video', priority = false, sizes, children, ...props }, ref) => {
+  (
+    {
+      className,
+      src,
+      alt,
+      overlay = true,
+      aspectRatio = 'video',
+      priority = false,
+      sizes,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState(false)
     const proxiedSrc = getProxiedImageUrl(src) ?? src
@@ -179,7 +184,6 @@ export const CardImage = React.forwardRef<HTMLDivElement, CardImageProps>(
       portrait: 'aspect-[3/4]',
     }
 
-    // Default responsive sizes
     const defaultSizes = sizes || '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'
 
     return (
@@ -228,7 +232,6 @@ export const CardImage = React.forwardRef<HTMLDivElement, CardImageProps>(
 
 CardImage.displayName = 'CardImage'
 
-// Accent line for cards
 export const CardAccent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { color?: 'coral' | 'blue' | 'purple' }

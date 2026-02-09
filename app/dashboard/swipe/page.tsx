@@ -1,18 +1,31 @@
 'use client'
 
-import { Suspense, useState, useEffect, useCallback, useMemo } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import Image from 'next/image'
 import { getProxiedImageUrl } from '@/lib/image-proxy'
 import { Heart, X, Star, ChefHat, Utensils } from 'lucide-react'
-import DiscoveryVisualization from '@/components/visualizations/presets/DiscoveryVisualization'
-import MatchVisualization from '@/components/visualizations/presets/MatchVisualization'
 import HelpButton from '@/components/guides/HelpButton'
-import OnboardingTour from '@/components/guides/OnboardingTour'
+
+const DiscoveryVisualization = dynamic(
+  () => import('@/components/visualizations/presets/DiscoveryVisualization'),
+  { ssr: false }
+)
+
+const MatchVisualization = dynamic(
+  () => import('@/components/visualizations/presets/MatchVisualization'),
+  { ssr: false }
+)
+
+const OnboardingTour = dynamic(
+  () => import('@/components/guides/OnboardingTour'),
+  { ssr: false }
+)
 
 interface Host {
   id: string
@@ -62,6 +75,7 @@ function SwipePageContent() {
   const [currentUser, setCurrentUser] = useState<{ name: string; profileImageUrl: string | null } | null>(null)
   const [showTour, setShowTour] = useState(false)
   const [hasCompletedTour, setHasCompletedTour] = useState(false)
+  const [showVisualizations, setShowVisualizations] = useState(false)
 
   // Fetch hosts on mount
   useEffect(() => {
@@ -98,6 +112,26 @@ function SwipePageContent() {
     }
 
     fetchData()
+  }, [])
+
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+    let idleId: number | null = null
+
+    const enableVisuals = () => setShowVisualizations(true)
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      idleId = window.requestIdleCallback(enableVisuals, { timeout: 1500 })
+    } else {
+      timeoutId = setTimeout(enableVisuals, 600)
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId)
+      if (idleId !== null && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(idleId)
+      }
+    }
   }, [])
 
   // Allow manual tour relaunch via ?tour=guest
@@ -315,12 +349,14 @@ function SwipePageContent() {
   return (
     <div className="min-h-screen bg-[var(--background)] relative overflow-hidden">
       <HelpButton pageId="swipe" />
-      <OnboardingTour
-        tourType="guest"
-        isOpen={showTour && !hasCompletedTour}
-        onClose={() => setShowTour(false)}
-        onComplete={handleTourComplete}
-      />
+      {showTour && !hasCompletedTour && (
+        <OnboardingTour
+          tourType="guest"
+          isOpen={showTour && !hasCompletedTour}
+          onClose={() => setShowTour(false)}
+          onComplete={handleTourComplete}
+        />
+      )}
 
       {/* Animated background - smaller on mobile */}
       <div className="absolute inset-0 pointer-events-none">
@@ -338,17 +374,21 @@ function SwipePageContent() {
 
       {/* 3D Network Graph Background */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <DiscoveryVisualization
-          hosts={hosts.map(h => ({
-            id: h.id,
-            name: h.name || 'Host',
-            profileImageUrl: h.profileImageUrl,
-            tags: h.tags,
-            rating: h.rating,
-            matchScore: h.matchScore,
-          }))}
-          currentHostId={currentHost?.id}
-        />
+        {showVisualizations ? (
+          <DiscoveryVisualization
+            hosts={hosts.map(h => ({
+              id: h.id,
+              name: h.name || 'Host',
+              profileImageUrl: h.profileImageUrl,
+              tags: h.tags,
+              rating: h.rating,
+              matchScore: h.matchScore,
+            }))}
+            currentHostId={currentHost?.id}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-coral-500/5 via-transparent to-accent-500/5" />
+        )}
       </div>
 
       {/* Content */}
@@ -681,14 +721,16 @@ function SwipePageContent() {
       </div>
 
       {/* Match celebration overlay */}
-      <MatchVisualization
-        isActive={showMatch}
-        userName={currentUser?.name}
-        hostName={matchData?.hostName || undefined}
-        userImage={currentUser?.profileImageUrl}
-        hostImage={matchData?.hostImage}
-        onComplete={handleMatchClose}
-      />
+      {showMatch && (
+        <MatchVisualization
+          isActive={showMatch}
+          userName={currentUser?.name}
+          hostName={matchData?.hostName || undefined}
+          userImage={currentUser?.profileImageUrl}
+          hostImage={matchData?.hostImage}
+          onComplete={handleMatchClose}
+        />
+      )}
     </div>
   )
 }

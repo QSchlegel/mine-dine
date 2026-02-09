@@ -7,9 +7,9 @@ import { Navigation } from "@/components/ui/Navigation";
 import { Footer } from "@/components/ui/Footer";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { ToastProvider } from "@/components/ui/Toast";
-import { ProactiveAssistant } from "@/components/assistant/ProactiveAssistant";
-import GlobalBackground from "@/components/GlobalBackground";
-import { ScrollToTop } from "@/components/ui/ScrollToTop";
+import { SessionStateProvider } from "@/components/auth/SessionStateProvider";
+import { DeferredChrome } from "@/components/performance/DeferredChrome";
+import { WebVitalsReporter } from "@/components/performance/WebVitalsReporter";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -84,15 +84,16 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col antialiased">
         <UmamiScript />
         <ThemeProvider>
-          <GlobalBackground />
-          <ToastProvider position="top-center">
-            <Navigation />
-            <main className="flex-1 pt-20 pb-24 md:pb-0">{children}</main>
-            <BottomNav />
-            <Footer className="hidden md:block" />
-            <ScrollToTop />
-            <ProactiveAssistant />
-          </ToastProvider>
+          <SessionStateProvider>
+            <WebVitalsReporter />
+            <ToastProvider position="top-center">
+              <Navigation />
+              <main className="flex-1 pt-20 pb-24 md:pb-0">{children}</main>
+              <BottomNav />
+              <Footer className="hidden md:block" />
+              <DeferredChrome />
+            </ToastProvider>
+          </SessionStateProvider>
         </ThemeProvider>
       </body>
     </html>

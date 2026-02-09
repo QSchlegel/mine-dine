@@ -23,6 +23,7 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import Link from 'next/link'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 
 interface Tag {
   id: string
@@ -558,7 +559,7 @@ export default function EditDinnerPage({ params }: { params: Promise<{ id: strin
                   <p className="text-sm font-medium text-foreground mb-2">Preview</p>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={imageUrl}
+                    src={getProxiedImageUrl(imageUrl) ?? imageUrl}
                     alt="Preview"
                     className="w-full max-w-md h-48 object-cover rounded-lg"
                     onError={(e) => {

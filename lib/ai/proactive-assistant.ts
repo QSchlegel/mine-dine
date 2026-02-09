@@ -24,7 +24,7 @@ export interface AssistantContext {
   path?: string
   idleSeconds?: number
   userRole?: string | null
-  mode?: 'plan_dinner' | 'plan_recipe' | 'general'
+  mode?: 'plan_dinner' | 'plan_recipe' | 'general' | 'moderator'
   isProfileComplete?: boolean
 }
 
@@ -33,60 +33,43 @@ export interface AssistantSuggestion {
   action?: AssistantAction
 }
 
-type Season = 'winter' | 'spring' | 'summer' | 'fall'
-
 interface SuggestionPair {
   message: string
   actionId: AssistantActionId
 }
 
-function getSeason(): Season {
-  const month = new Date().getMonth() + 1 // 1-12
-  if (month >= 12 || month <= 2) return 'winter'
-  if (month <= 5) return 'spring'
-  if (month <= 8) return 'summer'
-  return 'fall'
+interface FunctionToolCall {
+  function?: {
+    name?: string
+    arguments?: string
+  }
 }
 
-function getDailyIndex(): number {
-  const now = new Date()
-  const start = new Date(now.getFullYear(), 0, 0)
-  const dayOfYear = Math.floor((now.getTime() - start.getTime()) / (24 * 60 * 60 * 1000))
-  const weekday = now.getDay()
-  return (dayOfYear + weekday) % 30
-}
-
-const SUGGESTION_PAIRS: SuggestionPair[] = [
-  { message: 'Need a quick assist finding the right dinner or host?', actionId: 'browse_dinners' },
-  { message: 'Want to discover dinners that match your taste?', actionId: 'open_swipe' },
-  { message: 'Ready to plan a recipe? I can help you from idea to publish.', actionId: 'plan_recipe' },
-  { message: 'Browse community recipes for inspiration.', actionId: 'browse_recipes' },
-  { message: 'Perfect for a {{season}} evening—find a dinner near you.', actionId: 'browse_dinners' },
-  { message: 'Swipe through hosts and dinners that fit your vibe.', actionId: 'open_swipe' },
-  { message: 'Have a dish in mind? Plan a recipe with Dine Bot.', actionId: 'plan_recipe' },
-  { message: 'Check out what others are cooking and share your own.', actionId: 'browse_recipes' },
-  { message: '{{season}} is great for trying new dinners. Want to browse?', actionId: 'browse_dinners' },
-  { message: 'Find your next dinner match in a few swipes.', actionId: 'open_swipe' },
-  { message: 'From a quick idea to a full recipe—I can guide you.', actionId: 'plan_recipe' },
-  { message: 'Explore recipes from the community.', actionId: 'browse_recipes' },
-  { message: 'Looking for a dinner tonight? I can help you explore options.', actionId: 'browse_dinners' },
-  { message: 'Discover hosts and dinners that suit you.', actionId: 'open_swipe' },
-  { message: 'Tell me a dish and I’ll help you build a recipe plan.', actionId: 'plan_recipe' },
-  { message: 'Cozy {{season}} dinners are just a few clicks away.', actionId: 'browse_dinners' },
-  { message: 'Swipe to find dinners and hosts you’ll love.', actionId: 'open_swipe' },
-  { message: 'Plan a recipe step by step with Dine Bot.', actionId: 'plan_recipe' },
-  { message: '{{season}} vibes—browse dinners that fit the season.', actionId: 'browse_dinners' },
-  { message: 'Quick way to find dinners: try the swipe experience.', actionId: 'open_swipe' },
-  { message: 'Start with an idea; I’ll help you turn it into a recipe.', actionId: 'plan_recipe' },
-  { message: 'Find a dinner that fits your mood today.', actionId: 'browse_dinners' },
-  { message: 'Explore dinners and hosts with a simple swipe.', actionId: 'open_swipe' },
-  { message: 'Plan a {{season}} dinner with Dine Bot.', actionId: 'plan_dinner' },
-  { message: 'Create your next dinner and invite guests.', actionId: 'create_dinner' },
-  { message: 'Finish your profile so hosts can find you.', actionId: 'complete_profile' },
-  { message: 'Check your messages and stay in the loop.', actionId: 'open_messages' },
-  { message: 'Become a host and share your table.', actionId: 'apply_host' },
-  { message: 'Sign in to save your progress and matches.', actionId: 'sign_in' },
-  { message: 'Create an account to join the community.', actionId: 'sign_up' },
+const PROACTIVE_SUGGESTION_PAIRS: SuggestionPair[] = [
+  {
+    message: 'If you want, I can point you to dinners, recipes, or messages.',
+    actionId: 'browse_dinners',
+  },
+  {
+    message: 'Need to continue a conversation? Open your messages.',
+    actionId: 'open_messages',
+  },
+  {
+    message: 'If you are planning something new, start with a recipe plan.',
+    actionId: 'plan_recipe',
+  },
+  {
+    message: 'If you are hosting, you can start a new dinner listing.',
+    actionId: 'create_dinner',
+  },
+  {
+    message: 'You can browse recipes for ideas and then refine with Dine Bot.',
+    actionId: 'browse_recipes',
+  },
+  {
+    message: 'If matching is your goal, open swipe to see hosts and dinners.',
+    actionId: 'open_swipe',
+  },
 ]
 
 const actionCatalog: Record<AssistantActionId, AssistantAction> = {
@@ -147,20 +130,59 @@ const actionCatalog: Record<AssistantActionId, AssistantAction> = {
   },
 }
 
+function getDailyIndex(length: number): number {
+  if (length <= 0) return 0
+
+  const now = new Date()
+  const start = new Date(now.getFullYear(), 0, 0)
+  const dayOfYear = Math.floor((now.getTime() - start.getTime()) / (24 * 60 * 60 * 1000))
+  const weekday = now.getDay()
+
+  return (dayOfYear + weekday) % length
+}
+
+function normalizeText(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function includesAny(text: string, phrases: string[]): boolean {
+  return phrases.some((phrase) => text.includes(phrase))
+}
+
+function pickAvailableAction(
+  actionIds: AssistantActionId[],
+  availableActionMap: Map<AssistantActionId, AssistantAction>
+): AssistantAction | undefined {
+  for (const actionId of actionIds) {
+    const action = availableActionMap.get(actionId)
+    if (action) {
+      return action
+    }
+  }
+
+  return undefined
+}
+
 function getSuggestionFromPool(context: AssistantContext): AssistantSuggestion | null {
   const actions = getAvailableActions(context)
-  const actionIds = new Set(actions.map((a) => a.id))
-  const filtered = SUGGESTION_PAIRS.filter((p) => actionIds.has(p.actionId))
-  if (filtered.length === 0) return null
+  const availableActionIds = new Set(actions.map((action) => action.id))
+  const filtered = PROACTIVE_SUGGESTION_PAIRS.filter((pair) => availableActionIds.has(pair.actionId))
 
-  const season = getSeason()
-  const dailyIndex = getDailyIndex()
-  const seasonOffset: Record<Season, number> = { winter: 0, spring: 8, summer: 15, fall: 22 }
-  const index = (dailyIndex + seasonOffset[season]) % filtered.length
-  const pair = filtered[index]
-  const action = actionCatalog[pair.actionId]
-  const message = pair.message.replace(/\{\{season\}\}/g, season)
-  return { message, action }
+  if (filtered.length === 0) {
+    return null
+  }
+
+  const pair = filtered[getDailyIndex(filtered.length)]
+  const action = actions.find((availableAction) => availableAction.id === pair.actionId)
+
+  return {
+    message: pair.message,
+    action,
+  }
 }
 
 function getAvailableActions(context: AssistantContext): AssistantAction[] {
@@ -180,7 +202,6 @@ function getAvailableActions(context: AssistantContext): AssistantAction[] {
     baseActions.push(actionCatalog.create_dinner)
     baseActions.push(actionCatalog.open_messages)
   } else if (role) {
-    // Only suggest complete_profile if profile is not complete
     if (!isProfileComplete) {
       baseActions.push(actionCatalog.complete_profile)
     }
@@ -201,11 +222,7 @@ function getAvailableActions(context: AssistantContext): AssistantAction[] {
   }
 
   if (path.startsWith('/dashboard/profile')) {
-    const actions = [
-      actionCatalog.open_messages,
-      actionCatalog.browse_dinners,
-    ]
-    // Only include complete_profile if profile is not complete
+    const actions = [actionCatalog.open_messages, actionCatalog.browse_dinners]
     if (!isProfileComplete) {
       actions.unshift(actionCatalog.complete_profile)
     }
@@ -214,6 +231,10 @@ function getAvailableActions(context: AssistantContext): AssistantAction[] {
 
   if (path.startsWith('/dashboard/messages')) {
     return [actionCatalog.open_messages, actionCatalog.browse_dinners]
+  }
+
+  if (mode === 'moderator' || path.startsWith('/minebot/moderator')) {
+    return [actionCatalog.open_messages, actionCatalog.browse_dinners, actionCatalog.browse_recipes]
   }
 
   if (path.startsWith('/minebot/plan-dinner') || mode === 'plan_dinner') {
@@ -236,30 +257,26 @@ function getAvailableActions(context: AssistantContext): AssistantAction[] {
 }
 
 function fallbackMessage(context: AssistantContext): string {
-  if (context.path?.startsWith('/dashboard/host')) {
-    return 'Need a hand setting up your dinner? I can guide you to the next step.'
+  if (context.mode === 'plan_dinner' || context.path?.startsWith('/minebot/plan-dinner')) {
+    return 'Tell me what to adjust next: menu, timing, pricing, or listing details.'
   }
 
-  if (context.path?.startsWith('/dashboard/profile')) {
-    // Only suggest completing profile if it's not already complete
-    if (!context.isProfileComplete) {
-      return 'Want help finishing your profile so others can find you?'
-    }
-    return 'Need help with something else? I can help you browse dinners or answer questions.'
+  if (context.mode === 'plan_recipe' || context.path?.startsWith('/minebot/plan-recipe')) {
+    return 'Tell me what to refine next: ingredients, steps, title, or plating.'
   }
 
-  if (context.path?.startsWith('/dinners')) {
-    return 'If you want, I can help you filter dinners or answer questions.'
+  if (context.path?.startsWith('/dashboard/profile') && !context.isProfileComplete) {
+    return 'I can help with profile completion, messages, dinners, or hosting.'
   }
 
-  return 'Need a quick assist finding the right dinner or host?'
+  return 'I can help you navigate. Tell me what you want to do next.'
 }
 
 function buildProactivePrompt(context: AssistantContext, actions: AssistantAction[]): string {
   const idleSeconds = Math.max(0, Math.floor(context.idleSeconds || 0))
   const actionList = actions.map((action) => `- ${action.id}: ${action.label}`).join('\n')
 
-  return `The user appears hesitant or idle in the Mine Dine app.
+  return `The user appears idle in the Mine Dine app.
 
 Context:
 - Path: ${context.path || 'unknown'}
@@ -267,9 +284,9 @@ Context:
 - Role: ${context.userRole || 'unknown'}
 - Mode: ${context.mode || 'general'}
 
-If the mode is plan_dinner, focus on dinner planning. If the mode is plan_recipe, focus on recipe creation.
-
-Provide a short, friendly proactive message (max 2 sentences). If a clear next step helps, call the tool to select ONE action from the list.
+Write one calm, concise sentence offering help.
+Only call select_action if there is an obvious next click from context.
+If uncertain, do not call any tool.
 
 Available actions:
 ${actionList}`
@@ -285,19 +302,27 @@ Context:
 - Role: ${context.userRole || 'unknown'}
 - Mode: ${context.mode || 'general'}
 
-If the mode is plan_dinner, focus on dinner planning. If the mode is plan_recipe, focus on recipe creation.
-
-Reply in 1-3 sentences. If a concrete next step helps, call the tool to select ONE action from the list.
+Response rules:
+- Professional, concise, and practical.
+- 1-2 short sentences.
+- No hype and no exclamation marks.
+- Only call select_action if the user clearly needs a specific next click.
+- If uncertain, reply with clarification and do not call any tool.
 
 Available actions:
 ${actionList}`
 }
 
-function parseToolAction(toolCalls: Array<{ function?: { name?: string; arguments?: string } }>): AssistantAction | undefined {
+function parseToolAction(
+  toolCalls: FunctionToolCall[],
+  availableActions: AssistantAction[]
+): AssistantAction | undefined {
   const toolCall = toolCalls.find((call) => call.function?.name === 'select_action')
   if (!toolCall?.function?.arguments) {
     return undefined
   }
+
+  const availableActionMap = new Map(availableActions.map((action) => [action.id, action] as const))
 
   try {
     const args = JSON.parse(toolCall.function.arguments) as {
@@ -306,11 +331,15 @@ function parseToolAction(toolCalls: Array<{ function?: { name?: string; argument
       reason?: string
     }
 
-    if (!args.id || !actionCatalog[args.id]) {
+    if (!args.id) {
       return undefined
     }
 
-    const base = actionCatalog[args.id]
+    const base = availableActionMap.get(args.id)
+    if (!base) {
+      return undefined
+    }
+
     return {
       ...base,
       label: args.label?.trim() || base.label,
@@ -320,6 +349,336 @@ function parseToolAction(toolCalls: Array<{ function?: { name?: string; argument
     console.warn('Failed to parse assistant tool call:', error)
     return undefined
   }
+}
+
+function mapToolCalls(
+  toolCalls: Array<{
+    type?: string
+    function?: {
+      name?: string
+      arguments?: string | object
+    }
+  }> = []
+): FunctionToolCall[] {
+  return toolCalls
+    .filter((toolCall) => toolCall.type === 'function')
+    .map((toolCall) => ({
+      function: {
+        name: toolCall.function?.name,
+        arguments:
+          typeof toolCall.function?.arguments === 'string'
+            ? toolCall.function.arguments
+            : toolCall.function?.arguments
+              ? JSON.stringify(toolCall.function.arguments)
+              : undefined,
+      },
+    }))
+}
+
+function resolveNavigationIntent(
+  userMessage: string,
+  availableActions: AssistantAction[]
+): AssistantSuggestion | null {
+  const normalized = normalizeText(userMessage)
+  if (!normalized) {
+    return null
+  }
+
+  const availableActionMap = new Map(availableActions.map((action) => [action.id, action] as const))
+
+  const quickClarifiers = new Set(['help', 'hello', 'hi', 'hey', 'start'])
+  if (quickClarifiers.has(normalized)) {
+    return {
+      message:
+        'I can route you to messages, dinners, recipes, profile, or hosting. Tell me your goal.',
+    }
+  }
+
+  if (includesAny(normalized, ['message', 'messages', 'inbox', 'chat'])) {
+    const action = pickAvailableAction(['open_messages', 'sign_in', 'sign_up'], availableActionMap)
+
+    if (action?.id === 'open_messages') {
+      return {
+        message: 'Open your messages to view and reply to conversations.',
+        action,
+      }
+    }
+
+    if (action) {
+      return {
+        message: 'Messages are available after sign-in.',
+        action,
+      }
+    }
+
+    return {
+      message: 'Messages are available in your dashboard after sign-in.',
+    }
+  }
+
+  if (
+    includesAny(normalized, [
+      'become a host',
+      'become host',
+      'apply host',
+      'host application',
+      'host apply',
+    ]) ||
+    (normalized.includes('host') && includesAny(normalized, ['apply', 'become', 'how', 'start']))
+  ) {
+    const action = pickAvailableAction(['apply_host', 'sign_in', 'sign_up'], availableActionMap)
+
+    if (action?.id === 'apply_host') {
+      return {
+        message: 'Use the host application flow to get started.',
+        action,
+      }
+    }
+
+    if (action) {
+      return {
+        message: 'To apply as a host, sign in first.',
+        action,
+      }
+    }
+
+    return {
+      message: 'Host applications are available from the dashboard after sign-in.',
+    }
+  }
+
+  if (includesAny(normalized, ['profile', 'bio', 'tags'])) {
+    const action = pickAvailableAction(['complete_profile', 'sign_in', 'sign_up'], availableActionMap)
+
+    if (action?.id === 'complete_profile') {
+      return {
+        message: 'Open your profile to complete or update your details.',
+        action,
+      }
+    }
+
+    if (action) {
+      return {
+        message: 'Profile editing is available after sign-in.',
+        action,
+      }
+    }
+
+    return {
+      message: 'Profile settings are available from your dashboard.',
+    }
+  }
+
+  if (
+    includesAny(normalized, ['create dinner', 'new dinner', 'post dinner', 'list dinner']) ||
+    (normalized.includes('dinner') && includesAny(normalized, ['create', 'new', 'publish', 'post', 'list']))
+  ) {
+    const action = pickAvailableAction(
+      ['create_dinner', 'plan_dinner', 'apply_host', 'sign_in'],
+      availableActionMap
+    )
+
+    if (action?.id === 'create_dinner') {
+      return {
+        message: 'Create a dinner listing and continue from there.',
+        action,
+      }
+    }
+
+    if (action?.id === 'plan_dinner') {
+      return {
+        message: 'Start with dinner planning, then continue to your listing.',
+        action,
+      }
+    }
+
+    if (action?.id === 'apply_host') {
+      return {
+        message: 'Hosting tools are unlocked after your host application is approved.',
+        action,
+      }
+    }
+
+    if (action) {
+      return {
+        message: 'Creating a dinner requires sign-in first.',
+        action,
+      }
+    }
+
+    return {
+      message: 'Dinner creation is available from host tools after sign-in.',
+    }
+  }
+
+  if (
+    includesAny(normalized, ['plan dinner', 'dinner plan', 'menu plan']) ||
+    (normalized.includes('dinner') && includesAny(normalized, ['plan', 'planning']))
+  ) {
+    const action = pickAvailableAction(['plan_dinner', 'create_dinner', 'apply_host', 'sign_in'], availableActionMap)
+
+    if (action?.id === 'plan_dinner') {
+      return {
+        message: 'Open dinner planning to draft menu, timing, and pricing.',
+        action,
+      }
+    }
+
+    if (action?.id === 'create_dinner') {
+      return {
+        message: 'Open dinner creation and refine the plan in the listing flow.',
+        action,
+      }
+    }
+
+    if (action?.id === 'apply_host') {
+      return {
+        message: 'Dinner planning is available to hosts. Apply first to unlock it.',
+        action,
+      }
+    }
+
+    if (action) {
+      return {
+        message: 'Dinner planning requires sign-in first.',
+        action,
+      }
+    }
+
+    return {
+      message: 'Dinner planning is available in MineBot host tools.',
+    }
+  }
+
+  if (
+    includesAny(normalized, ['plan recipe', 'recipe plan']) ||
+    (normalized.includes('recipe') && includesAny(normalized, ['plan', 'create']))
+  ) {
+    const action = pickAvailableAction(['plan_recipe', 'browse_recipes', 'sign_in', 'sign_up'], availableActionMap)
+
+    if (action?.id === 'plan_recipe') {
+      return {
+        message: 'Open recipe planning to draft and refine your dish.',
+        action,
+      }
+    }
+
+    if (action?.id === 'browse_recipes') {
+      return {
+        message: 'Browse recipes for ideas, then choose one to refine.',
+        action,
+      }
+    }
+
+    if (action) {
+      return {
+        message: 'Recipe planning is available after sign-in.',
+        action,
+      }
+    }
+
+    return {
+      message: 'Recipe planning is available in MineBot tools.',
+    }
+  }
+
+  if (includesAny(normalized, ['recipe', 'recipes', 'cooking ideas', 'dish ideas'])) {
+    const action = pickAvailableAction(['browse_recipes', 'plan_recipe'], availableActionMap)
+
+    if (action?.id === 'browse_recipes') {
+      return {
+        message: 'Browse recipes to find ideas or save something to try.',
+        action,
+      }
+    }
+
+    if (action) {
+      return {
+        message: 'You can jump into recipe planning directly.',
+        action,
+      }
+    }
+
+    return {
+      message: 'I can help you with recipes once that section is available.',
+    }
+  }
+
+  if (includesAny(normalized, ['swipe', 'match', 'matches', 'discover host', 'discover hosts'])) {
+    const action = pickAvailableAction(['open_swipe', 'browse_dinners'], availableActionMap)
+
+    if (action?.id === 'open_swipe') {
+      return {
+        message: 'Open swipe to discover and match with hosts.',
+        action,
+      }
+    }
+
+    if (action) {
+      return {
+        message: 'Browse dinners to discover available hosts and events.',
+        action,
+      }
+    }
+
+    return {
+      message: 'I can help you discover hosts from swipe or dinner listings.',
+    }
+  }
+
+  if (includesAny(normalized, ['dinner', 'dinners', 'event', 'events'])) {
+    const action = pickAvailableAction(['browse_dinners', 'open_swipe'], availableActionMap)
+
+    if (action?.id === 'browse_dinners') {
+      return {
+        message: 'Browse dinners to compare dates, pricing, and hosts.',
+        action,
+      }
+    }
+
+    if (action) {
+      return {
+        message: 'Open swipe to discover dinners and hosts.',
+        action,
+      }
+    }
+
+    return {
+      message: 'I can help you find dinners from the listing pages.',
+    }
+  }
+
+  if (includesAny(normalized, ['log in', 'login', 'sign in'])) {
+    const action = pickAvailableAction(['sign_in', 'sign_up'], availableActionMap)
+
+    if (action) {
+      return {
+        message: 'Open sign-in to access your dashboard and tools.',
+        action,
+      }
+    }
+
+    return {
+      message: 'Sign-in is available from the account menu.',
+    }
+  }
+
+  if (includesAny(normalized, ['sign up', 'signup', 'create account', 'register', 'join'])) {
+    const action = pickAvailableAction(['sign_up', 'sign_in'], availableActionMap)
+
+    if (action) {
+      return {
+        message: 'Create an account to save progress and use planning tools.',
+        action,
+      }
+    }
+
+    return {
+      message: 'Account creation is available from the sign-up page.',
+    }
+  }
+
+  return null
 }
 
 export async function generateProactiveSuggestion(
@@ -335,19 +694,18 @@ export async function generateProactiveSuggestion(
   if (!openai) {
     return {
       message: fallbackMessage(context),
-      action: actions[0],
     }
   }
 
   const response = await openai.chat.completions.create({
     model: 'gpt-4',
-    temperature: 0.4,
-    max_tokens: 200,
+    temperature: 0.3,
+    max_tokens: 160,
     messages: [
       {
         role: 'system',
         content:
-          'You are Mine Dine’s in-app assistant. Be brief, warm, and non-pushy. Avoid assumptions.',
+          'You are Mine Dine\'s in-app assistant. Be professional, concise, and low-pressure.',
       },
       {
         role: 'user',
@@ -359,7 +717,7 @@ export async function generateProactiveSuggestion(
         type: 'function',
         function: {
           name: 'select_action',
-          description: 'Pick the single best next action to help the user.',
+          description: 'Pick a single next action only when it is clearly helpful.',
           parameters: {
             type: 'object',
             properties: {
@@ -373,7 +731,7 @@ export async function generateProactiveSuggestion(
               },
               reason: {
                 type: 'string',
-                description: 'Short reason for logging.',
+                description: 'Brief rationale for logging.',
               },
             },
             required: ['id'],
@@ -386,22 +744,13 @@ export async function generateProactiveSuggestion(
 
   const message = response.choices[0]?.message
   const content = message?.content?.trim() || fallbackMessage(context)
-  const action = message?.tool_calls 
-    ? parseToolAction(message.tool_calls
-        .filter(tc => tc.type === 'function')
-        .map(tc => ({ 
-          function: { 
-            name: tc.function.name, 
-            arguments: typeof tc.function.arguments === 'string' 
-              ? tc.function.arguments 
-              : (tc.function.arguments ? JSON.stringify(tc.function.arguments) : undefined)
-          } 
-        })))
+  const action = message?.tool_calls
+    ? parseToolAction(mapToolCalls(message.tool_calls), actions)
     : undefined
 
   return {
     message: content,
-    action: action || actions[0],
+    action,
   }
 }
 
@@ -411,23 +760,26 @@ export async function generateAssistantReply(
 ): Promise<AssistantSuggestion> {
   const actions = getAvailableActions(context)
 
+  const deterministicReply = resolveNavigationIntent(userMessage, actions)
+  if (deterministicReply) {
+    return deterministicReply
+  }
+
   if (!openai) {
     return {
-      message:
-        'Thanks for the note. I can help you find dinners, connect with hosts, or finish your profile.',
-      action: actions[0],
+      message: fallbackMessage(context),
     }
   }
 
   const response = await openai.chat.completions.create({
     model: 'gpt-4',
-    temperature: 0.5,
-    max_tokens: 240,
+    temperature: 0.35,
+    max_tokens: 220,
     messages: [
       {
         role: 'system',
         content:
-          'You are Mine Dine’s in-app assistant. Keep replies friendly, concise, and actionable.',
+          'You are Mine Dine\'s in-app assistant. Be professional, concise, and practical.',
       },
       {
         role: 'user',
@@ -439,7 +791,7 @@ export async function generateAssistantReply(
         type: 'function',
         function: {
           name: 'select_action',
-          description: 'Pick the single best next action to help the user.',
+          description: 'Pick a single next action only when it is clearly helpful.',
           parameters: {
             type: 'object',
             properties: {
@@ -453,7 +805,7 @@ export async function generateAssistantReply(
               },
               reason: {
                 type: 'string',
-                description: 'Short reason for logging.',
+                description: 'Brief rationale for logging.',
               },
             },
             required: ['id'],
@@ -466,21 +818,12 @@ export async function generateAssistantReply(
 
   const message = response.choices[0]?.message
   const content = message?.content?.trim() || fallbackMessage(context)
-  const action = message?.tool_calls 
-    ? parseToolAction(message.tool_calls
-        .filter(tc => tc.type === 'function')
-        .map(tc => ({ 
-          function: { 
-            name: tc.function.name, 
-            arguments: typeof tc.function.arguments === 'string' 
-              ? tc.function.arguments 
-              : (tc.function.arguments ? JSON.stringify(tc.function.arguments) : undefined)
-          } 
-        })))
+  const action = message?.tool_calls
+    ? parseToolAction(mapToolCalls(message.tool_calls), actions)
     : undefined
 
   return {
     message: content,
-    action: action || actions[0],
+    action,
   }
 }

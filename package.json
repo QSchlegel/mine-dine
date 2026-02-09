@@ -12,9 +12,11 @@
   },
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build",
+    "build": "next build && npm run perf:budget",
     "start": "next start",
     "lint": "next lint",
+    "perf:report": "node scripts/perf/collect-route-chunks.mjs --report",
+    "perf:budget": "node scripts/perf/collect-route-chunks.mjs --budget scripts/perf/budgets.json",
     "postinstall": "prisma generate",
     "db:seed": "npx tsx prisma/seed.ts",
     "db:promote-first-admin": "npx tsx scripts/promote-first-admin.ts",

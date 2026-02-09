@@ -23,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 
 interface Invitation {
   id: string
@@ -375,7 +376,7 @@ export default function EventDetailPage() {
                   <div className="rounded-lg overflow-hidden mb-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={event.imageUrl}
+                      src={getProxiedImageUrl(event.imageUrl) ?? event.imageUrl}
                       alt={event.title}
                       className="w-full h-48 object-cover"
                     />

@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/Textarea'
 import { Avatar } from '@/components/ui/Avatar'
 import { Heart, MessageCircle, Eye, Flame, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 
 interface RecipeDetail {
   id: string
@@ -204,7 +205,7 @@ export default function RecipeDetailPage() {
             {recipe.imageUrl && (
               <div className="rounded-xl overflow-hidden border border-[var(--border)] aspect-video max-w-2xl mb-4">
                 <img
-                  src={recipe.imageUrl}
+                  src={getProxiedImageUrl(recipe.imageUrl) ?? recipe.imageUrl}
                   alt={recipe.title}
                   className="w-full h-full object-cover"
                 />

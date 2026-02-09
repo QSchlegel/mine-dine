@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -423,7 +424,7 @@ export default function CreateEventPage() {
                   <div className="rounded-lg overflow-hidden bg-[var(--background-elevated)]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={imageUrl}
+                      src={getProxiedImageUrl(imageUrl) ?? imageUrl}
                       alt="Cover preview"
                       className="w-full max-w-md h-48 object-cover"
                       onError={(e) => {

@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Button } from './Button'
 import { UserMenu } from './UserMenu'
-import { useSession, signOut } from '@/lib/auth-client'
+import { signOut } from '@/lib/auth-client'
+import { useSessionState } from '@/components/auth/SessionStateProvider'
 import {
   Calendar,
   MessageSquare,
@@ -54,7 +54,7 @@ const mobileAuthLinks: NavLink[] = [
 export const Navigation: React.FC = () => {
   const pathname = usePathname()
   const router = useRouter()
-  const { data: session, isPending } = useSession()
+  const { data: session, isPending } = useSessionState()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSigningOut, setIsSigningOut] = useState(false)
@@ -108,15 +108,14 @@ export const Navigation: React.FC = () => {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link href={isAuthenticated ? '/dashboard' : '/'} className="flex items-center gap-2 group">
-              <motion.span
+              <span
                 className={cn(
                   'text-2xl font-bold tracking-tight',
                   'bg-gradient-to-r from-coral-500 to-coral-400 bg-clip-text text-transparent'
                 )}
-                whileHover={{ scale: 1.02 }}
               >
                 Mine Dine
-              </motion.span>
+              </span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -156,7 +155,7 @@ export const Navigation: React.FC = () => {
               </div>
 
               {/* Mobile Menu Button */}
-              <motion.button
+              <button
                 className={cn(
                   'md:hidden p-2 rounded-lg',
                   'hover:bg-[var(--background-secondary)]',
@@ -164,41 +163,32 @@ export const Navigation: React.FC = () => {
                 )}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 aria-label="Toggle menu"
-                whileTap={{ scale: 0.95 }}
               >
                 <MenuIcon isOpen={isMobileMenuOpen} />
-              </motion.button>
+              </button>
             </div>
           </div>
         </nav>
       </header>
 
       {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              className="fixed inset-0 z-30 bg-black/50 md:hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsMobileMenuOpen(false)}
-            />
+      <div
+        className={cn(
+          'fixed inset-0 z-30 bg-black/50 md:hidden transition-opacity duration-200',
+          isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        )}
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
 
-            {/* Menu Panel */}
-            <motion.div
-              className={cn(
-                'fixed top-0 right-0 bottom-0 z-30 w-80 md:hidden',
-                'bg-[var(--background)] border-l border-[var(--border)]',
-                'overflow-y-auto'
-              )}
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            >
-              <div className="p-6 pt-20 space-y-6">
+      <div
+        className={cn(
+          'fixed top-0 right-0 bottom-0 z-30 w-80 md:hidden',
+          'bg-[var(--background)] border-l border-[var(--border)]',
+          'overflow-y-auto transition-transform duration-200',
+          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        )}
+      >
+        <div className="p-6 pt-20 space-y-6">
                 {/* User Info (if authenticated) */}
                 {isAuthenticated && user && (
                   <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--background-secondary)]">
@@ -299,11 +289,8 @@ export const Navigation: React.FC = () => {
                     </button>
                   </>
                 )}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+        </div>
+      </div>
     </>
   )
 }
@@ -328,11 +315,7 @@ const NavItem: React.FC<NavItemProps> = ({ href, isActive, children }) => (
   >
     {children}
     {isActive && (
-      <motion.div
-        className="absolute bottom-0 left-2 right-2 h-0.5 bg-coral-500 rounded-full"
-        layoutId="nav-indicator"
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      />
+      <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-coral-500 rounded-full" />
     )}
   </Link>
 )
@@ -370,36 +353,18 @@ const MenuIcon: React.FC<{ isOpen: boolean }> = ({ isOpen }) => (
     stroke="currentColor"
     strokeWidth={2}
   >
-    <AnimatePresence mode="wait" initial={false}>
-      {isOpen ? (
-        <motion.g
-          key="close"
-          initial={{ opacity: 0, rotate: -90 }}
-          animate={{ opacity: 1, rotate: 0 }}
-          exit={{ opacity: 0, rotate: 90 }}
-          transition={{ duration: 0.2 }}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </motion.g>
-      ) : (
-        <motion.g
-          key="menu"
-          initial={{ opacity: 0, rotate: 90 }}
-          animate={{ opacity: 1, rotate: 0 }}
-          exit={{ opacity: 0, rotate: -90 }}
-          transition={{ duration: 0.2 }}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M4 6h16M4 12h16M4 18h16"
-          />
-        </motion.g>
-      )}
-    </AnimatePresence>
+    {isOpen ? (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6 18L18 6M6 6l12 12"
+      />
+    ) : (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 6h16M4 12h16M4 18h16"
+      />
+    )}
   </svg>
 )

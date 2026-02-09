@@ -1,10 +1,13 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride'
-import { Button } from '@/components/ui/Button'
-import { X } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import { getTourConfig, type TourType } from '@/lib/guides'
+import type { CallBackProps, Step } from 'react-joyride'
+
+const Joyride = dynamic(() => import('react-joyride').then((mod) => mod.default), {
+  ssr: false,
+})
 
 interface OnboardingTourProps {
   tourType: TourType
@@ -30,9 +33,9 @@ export default function OnboardingTour({
 
   const handleJoyrideCallback = useCallback(
     (data: CallBackProps) => {
-      const { status } = data
+      const status = data?.status
 
-      if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+      if (status === 'finished' || status === 'skipped') {
         setRunTour(false)
         onClose()
         if (onComplete) {
@@ -49,8 +52,8 @@ export default function OnboardingTour({
     target: step.target,
     content: step.content,
     title: step.title,
-    placement: step.placement || 'auto',
-    disableBeacon: step.disableBeacon || false,
+    placement: step.placement ?? 'auto',
+    disableBeacon: step.disableBeacon ?? false,
   }))
 
   return (

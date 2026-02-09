@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import InteractiveFloatingIcons from '@/components/InteractiveFloatingIcons'
 import DynamicSlogan from '@/components/ui/DynamicSlogan'
 import { useInteraction, requestGyroscopePermission } from '@/hooks/useInteraction'
+import { shouldSkipHeavyEffects } from '@/lib/performance'
 import {
   ArrowRight,
   Calendar,
@@ -24,7 +25,8 @@ import {
 } from 'lucide-react'
 
 export default function Home() {
-  const interaction = useInteraction()
+  const [interactionEnabled, setInteractionEnabled] = useState(false)
+  const interaction = useInteraction({ enabled: interactionEnabled })
   const [gyroRequested, setGyroRequested] = useState(false)
   const heroRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
@@ -35,6 +37,10 @@ export default function Home() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
   const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95])
   const heroY = useTransform(scrollYProgress, [0, 0.5], [0, 50])
+
+  useEffect(() => {
+    setInteractionEnabled(!shouldSkipHeavyEffects())
+  }, [])
 
   const handleFirstInteraction = useCallback(async () => {
     if (!gyroRequested && interaction.isMobile && interaction.hasGyroscope) {

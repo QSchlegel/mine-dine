@@ -5,10 +5,12 @@ export interface PinResult {
   url: string
 }
 
-const DEFAULT_GATEWAY_BASE = 'https://gateway.pinata.cloud'
+const DEFAULT_GATEWAY_BASE = 'https://dweb.link'
 
 function getGatewayBase(): string {
-  return DEFAULT_GATEWAY_BASE
+  const configuredBase = process.env.IPFS_GATEWAY_BASE?.trim()
+  if (!configuredBase) return DEFAULT_GATEWAY_BASE
+  return configuredBase.replace(/\/+$/, '')
 }
 
 function getPinataJwt(): string | null {
@@ -115,7 +117,10 @@ export function isIpfsUrl(url: string | null | undefined): boolean {
       u.pathname.includes('/ipfs/') ||
       u.hostname.includes('pinata.cloud') ||
       u.hostname.includes('ipfs.io') ||
-      u.hostname.endsWith('.ipfs.dweb.link')
+      u.hostname === 'dweb.link' ||
+      u.hostname === 'w3s.link' ||
+      u.hostname.endsWith('.ipfs.dweb.link') ||
+      u.hostname.endsWith('.ipfs.w3s.link')
     )
   } catch {
     return false

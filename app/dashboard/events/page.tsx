@@ -7,6 +7,7 @@ import { Plus, Calendar, Users, Clock, MapPin, Check, X, Mail, Edit } from 'luci
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 
 interface Invitation {
   id: string
@@ -163,7 +164,7 @@ export default function EventsDashboardPage() {
                     <div className="h-32 overflow-hidden">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={event.imageUrl}
+                        src={getProxiedImageUrl(event.imageUrl) ?? event.imageUrl}
                         alt={event.title}
                         className="w-full h-full object-cover"
                       />

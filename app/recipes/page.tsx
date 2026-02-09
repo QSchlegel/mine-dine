@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
 import { Heart, MessageCircle, Utensils, Eye, Flame } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 
 interface RecipeListItem {
   id: string
@@ -134,7 +135,7 @@ export default function RecipesPage() {
                   {recipe.imageUrl && (
                     <div className="rounded-lg overflow-hidden border border-[var(--border)] aspect-video mb-3">
                       <img
-                        src={recipe.imageUrl}
+                        src={getProxiedImageUrl(recipe.imageUrl) ?? recipe.imageUrl}
                         alt={recipe.title}
                         className="w-full h-full object-cover"
                       />

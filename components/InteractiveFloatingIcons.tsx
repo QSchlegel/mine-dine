@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, ReactNode, useState } from 'react'
 import { motion, useSpring } from 'framer-motion'
-import { useInteraction } from '@/hooks/useInteraction'
+import { useInteraction, type InteractionState } from '@/hooks/useInteraction'
 import { shouldSkipHeavyEffects } from '@/lib/performance'
 import {
   UtensilsCrossed,
@@ -25,6 +25,7 @@ interface FloatingIconProps {
   color: string // Tailwind color class
   delay?: number // Animation delay in seconds
   floatAmplitude?: number // How much it floats up/down
+  interaction: InteractionState
 }
 
 function FloatingIcon({
@@ -35,12 +36,8 @@ function FloatingIcon({
   color,
   delay = 0,
   floatAmplitude = 10,
+  interaction,
 }: FloatingIconProps) {
-  const interaction = useInteraction({
-    smoothing: 0.05 + (1 - depth) * 0.1, // Deeper elements smooth more slowly
-    enabled: true,
-  })
-
   // Use springs for silky smooth parallax
   const springConfig = { stiffness: 100, damping: 20 }
   const x = useSpring(0, springConfig)
@@ -138,6 +135,10 @@ export default function InteractiveFloatingIcons({
   className = '',
 }: InteractiveFloatingIconsProps) {
   const [shouldRender, setShouldRender] = useState(false)
+  const interaction = useInteraction({
+    smoothing: 0.08,
+    enabled: shouldRender,
+  })
 
   // Check if we should render on client
   useEffect(() => {
@@ -155,6 +156,7 @@ export default function InteractiveFloatingIcons({
       {/* UtensilsCrossed - top left, medium depth */}
       {/* Light: pink / Dark: Neon teal with glow */}
       <FloatingIcon
+        interaction={interaction}
         icon={<UtensilsCrossed className="w-full h-full drop-shadow-[0_0_8px_currentColor]" />}
         depth={0.6}
         position={{ top: '20%', left: '10%' }}
@@ -167,6 +169,7 @@ export default function InteractiveFloatingIcons({
       {/* ChefHat - bottom right, high depth (more movement) */}
       {/* Light: pink / Dark: Neon coral */}
       <FloatingIcon
+        interaction={interaction}
         icon={<ChefHat className="w-full h-full drop-shadow-[0_0_10px_currentColor]" />}
         depth={0.8}
         position={{ bottom: '32%', right: '15%' }}
@@ -179,6 +182,7 @@ export default function InteractiveFloatingIcons({
       {/* Circle - top right, low depth (subtle movement) */}
       {/* Light: cyan / Dark: Neon teal ring */}
       <FloatingIcon
+        interaction={interaction}
         icon={<Circle className="w-full h-full fill-cyan-500/20 dark:fill-[#4DFFE6]/15 dark:stroke-[#4DFFE6]/30" />}
         depth={0.4}
         position={{ top: '33%', right: '10%' }}
@@ -191,6 +195,7 @@ export default function InteractiveFloatingIcons({
       {/* Sparkles - bottom left, medium depth */}
       {/* Light: purple / Dark: Neon amber */}
       <FloatingIcon
+        interaction={interaction}
         icon={<Sparkles className="w-full h-full drop-shadow-[0_0_6px_currentColor]" />}
         depth={0.5}
         position={{ bottom: '25%', left: '15%' }}
@@ -203,6 +208,7 @@ export default function InteractiveFloatingIcons({
       {/* Flame - middle right, high depth */}
       {/* Light: pink / Dark: Neon coral flame */}
       <FloatingIcon
+        interaction={interaction}
         icon={<Flame className="w-full h-full drop-shadow-[0_0_10px_currentColor]" />}
         depth={0.7}
         position={{ top: '50%', right: '20%' }}
@@ -215,6 +221,7 @@ export default function InteractiveFloatingIcons({
       {/* Additional decorative elements at various depths */}
       {/* Small circle - top right */}
       <FloatingIcon
+        interaction={interaction}
         icon={<Circle className="w-full h-full fill-purple-400/15 dark:fill-[#FFD666]/10 dark:stroke-[#FFD666]/20" />}
         depth={0.3}
         position={{ top: '15%', right: '25%' }}
@@ -226,6 +233,7 @@ export default function InteractiveFloatingIcons({
 
       {/* Sparkles - top left area */}
       <FloatingIcon
+        interaction={interaction}
         icon={<Sparkles className="w-full h-full drop-shadow-[0_0_8px_currentColor]" />}
         depth={0.9}
         position={{ top: '40%', left: '8%' }}

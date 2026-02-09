@@ -19,13 +19,13 @@ const FloatingFoodBackground = dynamic(() => import('@/components/backgrounds/Fl
 type AnimationType = 'particles' | 'waves' | 'geometric' | 'mesh' | 'radial' | 'wave-pattern' | 'floating-food' | 'none'
 
 const ANIMATION_MAP: Record<string, AnimationType> = {
-  '/': 'particles',
+  '/': 'waves',
   '/login': 'waves',
   '/signup': 'waves',
   '/dashboard': 'geometric',
   '/dinners': 'mesh',
-  '/swipe': 'particles',
-  '/dashboard/swipe': 'particles',
+  '/swipe': 'waves',
+  '/dashboard/swipe': 'geometric',
   '/dashboard/profile': 'radial',
   '/dashboard/bookings': 'wave-pattern',
   '/dashboard/messages': 'mesh',
@@ -38,7 +38,6 @@ const ANIMATION_MAP: Record<string, AnimationType> = {
 
 export default function GlobalBackground() {
   const pathname = usePathname()
-  const interaction = useInteraction()
   const [skipAnimations, setSkipAnimations] = useState(true) // Default to skip until checked
 
   // Check device capabilities on mount
@@ -75,6 +74,7 @@ export default function GlobalBackground() {
   }
 
   const animationType = getAnimationType()
+  const interaction = useInteraction({ enabled: animationType === 'particles' })
 
   // Render static gradient fallback on mobile
   if (animationType === 'none') {

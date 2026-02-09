@@ -9,7 +9,7 @@ import { AuthAlert } from '@/components/auth/AuthAlert'
 import { Input } from '@/components/ui/Input'
 import { PasswordInput } from '@/components/auth/PasswordInput'
 import { Button } from '@/components/ui/Button'
-import { authClient } from '@/lib/auth-client'
+import { authClientPasskey } from '@/lib/auth-client-passkey'
 import {
   Mail,
   Fingerprint,
@@ -55,7 +55,7 @@ function LoginContent() {
 
     const timer = window.setTimeout(async () => {
       try {
-        const result = await authClient.signIn.passkey()
+        const result = await authClientPasskey.signIn.passkey()
 
         if (!result.error) {
           if (!isActive) return
@@ -101,7 +101,7 @@ function LoginContent() {
     setIsLoading(true)
 
     try {
-      const result = await authClient.signIn.passkey()
+      const result = await authClientPasskey.signIn.passkey()
 
       if (result.error) {
         throw new Error(result.error.message || 'Passkey authentication failed')

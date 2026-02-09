@@ -1,11 +1,9 @@
 'use client'
 
-import React, { createContext, useContext, useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react'
 
-// Toast types
 export type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 export interface ToastData {
@@ -20,7 +18,10 @@ export interface ToastData {
   }
 }
 
-// Context
+interface InternalToastData extends ToastData {
+  leaving?: boolean
+}
+
 interface ToastContextValue {
   toasts: ToastData[]
   addToast: (toast: Omit<ToastData, 'id'>) => string
@@ -30,7 +31,6 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | undefined>(undefined)
 
-// Hook to use toasts
 export function useToast() {
   const context = useContext(ToastContext)
   if (!context) {
@@ -56,14 +56,10 @@ export function useToast() {
   }
 }
 
-// Provider
 export interface ToastProviderProps {
   children: React.ReactNode
-  /** Position of toasts */
   position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center' | 'bottom-center'
-  /** Default duration in ms */
   defaultDuration?: number
-  /** Maximum toasts visible */
   maxToasts?: number
 }
 
@@ -73,14 +69,43 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
   defaultDuration = 5000,
   maxToasts = 5,
 }) => {
-  const [toasts, setToasts] = useState<ToastData[]>([])
+  const [toasts, setToasts] = useState<InternalToastData[]>([])
+  const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+
+  const clearTimer = (id: string) => {
+    const timer = timersRef.current.get(id)
+    if (timer) {
+      clearTimeout(timer)
+      timersRef.current.delete(id)
+    }
+  }
+
+  const removeToast = useCallback((id: string) => {
+    clearTimer(id)
+
+    setToasts((prev) => {
+      const toast = prev.find((item) => item.id === id)
+      if (!toast || toast.leaving) {
+        return prev
+      }
+      return prev.map((item) => item.id === id ? { ...item, leaving: true } : item)
+    })
+
+    const exitTimer = setTimeout(() => {
+      setToasts((prev) => prev.filter((item) => item.id !== id))
+      timersRef.current.delete(id)
+    }, 160)
+
+    timersRef.current.set(id, exitTimer)
+  }, [])
 
   const addToast = useCallback((toast: Omit<ToastData, 'id'>) => {
-    const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    const newToast: ToastData = {
+    const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+    const newToast: InternalToastData = {
       ...toast,
       id,
       duration: toast.duration ?? defaultDuration,
+      leaving: false,
     }
 
     setToasts((prev) => {
@@ -88,22 +113,25 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
       return updated.slice(-maxToasts)
     })
 
-    // Auto remove
     if (newToast.duration && newToast.duration > 0) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         removeToast(id)
       }, newToast.duration)
+      timersRef.current.set(id, timer)
     }
 
     return id
-  }, [defaultDuration, maxToasts])
-
-  const removeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id))
-  }, [])
+  }, [defaultDuration, maxToasts, removeToast])
 
   const clearToasts = useCallback(() => {
-    setToasts([])
+    toasts.forEach((toast) => removeToast(toast.id))
+  }, [toasts, removeToast])
+
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach((timer) => clearTimeout(timer))
+      timersRef.current.clear()
+    }
   }, [])
 
   const positionClasses = {
@@ -116,7 +144,14 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
   }
 
   return (
-    <ToastContext.Provider value={{ toasts, addToast, removeToast, clearToasts }}>
+    <ToastContext.Provider
+      value={{
+        toasts: toasts.map(({ leaving: _leaving, ...toast }) => toast),
+        addToast,
+        removeToast,
+        clearToasts,
+      }}
+    >
       {children}
       <div
         className={cn(
@@ -126,18 +161,15 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
         )}
         aria-live="polite"
       >
-        <AnimatePresence mode="popLayout">
-          {toasts.map((toast) => (
-            <Toast key={toast.id} {...toast} onDismiss={() => removeToast(toast.id)} />
-          ))}
-        </AnimatePresence>
+        {toasts.map((toast) => (
+          <Toast key={toast.id} {...toast} onDismiss={() => removeToast(toast.id)} />
+        ))}
       </div>
     </ToastContext.Provider>
   )
 }
 
-// Individual Toast component
-interface ToastProps extends ToastData {
+interface ToastProps extends InternalToastData {
   onDismiss: () => void
 }
 
@@ -174,34 +206,28 @@ const Toast: React.FC<ToastProps> = ({
   description,
   action,
   duration,
+  leaving,
   onDismiss,
 }) => {
   const config = typeConfig[type]
   const Icon = config.icon
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.95 }}
-      transition={{ duration: 0.2 }}
+    <div
       className={cn(
         'pointer-events-auto w-80 max-w-full overflow-hidden rounded-xl border',
         'bg-[var(--background-elevated)] shadow-lg',
+        'transition-all duration-150 toast-enter',
+        leaving && 'toast-exit',
         config.containerClass
       )}
     >
       <div className="flex items-start gap-3 p-4">
         <Icon className={cn('h-5 w-5 flex-shrink-0 mt-0.5', config.iconClass)} />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-[var(--foreground)]">
-            {title}
-          </p>
+          <p className="text-sm font-medium text-[var(--foreground)]">{title}</p>
           {description && (
-            <p className="mt-1 text-sm text-[var(--foreground-secondary)]">
-              {description}
-            </p>
+            <p className="mt-1 text-sm text-[var(--foreground-secondary)]">{description}</p>
           )}
           {action && (
             <button
@@ -209,11 +235,7 @@ const Toast: React.FC<ToastProps> = ({
                 action.onClick()
                 onDismiss()
               }}
-              className={cn(
-                'mt-2 text-sm font-medium',
-                config.iconClass,
-                'hover:underline'
-              )}
+              className={cn('mt-2 text-sm font-medium', config.iconClass, 'hover:underline')}
             >
               {action.label}
             </button>
@@ -232,13 +254,11 @@ const Toast: React.FC<ToastProps> = ({
         </button>
       </div>
       {duration && duration > 0 && (
-        <motion.div
-          initial={{ width: '100%' }}
-          animate={{ width: '0%' }}
-          transition={{ duration: duration / 1000, ease: 'linear' }}
-          className={cn('h-1', config.progressClass)}
+        <div
+          className={cn('h-1 toast-progress', config.progressClass)}
+          style={{ animationDuration: `${duration}ms` }}
         />
       )}
-    </motion.div>
+    </div>
   )
 }
