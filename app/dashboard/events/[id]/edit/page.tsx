@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -11,6 +11,7 @@ import {
   Loader2,
   MapPin,
   Save,
+  Upload,
   Users,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -18,6 +19,9 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
+
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
 
 interface EventData {
   id: string
@@ -35,6 +39,7 @@ export default function EditEventPage() {
   const params = useParams()
   const router = useRouter()
   const eventId = params?.id as string
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -46,6 +51,9 @@ export default function EditEventPage() {
   const [dateTime, setDateTime] = useState('')
   const [maxGuests, setMaxGuests] = useState(10)
   const [imageUrl, setImageUrl] = useState('')
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [imageError, setImageError] = useState<string | null>(null)
+  const [dragActive, setDragActive] = useState(false)
   const [enableCostSplit, setEnableCostSplit] = useState(false)
   const [pricePerPerson, setPricePerPerson] = useState(0)
 
@@ -96,6 +104,58 @@ export default function EditEventPage() {
     setErrors(nextErrors)
     return Object.keys(nextErrors).length === 0
   }
+
+  const uploadFile = async (file: File) => {
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      setImageError('Only JPG, PNG, WEBP, or GIF are allowed.')
+      return
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      setImageError('File is too large. Maximum size is 10MB.')
+      return
+    }
+
+    setUploadingImage(true)
+    setImageError(null)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', 'dinner')
+
+      const res = await fetch('/api/uploads', { method: 'POST', body: formData })
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error ?? 'Upload failed')
+      }
+
+      setImageUrl(data.signedUrl || data.url)
+    } catch (error) {
+      setImageError(error instanceof Error ? error.message : 'Upload failed')
+    } finally {
+      setUploadingImage(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) uploadFile(file)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setDragActive(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) uploadFile(file)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setDragActive(true)
+  }
+
+  const handleDragLeave = () => setDragActive(false)
 
   const handleSave = async () => {
     if (!validateForm()) return
@@ -197,13 +257,63 @@ export default function EditEventPage() {
 
             <div>
               <label className="block text-sm font-medium text-[var(--foreground)] mb-1">Image URL</label>
-              <div className="flex items-center gap-2">
-                <ImageIcon className="h-4 w-4 text-[var(--foreground-muted)]" />
-                <Input
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://..."
-                />
+              <div className="space-y-3">
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`
+                    border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors
+                    ${dragActive ? 'border-coral-500 bg-coral-500/10' : 'border-[var(--border)] hover:border-coral-500/50 hover:bg-[var(--background-elevated)]'}
+                    ${uploadingImage ? 'pointer-events-none opacity-70' : ''}
+                  `}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept={ACCEPTED_IMAGE_TYPES.join(',')}
+                    className="hidden"
+                    onChange={handleFileInputChange}
+                  />
+                  {uploadingImage ? (
+                    <Loader2 className="h-8 w-8 mx-auto text-coral-500 animate-spin mb-2" />
+                  ) : (
+                    <Upload className="h-8 w-8 mx-auto text-[var(--foreground-muted)] mb-2" />
+                  )}
+                  <p className="text-sm font-medium text-[var(--foreground)]">
+                    {uploadingImage ? 'Uploading...' : 'Drop an image here or click to upload'}
+                  </p>
+                  <p className="text-xs text-[var(--foreground-muted)] mt-1">JPG, PNG, WEBP, GIF · max 10MB</p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4 text-[var(--foreground-muted)]" />
+                  <Input
+                    value={imageUrl}
+                    onChange={(e) => {
+                      setImageUrl(e.target.value)
+                      setImageError(null)
+                    }}
+                    placeholder="https://..."
+                  />
+                </div>
+
+                {imageError && <p className="text-sm text-red-600 dark:text-red-400">{imageError}</p>}
+
+                {imageUrl && (
+                  <div className="rounded-lg overflow-hidden border border-[var(--border)] bg-[var(--background-elevated)] max-w-sm">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imageUrl}
+                      alt="Event image preview"
+                      className="w-full h-40 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
