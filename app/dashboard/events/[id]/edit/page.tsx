@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -305,7 +306,7 @@ export default function EditEventPage() {
                   <div className="rounded-lg overflow-hidden border border-[var(--border)] bg-[var(--background-elevated)] max-w-sm">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={imageUrl}
+                      src={getProxiedImageUrl(imageUrl) ?? imageUrl}
                       alt="Event image preview"
                       className="w-full h-40 object-cover"
                       onError={(e) => {
