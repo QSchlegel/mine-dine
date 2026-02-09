@@ -391,7 +391,7 @@ function SwipePageContent() {
                   <div className="relative h-56 w-full bg-gradient-to-br from-primary-400 to-primary-600">
                     {host.coverImageUrl && (
                       <Image
-                        src={host.coverImageUrl}
+                        src={getProxiedImageUrl(host.coverImageUrl) ?? host.coverImageUrl}
                         alt=""
                         fill
                         sizes="(max-width: 1024px) 100vw, 520px"
@@ -460,7 +460,7 @@ function SwipePageContent() {
                   <div className="relative h-56 w-full bg-gradient-to-br from-primary-400 to-primary-600">
                     {currentHost.coverImageUrl ? (
                       <Image
-                        src={currentHost.coverImageUrl}
+                        src={getProxiedImageUrl(currentHost.coverImageUrl) ?? currentHost.coverImageUrl}
                         alt={currentHost.name || 'Host'}
                         fill
                         sizes="(max-width: 1024px) 100vw, 520px"

@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { motion, HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { cardHover, cardHoverSubtle } from '@/lib/animations'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 
 export interface CardProps extends Omit<HTMLMotionProps<'div'>, 'ref'> {
   variant?: 'default' | 'glass' | 'elevated' | 'outline'
@@ -170,6 +171,7 @@ export const CardImage = React.forwardRef<HTMLDivElement, CardImageProps>(
   ({ className, src, alt, overlay = true, aspectRatio = 'video', priority = false, sizes, children, ...props }, ref) => {
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState(false)
+    const proxiedSrc = getProxiedImageUrl(src) ?? src
 
     const aspectRatios = {
       video: 'aspect-video',
@@ -190,9 +192,9 @@ export const CardImage = React.forwardRef<HTMLDivElement, CardImageProps>(
         )}
         {...props}
       >
-        {src && !error ? (
+        {proxiedSrc && !error ? (
           <Image
-            src={src}
+            src={proxiedSrc}
             alt={alt || ''}
             fill
             sizes={defaultSizes}
@@ -204,10 +206,10 @@ export const CardImage = React.forwardRef<HTMLDivElement, CardImageProps>(
             )}
             onLoad={() => setIsLoading(false)}
             onError={() => setError(true)}
-            unoptimized={src.startsWith('http') && !src.includes('minedine')}
+            unoptimized={proxiedSrc.startsWith('http')}
           />
         ) : null}
-        {isLoading && src && !error && (
+        {isLoading && proxiedSrc && !error && (
           <div className="absolute inset-0 bg-[var(--background-secondary)] animate-pulse" />
         )}
         {error && (

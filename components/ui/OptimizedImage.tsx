@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 
 interface OptimizedImageProps {
   src: string
@@ -44,11 +45,14 @@ export function OptimizedImage({
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(false)
+  const resolvedSrc = getProxiedImageUrl(src) ?? src
 
-  // Handle external URLs that can't be optimized
-  const isExternal = src?.startsWith('http') && !src.includes(process.env.NEXT_PUBLIC_APP_URL || '')
+  // Handle external URLs that can't be optimized.
+  const isExternal =
+    resolvedSrc?.startsWith('http') &&
+    !resolvedSrc.includes(process.env.NEXT_PUBLIC_APP_URL || '')
 
-  if (error || !src) {
+  if (error || !resolvedSrc) {
     return (
       <div
         className={cn(
@@ -68,7 +72,7 @@ export function OptimizedImage({
     return (
       <div className={cn('relative', containerClassName)}>
         <Image
-          src={src}
+          src={resolvedSrc}
           alt={alt}
           width={fill ? undefined : (width || 400)}
           height={fill ? undefined : (height || 300)}
@@ -98,7 +102,7 @@ export function OptimizedImage({
   return (
     <div className={cn('relative', containerClassName)}>
       <Image
-        src={src}
+        src={resolvedSrc}
         alt={alt}
         width={fill ? undefined : (width || 400)}
         height={fill ? undefined : (height || 300)}

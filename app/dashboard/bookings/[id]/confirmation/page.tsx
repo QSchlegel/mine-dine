@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
 import Image from 'next/image'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 import {
   CheckCircle,
   Calendar,
@@ -220,7 +221,7 @@ END:VCALENDAR`
             {booking.dinner.imageUrl && (
               <div className="relative h-48 w-full">
                 <Image
-                  src={booking.dinner.imageUrl}
+                  src={getProxiedImageUrl(booking.dinner.imageUrl) ?? booking.dinner.imageUrl}
                   alt={booking.dinner.title}
                   fill
                   className="object-cover"
@@ -241,7 +242,10 @@ END:VCALENDAR`
                 <div className="relative h-14 w-14 rounded-full overflow-hidden bg-primary-100">
                   {booking.dinner.host.profileImageUrl ? (
                     <Image
-                      src={booking.dinner.host.profileImageUrl}
+                      src={
+                        getProxiedImageUrl(booking.dinner.host.profileImageUrl) ??
+                        booking.dinner.host.profileImageUrl
+                      }
                       alt={booking.dinner.host.name || 'Host'}
                       fill
                       className="object-cover"

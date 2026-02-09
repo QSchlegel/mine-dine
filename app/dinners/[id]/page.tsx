@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
 import Image from 'next/image'
 import { MapPin, Users, Calendar, Clock, ChefHat, Share2 } from 'lucide-react'
+import { getProxiedImageUrl } from '@/lib/image-proxy'
 
 import {
   Container,
@@ -179,7 +180,7 @@ export default function DinnerDetailPage() {
         {dinner.imageUrl && (
           <div className="relative h-[400px] w-full mb-8 rounded-2xl overflow-hidden">
             <Image
-              src={dinner.imageUrl}
+              src={getProxiedImageUrl(dinner.imageUrl) ?? dinner.imageUrl}
               alt={dinner.title}
               fill
               className="object-cover"
@@ -310,7 +311,7 @@ export default function DinnerDetailPage() {
                         {bill.imageUrl && (
                           <div className="relative h-40 w-full bg-[var(--background-secondary)]">
                             <Image
-                              src={bill.imageUrl}
+                              src={getProxiedImageUrl(bill.imageUrl) ?? bill.imageUrl}
                               alt="Grocery bill"
                               fill
                               className="object-contain"
